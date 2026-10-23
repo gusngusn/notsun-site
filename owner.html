@@ -230,10 +230,21 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
     </section>
 
     <section id="npcSec">
-      <h2>🎬 촬영용 가상 손님</h2>
-      <p class="sub">영상 찍을 때 스크린을 채워요. 가상 손님은 스크린에만 앉고, 손님 휴대폰의 하트·게임 목록에는 안 나와요. 스크린 손님 수에는 포함되니 촬영이 끝나면 꼭 내보내 주세요.</p>
-      <div class="chips"><button class="chip" type="button" data-npc="3">+3명 앉히기</button><button class="chip" type="button" data-npc="6">+6명 앉히기</button><button class="chip" type="button" id="npcOut">모두 내보내기</button></div>
+      <h2>🎬 손님 추가 · 오늘 기록 초기화</h2>
+      <p class="sub"><b>가상 손님 추가</b> (홍보 영상 촬영용) · 스크린에만 앉고, 손님 휴대폰의 하트·게임 목록에는 안 나와요. 스크린 손님 수에는 포함되니 촬영이 끝나면 꼭 내보내 주세요.</p>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0">
+        <button class="chip" type="button" id="npcMinus" aria-label="한 명 줄이기">−</button>
+        <input id="npcN" type="number" inputmode="numeric" min="1" max="30" value="5" style="width:72px;text-align:center;font-size:20px;padding:8px;border-radius:10px" aria-label="추가할 손님 수">
+        <button class="chip" type="button" id="npcPlus" aria-label="한 명 늘리기">+</button>
+        <span class="sub" style="margin:0">명</span>
+        <button class="btn primary" type="button" id="npcAdd" style="flex:1;min-width:140px">앉히기</button>
+      </div>
+      <div class="chips"><button class="chip" type="button" data-npcq="3">3명</button><button class="chip" type="button" data-npcq="5">5명</button><button class="chip" type="button" data-npcq="10">10명</button><button class="chip" type="button" data-npcq="20">20명</button><button class="chip" type="button" id="npcOut">가상 손님 모두 내보내기</button></div>
       <p class="sub" id="npcNote">지금 가상 손님 0명</p>
+      <hr style="border:0;border-top:1px solid #3a2a2e;margin:16px 0">
+      <p class="sub"><b>오늘 기록 초기화</b> (테스트 접속 정리용) · 오늘 등록된 손님 캐릭터 전부, 오늘 주문·호출, 게임 참여 기록, 가상 손님, 오늘의 이벤트(행운의 손님·생일·자리 배치)를 지워요. <b>되돌릴 수 없어요.</b> 실제 손님이 있을 때는 누르지 마세요.</p>
+      <button class="btn" type="button" id="dayReset" style="width:100%;border-color:#c0504d;color:#ff9a9a">🗑 오늘 기록 전체 지우기</button>
+      <p class="sub" id="dayResetNote"></p>
     </section>
 
     <section>
@@ -289,9 +300,24 @@ function start(){
   N.watchOwner(st => { ownerSt = st; if (typeof host !== 'undefined' && host) host.feed(st.game); theme = st.theme || 'auto'; seats = st.seats || {}; ev = { lucky: st.lucky, best: st.best, vip: st.vip || [], bdays: st.bdays || [] }; if (st.ntfy && !$('ntfyTopic').value) $('ntfyTopic').value = st.ntfy; if (st.wifi && !wifiTouched) { $('wifiS').value = st.wifi.s; $('wifiP').value = st.wifi.p; } renderThemes(); renderMap(); renderGuests(guestsNow); renderLucky(); renderQNow(); if (!dirty) { owners = st.owners.map(o => ({ ...o, lines: [...o.lines] })); renderOwners(); renderWho(); } });
   // 촬영용 가상 손님
   const npcNow = () => (ownerSt && ownerSt.npcs) || [];
-  function renderNpc(){ const n = npcNow().length; $('npcNote').textContent = n ? `지금 가상 손님 ${n}명이 스크린에 앉아 있어요 (최대 ${N.NPC_MAX}명)` : '지금 가상 손님 0명'; $('npcOut').disabled = !n; }
-  document.querySelectorAll('[data-npc]').forEach(b => b.onclick = async () => { const have = npcNow(), room = N.NPC_MAX - have.length; if (room <= 0) { $('npcNote').textContent = `가상 손님은 최대 ${N.NPC_MAX}명까지예요.`; return; }
-    const add = N.makeNpcs(Math.min(room, +b.dataset.npc), have.concat(guestsNow || [])); b.disabled = true; try { await N.setNpcs(have.concat(add)); } catch (e) { $('npcNote').textContent = '저장하지 못했어요. 다시 눌러 주세요.'; } b.disabled = false; });
+  let npcMsg = 0;
+  function renderNpc(){ const n = npcNow().length; $('npcOut').disabled = !n; if (Date.now() - npcMsg < 4000) return; $('npcNote').textContent = n ? `지금 가상 손님 ${n}명이 스크린에 앉아 있어요 (최대 ${N.NPC_MAX}명)` : '지금 가상 손님 0명'; }
+  const npcVal = () => Math.max(1, Math.min(N.NPC_MAX, parseInt($('npcN').value, 10) || 1));
+  $('npcMinus').onclick = () => { $('npcN').value = Math.max(1, npcVal() - 1); };
+  $('npcPlus').onclick = () => { $('npcN').value = Math.min(N.NPC_MAX, npcVal() + 1); };
+  document.querySelectorAll('[data-npcq]').forEach(b => b.onclick = () => { $('npcN').value = b.dataset.npcq; });
+  $('npcAdd').onclick = async () => { const have = npcNow(), room = N.NPC_MAX - have.length, want = npcVal();
+    if (room <= 0) { npcMsg = Date.now(); $('npcNote').textContent = `가상 손님은 최대 ${N.NPC_MAX}명까지예요. 먼저 내보내 주세요.`; return; }
+    const k = Math.min(room, want), add = N.makeNpcs(k, have.concat(guestsNow || [])); $('npcAdd').disabled = true;
+    try { await N.setNpcs(have.concat(add)); npcMsg = Date.now(); $('npcNote').textContent = k < want ? `자리가 부족해 ${k}명만 앉혔어요 (최대 ${N.NPC_MAX}명).` : `${k}명을 앉혔어요.`; } catch (e) { npcMsg = Date.now(); $('npcNote').textContent = '저장하지 못했어요. 다시 눌러 주세요.'; }
+    $('npcAdd').disabled = false; };
+  let resetArm = 0;
+  $('dayReset').onclick = async () => { const b = $('dayReset');
+    if (!resetArm) { resetArm = 1; b.textContent = '⚠️ 정말 지울까요? 5초 안에 한 번 더 누르면 지워져요'; setTimeout(() => { if (resetArm === 1) { resetArm = 0; b.textContent = '🗑 오늘 기록 전체 지우기'; } }, 5000); return; }
+    resetArm = 2; b.disabled = true; b.textContent = '지우는 중…';
+    try { const r = await N.resetDay(); $('dayResetNote').textContent = `지웠어요: 손님 ${r.guests}명 · 주문 ${r.orders}건 · 게임 기록 ${r.games}건 (${new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })})`; }
+    catch (e) { $('dayResetNote').textContent = '일부를 지우지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.'; }
+    resetArm = 0; b.disabled = false; b.textContent = '🗑 오늘 기록 전체 지우기'; };
   $('npcOut').onclick = async () => { try { await N.setNpcs([]); } catch (e) { $('npcNote').textContent = '저장하지 못했어요. 다시 눌러 주세요.'; } };
   setInterval(renderNpc, 1000); renderNpc();
   N.watchGuests(N.bizDate(), list => { guestsNow = list || []; renderGuests(guestsNow); renderMap(); if (typeof renderOrders === 'function' && ordersNow) renderOrders(); }, true);

@@ -1378,8 +1378,8 @@
     setTimeout(() => listeners.forEach(f => f()), 0);   // 데모: 실제 서버처럼 쓴 화면 자신에게도 알림
   }
   // 촬영용 가상 손님 (사장 설정에만 저장 → 손님 휴대폰의 하트·게임 대상에는 안 나타남)
-  const NPC_MAX = 12;
-  const NPC_NICKS = ['퇴근한곰', '첫혼술', '야행성', '위스키러버', '밤산책', '교동주민', '하이볼요정', '오늘도야근', '혼술초보', '칵테일덕후', '불금러', '조용히한잔', '월급루팡', '동네한바퀴', '금요일만', '막차탈래'];
+  const NPC_MAX = 30;
+  const NPC_NICKS = ['퇴근한곰', '첫혼술', '야행성', '위스키러버', '밤산책', '교동주민', '하이볼요정', '오늘도야근', '혼술초보', '칵테일덕후', '불금러', '조용히한잔', '월급루팡', '동네한바퀴', '금요일만', '막차탈래', '진토닉', '새벽감성', '혼자왔어요', '대구토박이', '퇴사각', '한잔만', '고양이집사', '출장중', '야근탈출', '동성로', '비오는날', '얼음많이', '첫방문', '단골예정', '낯가림', '말걸어줘요'];
   const NPC_MSGS = ['오늘 퇴사함', '혼술 처음이에요', '한 잔 더?', '분위기 좋다', '', '오늘 너무 피곤', '불금이다', '', '내일 출근 실화?', '', '여기 좋네', ''];
   function makeNpcs(n, have) {
     const pick = a => a[Math.floor(Math.random() * a.length)], now = Date.now(), used = new Set((have || []).map(g => g.nick)), out = [];
@@ -1390,6 +1390,23 @@
         style: sx + Math.floor(Math.random() * 4) + (sx === 'f' && Math.random() < 0.5 ? 1 : 0) + Math.floor(Math.random() * 4), talk: pick([0, 1, 1, 2]), ms: now - (n - i) * 40000 });
     }
     return out;
+  }
+  // 사장: 오늘 기록 초기화 (테스트 접속 정리용) — 오늘 손님 캐릭터·주문·게임 참여 기록·가상 손님·오늘 이벤트를 지움
+  async function resetDay() {
+    const day = bizDate(); let n = { guests: 0, orders: 0, games: 0 };
+    if (LIVE) {
+      const del = async (snap, key) => { const docs = snap.docs; n[key] += docs.length; for (let i = 0; i < docs.length; i += 400) { const b = fs.batch(); docs.slice(i, i + 400).forEach(d => b.delete(d.ref)); await b.commit(); } };
+      await del(await fs.collection('days').doc(day).collection('guests').get(), 'guests');
+      await del(await fs.collection('orders').where('day', '==', day).get(), 'orders');
+      await del(await fs.collection('games').where('day', '==', day).get(), 'games');
+      await fs.collection('owner').doc('settings').set({ npcs: null, lucky: null, best: null, vip: null, bday: null, bdays: null, order: null, game: null, seats: {} }, { mergeFields: ['npcs', 'lucky', 'best', 'vip', 'bday', 'bdays', 'order', 'game', 'seats'] });
+      return n;
+    }
+    n.guests = lsGet(DEMO_KEY(day), []).length; lsSet(DEMO_KEY(day), []);
+    const od = lsGet('notsun-orders', {}); Object.keys(od).forEach(k => { if (od[k].day === day) { delete od[k]; n.orders++; } }); lsSet('notsun-orders', od);
+    const ga = lsGet('notsun-gameacts', []); n.games = ga.filter(a => a.day === day).length; lsSet('notsun-gameacts', ga.filter(a => a.day !== day));
+    const ev = lsGet('notsun-owner-events', {}); ['npcs', 'lucky', 'best', 'vip', 'bday', 'bdays', 'order', 'game'].forEach(k => delete ev[k]); lsSet('notsun-owner-events', ev); lsSet('notsun-owner-seats', {});
+    ping(); setTimeout(() => listeners.forEach(f => f()), 0); return n;
   }
   const setNpcs = list => saveEvent('npcs', { day: bizDate(), list: (list || []).slice(0, NPC_MAX).map(g => ({ id: g.id, nick: g.nick, msg: g.msg, drink: g.drink, hair: g.hair, skin: g.skin, shirt: g.shirt, pants: g.pants, style: g.style, talk: g.talk, ms: g.ms })) });
   const setWifi = (s, p) => saveEvent('wifi', { s: String(s || '').trim().slice(0, 32), p: String(p || '').slice(0, 63) });
@@ -1782,6 +1799,6 @@
     lsSet('notsun-owner-live', { who, msg, ms: Date.now() }); ping();
   }
 
-  global.Notsun = { watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, BAL_QS, OX_QS, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, BOTTOMS, ACCS, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
+  global.Notsun = { resetDay, watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, BAL_QS, OX_QS, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, BOTTOMS, ACCS, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
     THEMES, resolveTheme, costumeFor, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
 })(window);
