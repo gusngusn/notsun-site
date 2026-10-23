@@ -29,7 +29,7 @@ canvas{display:block;image-rendering:pixelated}
 <div id="hostLogin" hidden><div class="hl">
   <form id="hostForm" hidden><b>🎮 게임 진행용 사장님 로그인</b><small>로그인하면 이 기기가 '게임 진행 스크린'이 돼요. 리모컨에서 게임을 시작하면 이 스크린이 진행해서, 리모컨 화면이 꺼져도 게임이 멈추지 않아요. 로그인은 계속 유지돼요.</small><input id="hostPw" type="password" autocomplete="current-password" placeholder="사장님 비밀번호"><button type="submit">로그인</button><small class="err" id="hostErr"></small></form>
   <div id="hostAsk" hidden><b>🎮 이 기기를 게임 진행 스크린으로 지정할까요?</b><small>사장님 계정으로 이미 로그인돼 있어요. 매장 프로젝터처럼 항상 켜져 있는 기기만 지정해 주세요. 휴대폰이나 노트북을 지정하면 화면이 꺼질 때 게임이 잠깐 멈출 수 있어요.</small><button type="button" id="hostYes">이 기기로 지정하기</button></div>
-  <div id="hostOn" hidden><b>✅ 이 기기는 게임 진행 스크린이에요</b><small>리모컨에서 게임을 시작하면 이 스크린이 진행해요.</small><button type="button" id="hostOk">확인</button><button type="button" id="hostOff" class="sub">지정 해제</button></div>
+  <div id="hostOn" hidden><b>✅ 이 기기는 게임 진행 스크린이에요</b><small>리모컨에서 게임을 시작하면 이 스크린이 진행해요. (이 창은 리모컨 확인 버튼을 2초 누르면 다시 열려요)</small><button type="button" id="hostOk">확인</button><button type="button" id="hostOff" class="sub">지정 해제</button></div>
   <small class="close"><a href="#" id="hostSkip">닫기</a></small>
 </div></div>
 <div id="hostBadge" hidden>🎮 이 스크린이 게임을 진행해요</div>
@@ -69,14 +69,15 @@ var gameHost = null;
 // 게임 진행 스크린: '사장님 계정으로 로그인' + '이 기기를 진행 스크린으로 지정'한 기기만 게임을 진행 (다른 기기에서 우연히 열린 스크린은 진행 안 함)
 const GS_KEY = 'notsun-game-screen';
 const isOwnerUser = () => { try { const u = firebase.auth().currentUser; return !!(u && u.email === N.OWNER_EMAIL); } catch (e) { return false; } };
-const isDesignated = () => { try { return localStorage.getItem(GS_KEY) === '1'; } catch (e) { return false; } };
-const setDesignated = on => { try { on ? localStorage.setItem(GS_KEY, '1') : localStorage.removeItem(GS_KEY); } catch (e) {} };
+const isDesignated = () => { try { return localStorage.getItem(GS_KEY) !== '0'; } catch (e) { return false; } };
+const setDesignated = on => { try { localStorage.setItem(GS_KEY, on ? '1' : '0'); } catch (e) {} };
 function startHost(){ if (gameHost) return; gameHost = createGameHost(N, { id: 'screen-' + Math.random().toString(36).slice(2, 8), canHost: () => !N.LIVE || (isOwnerUser() && isDesignated()) }); if (ownerState) gameHost.feed(ownerState.game);
   const b = document.getElementById('hostBadge'); b.hidden = false; setTimeout(() => b.hidden = true, 8000); }
 function stopHost(){ if (!gameHost) return; gameHost.stopTimer(); gameHost = null; }
 const $h = id => document.getElementById(id);
-const wantLogin = () => /(^|[#&?-])login\b/.test(location.hash + location.search);
-function showPanel(which){ ['hostForm', 'hostAsk', 'hostOn'].forEach(id => $h(id).hidden = id !== which); $h('hostLogin').hidden = !which; if (which === 'hostForm') setTimeout(() => $h('hostPw').focus(), 50); }
+let forceLogin = false;
+const wantLogin = () => forceLogin || /(^|[#&?-])login\b/.test(location.hash + location.search);
+function showPanel(which){ if (!which) forceLogin = false; ['hostForm', 'hostAsk', 'hostOn'].forEach(id => $h(id).hidden = id !== which); $h('hostLogin').hidden = !which; if (which) setTimeout(() => { const f = which === 'hostForm' ? $h('hostPw') : which === 'hostAsk' ? $h('hostYes') : $h('hostOk'); f && f.focus(); }, 50); }
 function cleanUrl(){ try { history.replaceState(null, '', location.pathname); } catch (e) {} }
 function hostRefresh(){
   if (!N.LIVE) { if (/(^|[#&?-])host\b/.test(location.hash + location.search)) startHost(); return; }   // 데모 시험용
@@ -93,6 +94,15 @@ $h('hostForm').onsubmit = async e => { e.preventDefault(); $h('hostErr').textCon
 $h('hostYes').onclick = () => { setDesignated(true); cleanUrl(); showPanel(''); hostRefresh(); };
 $h('hostOk').onclick = () => { cleanUrl(); showPanel(''); };
 $h('hostOff').onclick = () => { setDesignated(false); cleanUrl(); showPanel(''); hostRefresh(); };
+(function(){ let downAt = 0, fired = false;
+  const isOk = e => ['Enter', 'NumpadEnter'].includes(e.key) || e.keyCode === 13 || e.keyCode === 23;
+  const open = () => { fired = true; forceLogin = true; if (N.LIVE) hostRefresh(); else showPanel('hostForm'); };
+  addEventListener('keydown', e => { if (isOk(e) && fired && downAt) { e.preventDefault(); e.stopPropagation(); return; } }, true);   // 꾹 누르는 중 반복 입력이 창의 버튼을 눌러버리지 않게
+  addEventListener('keydown', e => { if (!isOk(e) || !$h('hostLogin').hidden) return; if (!downAt) { downAt = Date.now(); fired = false; } else if (!fired && Date.now() - downAt > 1800) open(); });
+  addEventListener('keyup', e => { if (!isOk(e)) return; if (downAt && !fired && $h('hostLogin').hidden && Date.now() - downAt > 1800) open(); downAt = 0; });
+  // 키 반복이 안 오는 리모컨 대비: 누르고 있는 동안 시간 확인
+  setInterval(() => { if (downAt && !fired && $h('hostLogin').hidden && Date.now() - downAt > 1800) open(); }, 200);
+})();
 $h('hostSkip').onclick = e => { e.preventDefault(); cleanUrl(); showPanel(''); };
 // 새 버전이 올라오면 스크린이 스스로 새로고침 (10분마다 확인 · 게임 중에는 안 함)
 var verSig = null;
