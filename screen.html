@@ -29,7 +29,7 @@ canvas{display:block;image-rendering:pixelated}
 <div id="hostLogin" hidden><div class="hl">
   <form id="hostForm" hidden><b>🎮 게임 진행용 사장님 로그인</b><small>로그인하면 이 기기가 '게임 진행 스크린'이 돼요. 리모컨에서 게임을 시작하면 이 스크린이 진행해서, 리모컨 화면이 꺼져도 게임이 멈추지 않아요. 로그인은 계속 유지돼요.</small><input id="hostPw" type="password" autocomplete="current-password" placeholder="사장님 비밀번호"><button type="submit">로그인</button><small class="err" id="hostErr"></small></form>
   <div id="hostAsk" hidden><b>🎮 이 기기를 게임 진행 스크린으로 지정할까요?</b><small>사장님 계정으로 이미 로그인돼 있어요. 매장 프로젝터처럼 항상 켜져 있는 기기만 지정해 주세요. 휴대폰이나 노트북을 지정하면 화면이 꺼질 때 게임이 잠깐 멈출 수 있어요.</small><button type="button" id="hostYes">이 기기로 지정하기</button></div>
-  <div id="hostOn" hidden><b>✅ 이 기기는 게임 진행 스크린이에요</b><small>리모컨에서 게임을 시작하면 이 스크린이 진행해요. (이 창은 리모컨 확인 버튼을 2초 누르면 다시 열려요)</small><button type="button" id="hostOk">확인</button><button type="button" id="hostOff" class="sub">지정 해제</button></div>
+  <div id="hostOn" hidden><b>✅ 이 기기는 게임 진행 스크린이에요</b><small>리모컨에서 게임을 시작하면 이 스크린이 진행해요. (이 창은 리모컨 확인 버튼을 빠르게 5번 누르면 다시 열려요)</small><button type="button" id="hostOk">확인</button><button type="button" id="hostOff" class="sub">지정 해제</button></div>
   <small class="close"><a href="#" id="hostSkip">닫기</a></small>
 </div></div>
 <div id="hostBadge" hidden>🎮 이 스크린이 게임을 진행해요</div>
@@ -100,6 +100,11 @@ $h('hostOff').onclick = () => { setDesignated(false); cleanUrl(); showPanel('');
   addEventListener('keydown', e => { if (isOk(e) && fired && downAt) { e.preventDefault(); e.stopPropagation(); return; } }, true);   // 꾹 누르는 중 반복 입력이 창의 버튼을 눌러버리지 않게
   addEventListener('keydown', e => { if (!isOk(e) || !$h('hostLogin').hidden) return; if (!downAt) { downAt = Date.now(); fired = false; } else if (!fired && Date.now() - downAt > 1800) open(); });
   addEventListener('keyup', e => { if (!isOk(e)) return; if (downAt && !fired && $h('hostLogin').hidden && Date.now() - downAt > 1800) open(); downAt = 0; });
+  // 꾹 누르기가 안 되는 리모컨: 확인 버튼(또는 클릭) 3초 안에 5번 → 로그인 창
+  let taps = [];
+  const tap = () => { if (!$h('hostLogin').hidden) return; const t = Date.now(); taps = taps.filter(x => t - x < 3000); taps.push(t); if (taps.length >= 5) { taps = []; open(); } };
+  addEventListener('keydown', e => { if (isOk(e) && !e.repeat) tap(); });
+  addEventListener('pointerdown', e => { if (!$h('hostLogin').contains(e.target)) tap(); });
   // 키 반복이 안 오는 리모컨 대비: 누르고 있는 동안 시간 확인
   setInterval(() => { if (downAt && !fired && $h('hostLogin').hidden && Date.now() - downAt > 1800) open(); }, 200);
 })();
