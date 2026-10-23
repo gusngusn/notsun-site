@@ -1599,6 +1599,32 @@
     if (!all.some(h => h.from === uid && h.to === other.id)) return false;
     return all.some(h => h.from === other.uid && h.to === myGid);
   }
+  // 서로 하트 대화: 두 사람만, 한 사람당 하룻밤 20개, 60자, 한쪽이 그만하면 닫힘
+  const CHAT_MAX = 20, CHAT_LEN = 60;
+  const chatId = (day, a, b) => day + '_' + [a, b].sort().join('_');
+  function watchChat(day, myGid, otherGid, cb) {
+    const cid = chatId(day, myGid, otherGid);
+    if (LIVE) {
+      let msgs = [], meta = {}; const emit = () => cb({ msgs, closed: !!meta.closed, closedBy: meta.by || '' });
+      const u1 = fs.collection('chats').doc(cid).collection('msgs').orderBy('ts').limit(60).onSnapshot(s => { msgs = s.docs.map(d => { const v = d.data(); return { id: d.id, fromGid: v.fromGid, text: String(v.text || '').slice(0, CHAT_LEN), ms: v.ts ? v.ts.toMillis() : Date.now() }; }); emit(); }, () => {});
+      const u2 = fs.collection('chats').doc(cid).onSnapshot(d => { meta = d.exists ? d.data() : {}; emit(); }, () => {});
+      return () => { u1(); u2(); };
+    }
+    const read = () => { const c = lsGet('notsun-chats', {})[cid] || {}; cb({ msgs: c.msgs || [], closed: !!c.closed, closedBy: c.by || '' }); };
+    read(); listeners.push(read); return () => { const i = listeners.indexOf(read); if (i >= 0) listeners.splice(i, 1); };
+  }
+  async function sendChat(day, myGid, otherGid, text, n) {   // n: 오늘 이 대화에서 내 몇 번째 메시지인지 (1~20)
+    text = String(text || '').replace(/\s+/g, ' ').trim().slice(0, CHAT_LEN); if (!text) throw new Error('empty'); if (!(n >= 1 && n <= CHAT_MAX)) throw new Error('max');
+    const cid = chatId(day, myGid, otherGid), uid = await myUid(); if (!uid) throw new Error('nokey');
+    if (LIVE) { await fs.collection('chats').doc(cid).collection('msgs').doc(uid + '_' + n).set({ from: uid, fromGid: myGid, text, ts: firebase.firestore.FieldValue.serverTimestamp() }); return; }
+    const all = lsGet('notsun-chats', {}), c = all[cid] || { msgs: [] }; if (c.closed) throw new Error('closed'); const id = uid + '_' + n; if (c.msgs.some(m => m.id === id)) throw new Error('dup');
+    c.msgs.push({ id, fromGid: myGid, text, ms: Date.now() }); all[cid] = c; lsSet('notsun-chats', all); ping(); setTimeout(() => listeners.forEach(f => f()), 0);
+  }
+  async function closeChat(day, myGid, otherGid) {
+    const cid = chatId(day, myGid, otherGid);
+    if (LIVE) { await fs.collection('chats').doc(cid).set({ closed: true, by: myGid, ts: firebase.firestore.FieldValue.serverTimestamp() }); return; }
+    const all = lsGet('notsun-chats', {}), c = all[cid] || { msgs: [] }; c.closed = true; c.by = myGid; all[cid] = c; lsSet('notsun-chats', all); ping(); setTimeout(() => listeners.forEach(f => f()), 0);
+  }
   async function markRealert(id) { // 재알림은 주문마다 한 번만 (사장님 기기가 여러 대여도)
     if (LIVE) { await fs.collection('orders').doc(id).update({ re: true }); return; }
     const all = lsGet('notsun-orders', {}); if (all[id]) { all[id].re = true; lsSet('notsun-orders', all); ping(); }
@@ -1756,6 +1782,6 @@
     lsSet('notsun-owner-live', { who, msg, ms: Date.now() }); ping();
   }
 
-  global.Notsun = { makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, BAL_QS, OX_QS, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, BOTTOMS, ACCS, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
+  global.Notsun = { watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, BAL_QS, OX_QS, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, BOTTOMS, ACCS, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
     THEMES, resolveTheme, costumeFor, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
 })(window);
