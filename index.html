@@ -464,7 +464,7 @@ function renderHearts(){
   const sent = heartTo || [], left = Math.max(0, N.HEART_MAX - sent.length);
   $('heartLeft').textContent = `오늘 남은 하트 ${left}개`;
   const mm = mutualSeen(); $('mutualBox').innerHTML = mm.map(id => { const g = allGuests.find(x => x.id === id); return g ? `<div class="mrow3">💞 <b>${chEsc(g.nick)}</b>님과 서로 하트${chatUnread[id] ? '<span class="cdot" title="새 메시지"></span>' : ''}<button type="button" class="cbtn" data-chat="${chEsc(id)}">💬 대화</button></div>` : ''; }).join(''); $('mutualBox').querySelectorAll('[data-chat]').forEach(b => b.onclick = () => openChat(b.dataset.chat)); chatWatchAll(mm);
-  const open = allGuests.filter(g => !g.npc && g.id !== me.id && g.uid && g.uid !== (mine && mine.uid) && !g.noheart && g.talk !== 2);
+  const open = allGuests.filter(g => !g.npc && !g.left && g.id !== me.id && g.uid && g.uid !== (mine && mine.uid) && !g.noheart && g.talk !== 2);
   if (!open.length) { $('heartNote').textContent = '지금은 하트를 받을 수 있는 손님이 없어요.'; return; }
   if ($('heartNote').textContent.startsWith('지금은')) $('heartNote').textContent = '';
   open.slice(0, 30).forEach(g => { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; const done = sent.includes(g.id);
@@ -798,13 +798,21 @@ $('sendOrder').onclick = async () => {
   catch (e) { $('cartErr').textContent = '주문을 보내지 못했어요. 인터넷을 확인하고 다시 눌러주세요. 계속 안 되면 바에 말씀해 주세요.'; $('cartErr').hidden = false; }
   sending = false; $('sendOrder').disabled = false; $('sendOrder').textContent = '주문 보내기';
 };
-N.watchMyOrders(list => { myOrders = list; renderOrders(); });
+// 주문 상태가 바뀌면 손님 폰에 알림 (진동 + 소리 + 화면 번쩍임 + 상단 안내). 처음 불러올 때는 울리지 않음
+const ordSeen = {}; let ordInit = false;
+N.watchMyOrders(list => { myOrders = list;
+  list.forEach(o => { const was = ordSeen[o.id]; ordSeen[o.id] = o.status; if (!ordInit || was === o.status || (!was && o.status === 'new')) return;
+    const names = o.items.map(it => it.name).join(', ');
+    const say = o.kind === 'call' ? (o.status !== 'new' ? '👍 사장님이 확인했어요' : '')
+      : { accepted: `🍳 주문 접수! 지금 만들고 있어요 · ${names}`, done: `🍸 준비 완료! 곧 가져다 드릴게요 · ${names}`, rejected: '⚠️ 주문을 확인하지 못했어요. 바에 말씀해 주세요' }[o.status];
+    if (!say) return; gAlert(o.status === 'done' ? 'ready' : 'order'); toast(say); });
+  ordInit = true; renderOrders(); });
 function renderOrders(){
   const el = $('orderStatus'); el.innerHTML = '';
   myOrders.filter(o => o.kind !== 'call' ? (o.status !== 'done' || Date.now() - o.ms < 3 * 3600e3) : Date.now() - o.ms < 10 * 60e3).slice(0, 3).forEach(o => {
     const d = document.createElement('div'); d.className = 'ostat ' + o.status;
     if (o.kind === 'call') { d.innerHTML = `<b>${o.status === 'new' ? '🙋 사장님께 알렸어요' : '👍 사장님이 확인했어요'}</b><small>${escH(o.items.map(it => it.name).join(', '))}</small>`; el.appendChild(d); return; }
-    const msg = { new: '⏳ 주문 확인 중이에요', accepted: '✅ 주문 접수! 곧 가져다 드릴게요', done: '🍸 준비 완료! 맛있게 드세요', rejected: '⚠️ 주문을 확인하지 못했어요. 바에 말씀해 주세요' }[o.status] || '';
+    const msg = { new: '⏳ 주문 확인 중이에요', accepted: '🍳 주문 접수! 지금 만들고 있어요', done: '🍸 준비 완료! 맛있게 드세요', rejected: '⚠️ 주문을 확인하지 못했어요. 바에 말씀해 주세요' }[o.status] || '';
     d.innerHTML = `<b>${msg}</b><small>${escH(o.items.map(it => it.name + ' ×' + it.qty).join(', '))} · ${won(o.total)}</small>`;
     el.appendChild(d); });
   const h = $('hubOrders'); if (h) { h.innerHTML = el.innerHTML; }

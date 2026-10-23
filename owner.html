@@ -83,6 +83,7 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
 .onav{position:sticky;top:0;z-index:10;display:flex;gap:6px;overflow-x:auto;padding:8px 0;background:var(--night,#120c0d);border-bottom:1px solid var(--line);scrollbar-width:none}.onav a{flex:0 0 auto;padding:9px 13px;border-radius:999px;border:1px solid var(--line);color:var(--ink);text-decoration:none;font:16px "Do Hyeon",sans-serif;background:#1a1214}
 #app section{scroll-margin-top:60px}
 #app>*{min-width:0}
+.row.gone{opacity:.45}.btn.pay{background:#2e7d4f;color:#fff}
 </style>
 </head>
 <body>
@@ -415,8 +416,9 @@ function renderGuests(list){
     const r = document.createElement('div'); r.className = 'row';
     const t = document.createElement('span'); const tr = N.tierOf(g.v); t.textContent = `${g.nick}${tr ? ' (' + (g.v | 0) + '회)' : ''}${g.talk === 1 ? ' 💬' : g.talk === 2 ? ' 🌙' : ''}${g.bd ? ' 🎂생일' : ''}${guestSum(g.id)} · ${g.msg || '(한 줄 없음)'}`;
     const tm = document.createElement('small'); tm.textContent = g.ms ? new Date(g.ms).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : '';
-    const b = document.createElement('button'); b.className = 'btn small'; b.textContent = '숨기기';
-    b.onclick = async () => { if (b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = '정말 숨길까요?'; return; } b.disabled = true; try { await N.removeGuest(N.bizDate(), g.id); } catch (e) { b.textContent = '실패'; } };
+    // 계산 완료 → 스크린에서 캐릭터 퇴장 (기록은 남고, 실수면 다시 앉히기)
+    const b = document.createElement('button'); b.className = 'btn small' + (g.left ? '' : ' pay'); b.textContent = g.left ? '↩ 다시 앉히기' : '💳 계산완료';
+    b.onclick = async () => { if (!g.left && b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = '퇴장시킬까요?'; setTimeout(() => { if (b.dataset.sure === '1') { b.dataset.sure = ''; b.textContent = '💳 계산완료'; } }, 4000); return; } b.disabled = true; try { await N.setGuestLeft(g.id, !g.left); } catch (e) { b.textContent = '실패'; b.disabled = false; } };
     const mv = document.createElement('button'); mv.className = 'btn small'; mv.textContent = '자리';
     mv.onclick = () => { selId = selId === g.id ? null : g.id; renderMap(); renderGuests(guestsNow); if (selId) $('seatSec').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
     if (g.id === selId) r.classList.add('sel');
@@ -426,7 +428,9 @@ function renderGuests(list){
     vp.onclick = async () => { const ids = isVip ? ev.vip.filter(x => x !== g.id) : [...ev.vip, g.id]; try { await N.setVip(ids); ev.vip = ids; renderGuests(guestsNow); } catch (e) { vp.textContent = '실패'; } };
     const bdb = document.createElement('button'); const didBd = (ev.bdays || []).includes(g.id); bdb.className = 'btn small' + (g.bd || didBd ? ' on' : ''); bdb.textContent = didBd ? '🎂 다시' : '🎂 축하';
     bdb.onclick = async () => { bdb.disabled = true; try { await N.celebrateBirthday(g.id, g.nick, ev.bdays); ev.bdays = [...new Set([...(ev.bdays || []), g.id])]; bdb.textContent = '🎉 스크린 확인!'; setTimeout(() => renderGuests(guestsNow), 2500); } catch (e) { bdb.textContent = '실패'; bdb.disabled = false; } };
-    const acts = document.createElement('div'); acts.className = 'acts'; acts.append(mv, bdb, bs, vp, b);
+    const acts = document.createElement('div'); acts.className = 'acts';
+    if (g.left) { r.classList.add('gone'); const lt = g.lts && g.lts.toMillis ? g.lts.toMillis() : g.lts; tm.textContent += lt ? ` · 🚪퇴장 ${new Date(lt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}` : ' · 🚪퇴장'; acts.append(b); }
+    else acts.append(mv, bdb, bs, vp, b);
     r.append(t, tm, acts); el.appendChild(r);
   });
 }

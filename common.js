@@ -42,7 +42,7 @@
   }
   // 할로윈은 저작권 캐릭터 대신 오리지널 코스튬 (낯선맨 히어로, 유령, 미라, 해적, 호박머리, 마녀, 뱀파이어, 고양이)
   const COSTUMES = {
-    halloween: ['vampire', 'witch', 'mummy', 'ghost', 'pumpkinhead', 'frank', 'skeleton', 'zombie', 'werewolf', 'devil', 'reaper', 'jiangshi', 'cat', 'pirate'],
+    halloween: ['vampire', 'witch', 'mummy', 'ghost', 'pumpkinhead', 'frank', 'skeleton', 'zombie', 'werewolf', 'devil', 'reaper', 'jiangshi', 'cat', 'pirate', 'hero', 'villain', 'starhero', 'plague', 'gwishin', 'astronaut', 'robot', 'alien'],
     christmas: ['santasuit', 'antler', 'elf', 'snowman', 'ginger', 'sweater', 'xtree', 'earmuff', 'santasuit'],
     summer: ['swim+shades', 'swim+straw', 'swim+lei', 'swim'],
     spring: ['flower', 'flower', 'lei'],
@@ -90,6 +90,13 @@
       if (on('jiangshi')) { skin = '#e9e5d8'; shirt = '#2a3a6a'; pants = '#1e2a50'; }
       if (on('devil')) { shirt = '#b8202a'; }
       if (on('werewolf')) { hair = '#5e5048'; shirt = '#6a4a3a'; }
+      if (on('villain')) { shirt = '#3a1a4a'; pants = '#1a1020'; }
+      if (on('starhero')) { shirt = '#1f7a8a'; pants = '#1f7a8a'; }
+      if (on('plague')) { shirt = '#1a1614'; pants = '#1a1614'; }
+      if (on('gwishin')) { skin = '#e8e6e2'; shirt = '#f2f0ea'; pants = '#f2f0ea'; hair = '#0e0c10'; }
+      if (on('astronaut')) { shirt = '#eef0f4'; pants = '#e2e6ec'; }
+      if (on('robot')) { shirt = '#9aa4b0'; pants = '#7a8490'; }
+      if (on('alien')) { skin = '#8fd47a'; hair = '#8fd47a'; shirt = '#4a4a5a'; }
       if (on('santasuit')) { shirt = '#d6262e'; pants = '#d6262e'; }
       if (on('elf')) { shirt = '#2a8a4a'; pants = '#d6262e'; }
       if (on('snowman')) { shirt = '#f6f8fc'; pants = '#e8ecf4'; }
@@ -110,6 +117,10 @@
     const csAll = parts.filter(k => k !== 'swim');
     if (has('cape') || has('vampire')) { P(0, 16, 20, 16, '#1a1016'); P(1, 13, 3, 5, '#a0202a'); P(16, 13, 3, 5, '#a0202a'); }
     if (has('reaper')) { P(0, 14, 20, 20, '#18141c'); }
+    if (has('villain')) { P(-1, 16, 22, 20, '#2a1036'); P(-1, 16, 1, 20, '#4a1a5a'); P(20, 16, 1, 20, '#4a1a5a'); }
+    if (has('starhero')) { P(1, 17, 18, 13, '#ff8a2a'); }
+    if (has('gwishin')) { P(2, 6, 16, 24, '#0e0c10'); }
+    if (has('astronaut')) { P(1, 18, 18, 10, '#c8ccd4'); }
     if (has('hero')) { P(0, 17, 20, 18, '#d6262e'); P(1, 17, 18, 1, '#a01a20'); }
     if (has('wings')) { P(-3, 18, 4, 7, '#ffffff'); P(-4, 19, 2, 4, '#f0f4ff'); P(19, 18, 4, 7, '#ffffff'); P(21, 19, 2, 4, '#f0f4ff'); }
     P(8, 16, 4, 2, skin);                                                  // 목
@@ -198,6 +209,14 @@
     if (cs === 'pirate') { for (let py = 1; py <= 5; py++) for (let px = 0; px < 20; px++) if (inHead(px, py)) P(px, py, 1, 1, '#c8262e'); P(1, 5, 18, 1, '#c8262e'); P(3, 2, 1, 1, '#ffffff'); P(8, 3, 1, 1, '#ffffff'); P(13, 2, 1, 1, '#ffffff'); P(17, 4, 3, 2, '#c8262e'); P(19, 6, 2, 3, '#c8262e'); P(12, 9, 4, 4, '#151515'); P(3, 8, 9, 1, '#151515'); }
     if (cs === 'mummy') { for (let py = 1; py <= 17; py += 2) for (let px = 0; px < 20; px++) if (inHead(px, py)) P(px, py, 1, 1, '#e8e2d0'); for (let py = 18; py <= 39; py += 3) P(4, py, 12, 1, '#e8e2d0'); P(5, 10, 2, 3, '#1a1010'); P(13, 10, 2, 3, '#1a1010'); P(5, 10, 1, 1, '#ffffff'); P(13, 10, 1, 1, '#ffffff'); }
     if (cs === 'pumpkinhead') { for (let py = 0; py <= 17; py++) for (let px = 0; px < 20; px++) if (((px - 9.5) / 9) ** 2 + ((py - 9) / 8.2) ** 2 <= 1) P(px, py, 1, 1, (px % 5 === 2) ? '#d8701a' : '#f08a1a'); P(9, -2, 2, 3, '#3a6a2a'); P(5, 9, 3, 2, '#2a1408'); P(12, 9, 3, 2, '#2a1408'); P(6, 8, 1, 1, '#2a1408'); P(13, 8, 1, 1, '#2a1408'); P(6, 13, 8, 2, '#2a1408'); P(8, 13, 1, 1, '#f08a1a'); P(11, 14, 1, 1, '#f08a1a'); }
+    // 장르 코스튬 (악당·히어로·호러·SF) — 특정 작품 캐릭터가 아닌 오리지널 디자인
+    if (cs === 'villain') { P(4, 0, 12, 2, '#d8b040'); P(4, -2, 2, 2, '#d8b040'); P(9, -3, 2, 3, '#d8b040'); P(14, -2, 2, 2, '#d8b040'); P(9, 0, 2, 1, '#3ad06a'); P(4, 9, 4, 1, '#151018'); P(12, 9, 4, 1, '#151018'); P(5, 11, 2, 1, '#5aff8a'); P(13, 11, 2, 1, '#5aff8a'); P(2, 12, 3, 6, '#5a2a7a'); P(15, 12, 3, 6, '#5a2a7a'); }
+    if (cs === 'starhero') { P(2, 10, 16, 1, '#2a2a2a'); P(4, 9, 5, 4, '#ffb43a'); P(11, 9, 5, 4, '#ffb43a'); P(5, 10, 1, 1, '#ffffff'); P(12, 10, 1, 1, '#ffffff'); P(9, 20, 2, 1, '#ffffff'); P(7, 21, 6, 1, '#ffffff'); P(8, 22, 4, 1, '#ffffff'); P(8, 23, 1, 1, '#ffffff'); P(11, 23, 1, 1, '#ffffff'); P(4, 27, 12, 1, '#ffb43a'); }
+    if (cs === 'plague') { P(-1, 3, 22, 2, '#151210'); P(3, -3, 14, 6, '#151210'); P(3, 1, 14, 1, '#5a4a3a'); P(6, 12, 8, 3, '#d8cdb0'); P(8, 15, 6, 2, '#d8cdb0'); P(10, 17, 4, 1, '#c8bd9e'); P(5, 9, 3, 3, '#3a2a20'); P(12, 9, 3, 3, '#3a2a20'); P(6, 10, 1, 1, '#a8d0e0'); P(13, 10, 1, 1, '#a8d0e0'); }
+    if (cs === 'gwishin') { P(2, 1, 5, 18, '#0e0c10'); P(13, 1, 5, 18, '#0e0c10'); P(6, 1, 8, 7, '#0e0c10'); P(8, 10, 2, 1, '#151515'); P(9, 14, 2, 1, '#8a1a1a'); }
+    if (cs === 'astronaut') { for (let py = -2; py <= 19; py++) for (let px = -2; px < 22; px++) if (((px - 9.5) / 11) ** 2 + ((py - 9) / 10.4) ** 2 <= 1 && !inHead(px, py)) P(px, py, 1, 1, '#f4f6fa'); P(3, 7, 14, 8, 'rgba(90,150,220,.35)'); P(5, 8, 2, 1, 'rgba(255,255,255,.85)'); P(6, 20, 8, 4, '#c8ccd4'); P(7, 21, 1, 1, '#e23b4a'); P(9, 21, 1, 1, '#3ad06a'); P(11, 21, 1, 1, '#3a8ae2'); }
+    if (cs === 'robot') { P(1, 0, 18, 17, '#a8b2be'); P(15, 0, 4, 17, '#8a94a0'); P(4, 7, 4, 3, '#151a20'); P(12, 7, 4, 3, '#151a20'); P(5, 8, 2, 1, '#5ae0ff'); P(13, 8, 2, 1, '#5ae0ff'); P(6, 13, 8, 1, '#5a6470'); P(6, 15, 8, 1, '#5a6470'); P(9, -4, 2, 4, '#7a8490'); P(8, -6, 4, 2, '#ff4a4a'); P(-1, 8, 2, 3, '#7a8490'); P(19, 8, 2, 3, '#7a8490'); P(6, 20, 8, 5, '#7a8490'); P(7, 21, 2, 1, '#ffd23a'); P(11, 21, 2, 1, '#5ae0ff'); }
+    if (cs === 'alien') { P(5, -4, 1, 5, '#5aa04a'); P(14, -4, 1, 5, '#5aa04a'); P(4, -6, 3, 2, '#c8ff5a'); P(13, -6, 3, 2, '#c8ff5a'); P(4, 9, 4, 4, '#101010'); P(12, 9, 4, 4, '#101010'); P(5, 10, 1, 1, '#ffffff'); P(13, 10, 1, 1, '#ffffff'); }
     // 할로윈 단골 캐릭터 (특정 작품 캐릭터가 아닌 누구나 아는 유형)
     if (cs === 'vampire') { P(8, 5, 4, 2, hair); P(9, 7, 2, 1, hair); P(8, 15, 1, 1, '#ffffff'); P(11, 15, 1, 1, '#ffffff'); if (frame !== 'b') { P(5, 11, 1, 2, '#c0202a'); P(14, 11, 1, 2, '#c0202a'); } P(9, 19, 2, 2, '#a0202a'); }
     if (cs === 'frank') { P(1, -1, 18, 5, '#151515'); P(2, 4, 16, 1, '#151515'); P(5, 5, 9, 1, '#3a3a3a'); [6, 8, 10, 12].forEach(k => P(k, 4, 1, 3, '#3a3a3a')); P(-1, 15, 2, 2, '#9aa0a6'); P(19, 15, 2, 2, '#9aa0a6'); P(4, 13, 3, 1, '#6a8a5a'); P(13, 13, 3, 1, '#6a8a5a'); }
@@ -427,9 +446,10 @@
     stool: L('stool', [14, 40, 66, 92, 118, 144, 170], 210, { sit: true, zone: 'bar' }),
     gBack: L('gBack', [232, 262, 292, 322, 352, 382, 412], 180, { zone: 'g' }),
     gIn: L('gIn', [262, 318, 374], 216, { zone: 'g' }),
-    nFront: L('nFront', [252, 286, 320, 354, 388, 422], 268, { zone: 'n' }),
-    nLeft: L('nLeft', [200, 202], 0, { zone: 'n' }).map((p, i) => ({ ...p, foot: i ? 254 : 230 })),
-    nIn: L('nIn', [292, 346], 246, { zone: 'n' }),
+    // ㄴ은 ㄱ을 180° 돌린 모양 (가운데 x=337 기준 대칭) → 자리도 ㄱ과 같은 7+3
+    nFront: L('nFront', [262, 292, 322, 352, 382, 412, 442], 268, { zone: 'n' }),
+    nLeft: [],
+    nIn: L('nIn', [300, 356, 412], 246, { zone: 'n' }),
     standBack: L('standBack', [247, 287, 327, 367, 407, 447], 162, { zone: 'stand' }),
     standFront: L('standFront', [14, 42, 70, 98, 126, 154, 182], 266, { zone: 'stand' })
   };
@@ -502,17 +522,18 @@
       px(x0, y1, x1 - x0, 5, FRONT); px(x0, y1, x1 - x0, 1, '#2a2830');
       legs.forEach(lx => px(lx, y1 + 5, 2, 12, LEG));
     }
-    const A = [214, 168, 460, 184], B = [440, 184, 460, 232];   // ㄱ
-    const C = [214, 190, 234, 250], D = [234, 234, 434, 250];   // ㄴ
+    // ㄱ과 ㄴ은 (337, 209) 기준 180° 대칭: 윗판·아랫판은 같은 길이, 다리도 같은 길이
+    const A = [214, 168, 460, 184], B = [440, 184, 460, 226];   // ㄱ
+    const C = [214, 192, 234, 234], D = [214, 234, 460, 250];   // ㄴ
     const lamp = (lx, ly) => { px(lx - 4, ly - 12, 9, 2, '#efe2c0'); px(lx, ly - 10, 1, 9, '#c9b48a'); px(lx - 3, ly - 1, 7, 2, '#c9b48a'); };
     const card = (mx, my) => { px(mx, my - 7, 6, 8, '#efe9de'); px(mx + 1, my - 6, 4, 3, '#3a3a3a'); };
     function tableBack() {
       slab(A, [216, 456]); slab(B, [442, 456]); slab(C, [216, 230]);
-      lamp(276, 178); lamp(396, 178); lamp(450, 212); lamp(224, 222);
-      card(334, 180); card(445, 198);
+      lamp(276, 178); lamp(396, 178); lamp(450, 210); lamp(224, 218);
+      card(334, 180); card(445, 196); card(223, 230);
     }
-    function tableFront() { slab(D, [236, 300, 370, 430]); lamp(334, 244); card(280, 246); card(392, 246); }
-    const glowsAt = [[44, 133], [150, 133], [276, 167], [396, 167], [450, 201], [224, 211], [334, 233]];
+    function tableFront() { slab(D, [216, 290, 382, 456]); lamp(278, 244); lamp(398, 244); card(340, 246); }
+    const glowsAt = [[44, 133], [150, 133], [276, 167], [396, 167], [450, 199], [224, 207], [278, 233], [398, 233]];
     const blit = (sp, cx, foot) => b.drawImage(sp, Math.round(cx - CX - 2), Math.round(foot - sp.height + 1));
     function bubble(ctx, s, ax, ay, text, kind, age, icon) {
       const pop = Math.min(1, age / 220), k = 0.6 + 0.4 * (1 - (1 - pop) ** 3);
@@ -541,7 +562,7 @@
       ctx.restore();
     }
     let lastKey = '', since = 0, sfxOrderKey = 0;
-    const seen = new Map(), lastSeat = new Map();
+    const seen = new Map(), lastSeat = new Map(), lastPos = new Map(), leftAt = new Map();
     // ---------- 시즌 장식 ----------
     function lights(x0, x1, y, cols, t, step) { for (let x = x0, i = 0; x < x1; x += step, i++) { const on = (i + Math.floor(t / 450)) % 3 !== 0; px(x, y + (i % 2), 2, 2, on ? cols[i % cols.length] : shade(cols[i % cols.length], .45)); px(x - step / 2, y - 1 + (i % 2 ? 0 : 1), step / 2, 1, '#2a2020'); } }
     function pumpkin(x, y) { px(x, y - 6, 9, 6, '#f08a1a'); px(x + 1, y - 7, 7, 1, '#f08a1a'); px(x + 3, y - 6, 1, 6, '#c86a10'); px(x + 6, y - 6, 1, 6, '#c86a10'); px(x + 4, y - 9, 1, 2, '#3a6a2a'); px(x + 2, y - 5, 1, 1, '#2a1408'); px(x + 6, y - 5, 1, 1, '#2a1408'); px(x + 2, y - 3, 5, 1, '#2a1408'); }
@@ -707,8 +728,12 @@
       room();
       decorWall(th, t);
       if ((opts.bdays || []).length) { balloon(463, 40, '#ff6aa8', t, 1); balloon(470, 52, '#ffd23a', t, 2); balloon(464, 64, '#4ad0e0', t, 3); }
+      // 계산 완료한 손님: 화면에 앉아 있던 걸 본 경우에만 퇴장 연출 (새로고침 때 다시 재생 안 함)
+      const leaving = []; guests.forEach(g => { if (!g.left || !g.id) return; if (!leftAt.has(g.id)) leftAt.set(g.id, lastPos.has(g.id) ? Date.now() : 0); const ms = leftAt.get(g.id); if (ms) leaving.push({ id: g.id, nick: g.nick, ms }); });
+      guests.forEach(g => { if (g.id && !g.left && leftAt.has(g.id)) leftAt.delete(g.id); });
+      guests = guests.filter(g => !g.left);
       const placed = placeGuests(guests, opts.seats).map(({ g, slot }, i) => ({ g, ...slot, i }));
-      placed.forEach(p => { const id = p.g.id; if (!id) return; const was = lastSeat.get(id); if (was && was !== p.code && seen.has(id)) seen.set(id, t); lastSeat.set(id, p.code); });
+      placed.forEach(p => { const id = p.g.id; if (!id) return; const was = lastSeat.get(id); if (was && was !== p.code && seen.has(id)) seen.set(id, t); lastSeat.set(id, p.code); lastPos.set(id, { x: p.x, foot: p.foot, sit: p.sit }); });
       const bob = i => (Math.sin(t / 650 + i * 1.9) > 0.7 ? -1 : 0);
       // 자연스러운 움직임: 깜빡임, 한 모금, 흔들흔들, 등장 점프, 짠!
       const ph = p => (p.ph ??= [...(p.g.nick || '')].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 9973, 7 + p.i * 131));
@@ -757,6 +782,12 @@
         for (let k = 0; k < 6; k++) { const ang = k / 6 * Math.PI * 2 + e * 3, r = (10 + e * 18) * s;
           ctx.fillStyle = `rgba(255,230,160,${1 - e})`; const sx2 = cx + Math.cos(ang) * r, sy2 = cy + Math.sin(ang) * r;
           ctx.fillRect(sx2 - s, sy2 - 3 * s, 2 * s, 6 * s); ctx.fillRect(sx2 - 3 * s, sy2 - s, 6 * s, 2 * s); } });
+      // 퇴장 인사: 자리에서 반짝이며 사라지고 '또 오세요!'가 떠오름
+      leaving.forEach(lv => { const pos = lastPos.get(lv.id); if (!pos) return; const e = (Date.now() - lv.ms) / 2600; if (e < 0 || e > 1) return;
+        const cx = pos.x * s, cy = (pos.foot - 24) * s;
+        for (let k = 0; k < 8; k++) { const ang = k / 8 * Math.PI * 2 + e * 2, r = (6 + e * 22) * s; ctx.fillStyle = `rgba(255,214,140,${1 - e})`; const sx2 = cx + Math.cos(ang) * r, sy2 = cy + Math.sin(ang) * r; ctx.fillRect(sx2 - s, sy2 - 3 * s, 2 * s, 6 * s); ctx.fillRect(sx2 - 3 * s, sy2 - s, 6 * s, 2 * s); }
+        ctx.save(); ctx.globalAlpha = Math.min(1, (1 - e) * 2); ctx.font = `${7 * s}px "Do Hyeon", sans-serif`; ctx.textAlign = 'center'; ctx.lineWidth = 2.4 * s; ctx.strokeStyle = '#2a1618'; const ty = cy - (8 + e * 16) * s;
+        ctx.strokeText('또 오세요!', cx, ty); ctx.fillStyle = '#ffd36a'; ctx.fillText('또 오세요!', cx, ty); ctx.restore(); });
       const cp = cheerPair(placed, t);
       if (cp) { const mx = (cp[0].x + cp[1].x) / 2 * s, my = (Math.min(cp[0].foot, cp[1].foot) - (cp[0].sit ? 46 : 50)) * s;
         ctx.save(); ctx.font = `${8 * s}px "Do Hyeon", sans-serif`; ctx.textAlign = 'center'; ctx.lineWidth = 2.5 * s; ctx.strokeStyle = '#2a1618';
@@ -824,7 +855,9 @@
       const live = opts.live;
       const od = opts.order, odOn = od && Date.now() - od.ms < 9000;
       if (od && od.ms && sfxOrderKey !== od.ms) { sfxOrderKey = od.ms; if (odOn) sfxDing(); }
+      const bye = leaving.filter(lv => Date.now() - lv.ms < 4000).pop();
       if (live && live.msg && Date.now() - live.ms < 15000) { const oi = live.who === 1 ? 1 : 0; pick = { key: 'live' + live.ms, x: owners[oi]._x ?? OWNER_X[oi], y: 103, text: live.msg, kind: 'live' }; }
+      else if (bye) pick = { key: 'bye' + bye.id + bye.ms, x: owners[0]._x ?? OWNER_X[0], y: 103, text: `${bye.nick}님, 안녕히 가세요!`, kind: 'live' };
       else if (odOn) { const op = od.gid && placed.find(p => p.g.id === od.gid);
         pick = op ? { key: 'od' + od.ms, x: op.x, y: headY(op), text: '주문 들어갔어요!', kind: 'order' }
                   : { key: 'od' + od.ms, x: owners[0]._x ?? OWNER_X[0], y: 103, text: `${od.nick || '손님'}님 주문 들어갔어요!`, kind: 'order' }; }
@@ -1056,13 +1089,15 @@
     // 오늘의 질문 (스크린 위쪽 띠)
     function qBanner(ctx, s, t, q) {
       ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.font = `${7 * s}px "Do Hyeon", sans-serif`; const txt = 'Q. ' + q, tw = ctx.measureText(txt).width;
-      ctx.font = `${4.4 * s}px "Do Hyeon", sans-serif`; const sub = '휴대폰에서 한 줄로 답해주세요', sw = ctx.measureText(sub).width;
-      const w = Math.max(tw, sw) + 18 * s, h = 20 * s, x = 240 * s - w / 2, y = 6 * s, glow = 0.5 + Math.sin(t / 600) * 0.2;
+      const txt = 'Q. ' + q; let fs = 11; ctx.font = `${fs * s}px "Do Hyeon", sans-serif`;
+      while (fs > 7 && ctx.measureText(txt).width > 300 * s) { fs -= 0.5; ctx.font = `${fs * s}px "Do Hyeon", sans-serif`; }   // 긴 질문은 글자를 줄여 한 줄에
+      const tw = ctx.measureText(txt).width;
+      ctx.font = `${5.6 * s}px "Do Hyeon", sans-serif`; const sub = '휴대폰에서 한 줄로 답해주세요', sw = ctx.measureText(sub).width;
+      const w = Math.max(tw, sw) + 26 * s, h = 30 * s, x = 240 * s - w / 2, y = 3 * s, glow = 0.6 + Math.sin(t / 600) * 0.25;
       ctx.fillStyle = 'rgba(14,9,10,.88)'; ctx.beginPath(); ctx.roundRect(x, y, w, h, 6 * s); ctx.fill();
-      ctx.strokeStyle = `rgba(255,178,122,${glow})`; ctx.lineWidth = 1 * s; ctx.stroke();
-      ctx.fillStyle = '#ffe2c4'; ctx.font = `${7 * s}px "Do Hyeon", sans-serif`; ctx.fillText(txt, 240 * s, y + 8 * s);
-      ctx.fillStyle = '#b9a59c'; ctx.font = `${4.4 * s}px "Do Hyeon", sans-serif`; ctx.fillText(sub, 240 * s, y + 15.5 * s);
+      ctx.strokeStyle = `rgba(255,178,122,${glow})`; ctx.lineWidth = 1.4 * s; ctx.stroke();
+      ctx.fillStyle = '#ffe2c4'; ctx.font = `${fs * s}px "Do Hyeon", sans-serif`; ctx.fillText(txt, 240 * s, y + 11.5 * s);
+      ctx.fillStyle = '#d2bfb4'; ctx.font = `${5.6 * s}px "Do Hyeon", sans-serif`; ctx.fillText(sub, 240 * s, y + 23 * s);
       ctx.restore();
     }
     // 익명 건배: 받은 손님 머리 위로 잔 두 개가 '짠' (5초)
@@ -1255,7 +1290,7 @@
   function valid(g) {
     return g && typeof g.nick === 'string' && g.nick.length >= 1 && g.nick.length <= 8 && typeof g.msg === 'string' && g.msg.length <= 24 &&
       DRINKS.some(d => d.k === g.drink) && isHex(g.hair) && isHex(g.skin) && isHex(g.shirt) && isHex(g.pants) && STYLE_RE.test(g.style) &&
-      (g.v === undefined || (Number.isInteger(g.v) && g.v >= 1 && g.v <= 999)) && (g.talk === undefined || [0, 1, 2].includes(g.talk)) && (g.bd === undefined || typeof g.bd === 'boolean') && (g.nolast === undefined || typeof g.nolast === 'boolean') && (g.noheart === undefined || typeof g.noheart === 'boolean') && (g.hearts === undefined || (Number.isInteger(g.hearts) && g.hearts >= 0)) && (g.npc === undefined || typeof g.npc === 'boolean');
+      (g.v === undefined || (Number.isInteger(g.v) && g.v >= 1 && g.v <= 999)) && (g.talk === undefined || [0, 1, 2].includes(g.talk)) && (g.bd === undefined || typeof g.bd === 'boolean') && (g.nolast === undefined || typeof g.nolast === 'boolean') && (g.noheart === undefined || typeof g.noheart === 'boolean') && (g.hearts === undefined || (Number.isInteger(g.hearts) && g.hearts >= 0)) && (g.npc === undefined || typeof g.npc === 'boolean') && (g.left === undefined || typeof g.left === 'boolean');
   }
   async function addGuest(g) {
     const doc = { nick: g.nick, msg: g.msg, drink: g.drink, hair: g.hair, skin: g.skin, shirt: g.shirt, pants: g.pants, style: g.style };
@@ -1773,6 +1808,12 @@
     if (LIVE) { await fs.collection('owner').doc('recipes').set({ map: { [k]: v } }, { merge: true }); return; }
     const m = lsGet('notsun-recipes', {}); m[k] = v; lsSet('notsun-recipes', m); ping();
   }
+  // 사장: 계산 완료 → 캐릭터 퇴장 (기록은 남김, 실수하면 다시 앉히기)
+  async function setGuestLeft(gid, left) {
+    if (!gid) return; const day = bizDate(), v = !!left;
+    if (LIVE) { await fs.collection('days').doc(day).collection('guests').doc(gid).update(v ? { left: true, lts: firebase.firestore.FieldValue.serverTimestamp() } : { left: false }); return; }
+    const list = lsGet(DEMO_KEY(day), []), g = list.find(x => x.id === gid); if (g) { g.left = v; if (v) g.lts = Date.now(); lsSet(DEMO_KEY(day), list); ping(); setTimeout(() => listeners.forEach(f => f()), 0); }
+  }
   async function setGuestLast(gid, name) {
     if (!gid) return; const day = bizDate(), last = String(name || '').slice(0, 30);
     if (LIVE) { await fs.collection('days').doc(day).collection('guests').doc(gid).update({ last }); return; }
@@ -1787,7 +1828,7 @@
   const setNtfy = topic => saveEvent('ntfy', String(topic || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64));
   const renotify = o => notifyPhones({ ...o, nick: `⏰ 아직 접수 전 · ${o.nick || '손님'}` });
   const testNtfy = topic => notifyPhones({ nick: '테스트', items: [{ name: '알림 테스트', qty: 1 }], note: '', total: 0 }, topic);
-  const onScreen = l => l.filter(g => valid(g) && clean(g.nick) && clean(g.msg));
+  const onScreen = l => l.filter(g => valid(g) && clean(g.nick) && clean(g.msg) && !g.left);   // 계산 완료(퇴장)한 손님은 자리에서 뺌
   async function saveTheme(theme) {
     if (!THEMES.some(t => t.k === theme)) return;
     if (LIVE) { await fs.collection('owner').doc('settings').set({ theme }, { merge: true }); return; }
@@ -1799,6 +1840,6 @@
     lsSet('notsun-owner-live', { who, msg, ms: Date.now() }); ping();
   }
 
-  global.Notsun = { resetDay, watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, BAL_QS, OX_QS, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, BOTTOMS, ACCS, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
+  global.Notsun = { setGuestLeft, resetDay, watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, BAL_QS, OX_QS, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, BOTTOMS, ACCS, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
     THEMES, resolveTheme, costumeFor, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
 })(window);
