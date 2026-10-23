@@ -69,7 +69,8 @@ function fit(){ const r = scene.getBoundingClientRect(), dpr = Math.min(2, devic
 addEventListener('resize', fit); fit();
 function loop(t){
   if (N.bizDate() !== day) { day = N.bizDate(); guests = []; subscribe(); }
-  view.render(ctx, scene.width, scene.height, guests, t, { day, count: guests.length, qr: null, owners: ownerState.owners, live: ownerState.live, seats: ownerState.seats,
+  const npcs = ownerState.npcs || [], all = npcs.length ? guests.concat(npcs).sort((a, b) => (a.ms || 0) - (b.ms || 0)) : guests;
+  view.render(ctx, scene.width, scene.height, all, t, { day, count: all.length, qr: null, owners: ownerState.owners, live: ownerState.live, seats: ownerState.seats,
     order: ownerState.order, bday: ownerState.bday, bdays: ownerState.bdays, lucky: ownerState.lucky, best: ownerState.best, vip: ownerState.vip, q: ownerState.q, rec: recName, cheers: cheerList, game: ownerState.game, gameActs, theme: N.resolveTheme(ownerState.theme), screenTitle: '지금 낯선 손님들', footer: guests.length ? '' : '첫 번째 낯선 손님을 기다리는 중' });
   requestAnimationFrame(loop);
 }

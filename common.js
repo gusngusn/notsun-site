@@ -1255,7 +1255,7 @@
   function valid(g) {
     return g && typeof g.nick === 'string' && g.nick.length >= 1 && g.nick.length <= 8 && typeof g.msg === 'string' && g.msg.length <= 24 &&
       DRINKS.some(d => d.k === g.drink) && isHex(g.hair) && isHex(g.skin) && isHex(g.shirt) && isHex(g.pants) && STYLE_RE.test(g.style) &&
-      (g.v === undefined || (Number.isInteger(g.v) && g.v >= 1 && g.v <= 999)) && (g.talk === undefined || [0, 1, 2].includes(g.talk)) && (g.bd === undefined || typeof g.bd === 'boolean') && (g.nolast === undefined || typeof g.nolast === 'boolean') && (g.noheart === undefined || typeof g.noheart === 'boolean') && (g.hearts === undefined || (Number.isInteger(g.hearts) && g.hearts >= 0));
+      (g.v === undefined || (Number.isInteger(g.v) && g.v >= 1 && g.v <= 999)) && (g.talk === undefined || [0, 1, 2].includes(g.talk)) && (g.bd === undefined || typeof g.bd === 'boolean') && (g.nolast === undefined || typeof g.nolast === 'boolean') && (g.noheart === undefined || typeof g.noheart === 'boolean') && (g.hearts === undefined || (Number.isInteger(g.hearts) && g.hearts >= 0)) && (g.npc === undefined || typeof g.npc === 'boolean');
   }
   async function addGuest(g) {
     const doc = { nick: g.nick, msg: g.msg, drink: g.drink, hair: g.hair, skin: g.skin, shirt: g.shirt, pants: g.pants, style: g.style };
@@ -1345,7 +1345,7 @@
   const SHOP_WIFI = { s: 'KT_GiGA_B945', p: '3bbbaxe067' };  // 손님용 와이파이 기본값 (사장 리모컨에서 바꿀 수 있음 · 이름은 대소문자 구분)
   const wifiQrText = w => `WIFI:T:WPA;S:${String(w.s).replace(/([\\;,:"])/g, '\\$1')};P:${String(w.p).replace(/([\\;,:"])/g, '\\$1')};;`;
   function cleanEvents(v) {
-    const today = bizDate(), out = { lucky: null, best: null, vip: [], order: null, ntfy: '', bday: null, bdays: [], q: '', game: null, wifi: { ...SHOP_WIFI } };
+    const today = bizDate(), out = { lucky: null, best: null, vip: [], order: null, ntfy: '', bday: null, bdays: [], q: '', game: null, npcs: [], wifi: { ...SHOP_WIFI } };
     const wf = v && v.wifi; if (wf && typeof wf.s === 'string') out.wifi = { s: wf.s.slice(0, 32), p: typeof wf.p === 'string' ? wf.p.slice(0, 63) : '' };
     const lk = v && v.lucky;
     if (lk && lk.day === today && typeof lk.id === 'string') {
@@ -1365,6 +1365,7 @@
     if (od && od.day === today && od.n) { const key = 'o|' + od.n; if (!(key in luckySeen)) luckySeen[key] = performance.now() < 5000 ? 0 : Date.now(); out.order = { gid: od.gid || '', nick: String(od.nick || '').slice(0, 8), icon: od.icon || 'cocktail', ms: luckySeen[key] }; }
     const vp = v && v.vip; if (vp && vp.day === today && Array.isArray(vp.ids)) out.vip = vp.ids.filter(x => typeof x === 'string').slice(0, 40);
     const gm = v && v.game; if (gm && gm.day === today && gm.n && GAME_TYPES.includes(gm.type)) { const key = 'g|' + gm.n + '|' + gm.phase + '|' + (gm.k || 0); if (!(key in luckySeen)) luckySeen[key] = Date.now(); out.game = { ...gm, ms: luckySeen[key] }; }
+    const np = v && v.npcs; if (np && np.day === today && Array.isArray(np.list)) out.npcs = np.list.filter(g => g && typeof g.id === 'string' && /^npc/.test(g.id) && valid({ ...g, id: undefined, ms: undefined })).slice(0, NPC_MAX).map(g => ({ ...g, npc: true, noheart: true }));
     const qv = v && v.q; if (qv && qv.day === today && typeof qv.text === 'string' && qv.text.trim()) out.q = qv.text.trim().slice(0, 40);
     return out;
   }
@@ -1376,6 +1377,21 @@
     const ev = lsGet('notsun-owner-events', {}); ev[field] = field === 'lucky' ? { ...value, ms: Date.now() } : value; lsSet('notsun-owner-events', ev); ping();
     setTimeout(() => listeners.forEach(f => f()), 0);   // 데모: 실제 서버처럼 쓴 화면 자신에게도 알림
   }
+  // 촬영용 가상 손님 (사장 설정에만 저장 → 손님 휴대폰의 하트·게임 대상에는 안 나타남)
+  const NPC_MAX = 12;
+  const NPC_NICKS = ['퇴근한곰', '첫혼술', '야행성', '위스키러버', '밤산책', '교동주민', '하이볼요정', '오늘도야근', '혼술초보', '칵테일덕후', '불금러', '조용히한잔', '월급루팡', '동네한바퀴', '금요일만', '막차탈래'];
+  const NPC_MSGS = ['오늘 퇴사함', '혼술 처음이에요', '한 잔 더?', '분위기 좋다', '', '오늘 너무 피곤', '불금이다', '', '내일 출근 실화?', '', '여기 좋네', ''];
+  function makeNpcs(n, have) {
+    const pick = a => a[Math.floor(Math.random() * a.length)], now = Date.now(), used = new Set((have || []).map(g => g.nick)), out = [];
+    const nicks = NPC_NICKS.filter(x => !used.has(x)).sort(() => Math.random() - 0.5);
+    for (let i = 0; i < n; i++) {
+      const sx = Math.random() < 0.5 ? 'm' : 'f';
+      out.push({ id: 'npc' + now.toString(36) + i, nick: nicks[i] || ('손님' + (i + 1)), msg: pick(NPC_MSGS), drink: pick(DRINKS).k, hair: pick(HAIR_COLORS), skin: pick(SKIN_COLORS), shirt: pick(SHIRT_COLORS), pants: PANTS,
+        style: sx + Math.floor(Math.random() * 4) + (sx === 'f' && Math.random() < 0.5 ? 1 : 0) + Math.floor(Math.random() * 4), talk: pick([0, 1, 1, 2]), ms: now - (n - i) * 40000 });
+    }
+    return out;
+  }
+  const setNpcs = list => saveEvent('npcs', { day: bizDate(), list: (list || []).slice(0, NPC_MAX).map(g => ({ id: g.id, nick: g.nick, msg: g.msg, drink: g.drink, hair: g.hair, skin: g.skin, shirt: g.shirt, pants: g.pants, style: g.style, talk: g.talk, ms: g.ms })) });
   const setWifi = (s, p) => saveEvent('wifi', { s: String(s || '').trim().slice(0, 32), p: String(p || '').slice(0, 63) });
   const setQuestion = text => saveEvent('q', { day: bizDate(), text: String(text || '').trim().slice(0, 40) });
   const drawLucky = (id, nick, reward) => saveEvent('lucky', { day: bizDate(), id, nick: String(nick || '').slice(0, 8), reward: String(reward || '').slice(0, 20) });
@@ -1740,6 +1756,6 @@
     lsSet('notsun-owner-live', { who, msg, ms: Date.now() }); ping();
   }
 
-  global.Notsun = { saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, BAL_QS, OX_QS, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, BOTTOMS, ACCS, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
+  global.Notsun = { makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, BAL_QS, OX_QS, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, BOTTOMS, ACCS, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
     THEMES, resolveTheme, costumeFor, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
 })(window);

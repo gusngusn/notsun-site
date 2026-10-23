@@ -449,7 +449,7 @@ function renderHearts(){
   const sent = heartTo || [], left = Math.max(0, N.HEART_MAX - sent.length);
   $('heartLeft').textContent = `오늘 남은 하트 ${left}개`;
   const mm = mutualSeen(); $('mutualBox').innerHTML = mm.map(id => { const g = allGuests.find(x => x.id === id); return g ? `<div class="mrow3">💞 <b>${escH(g.nick)}</b>님과 서로 하트</div>` : ''; }).join('');
-  const open = allGuests.filter(g => g.id !== me.id && g.uid && g.uid !== (mine && mine.uid) && !g.noheart && g.talk !== 2);
+  const open = allGuests.filter(g => !g.npc && g.id !== me.id && g.uid && g.uid !== (mine && mine.uid) && !g.noheart && g.talk !== 2);
   if (!open.length) { $('heartNote').textContent = '지금은 하트를 받을 수 있는 손님이 없어요.'; return; }
   if ($('heartNote').textContent.startsWith('지금은')) $('heartNote').textContent = '';
   open.slice(0, 30).forEach(g => { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; const done = sent.includes(g.id);

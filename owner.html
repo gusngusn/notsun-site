@@ -229,6 +229,13 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
       <div class="list" id="guests"></div>
     </section>
 
+    <section id="npcSec">
+      <h2>🎬 촬영용 가상 손님</h2>
+      <p class="sub">영상 찍을 때 스크린을 채워요. 가상 손님은 스크린에만 앉고, 손님 휴대폰의 하트·게임 목록에는 안 나와요. 스크린 손님 수에는 포함되니 촬영이 끝나면 꼭 내보내 주세요.</p>
+      <div class="chips"><button class="chip" type="button" data-npc="3">+3명 앉히기</button><button class="chip" type="button" data-npc="6">+6명 앉히기</button><button class="chip" type="button" id="npcOut">모두 내보내기</button></div>
+      <p class="sub" id="npcNote">지금 가상 손님 0명</p>
+    </section>
+
     <section>
       <h2>📊 오늘 마감 리포트</h2>
       <p class="sub">오늘 영업일(새벽 6시 기준) 손님과 주문을 모아서 보여줘요. 거절한 주문과 호출은 빼고 계산해요.</p>
@@ -280,6 +287,13 @@ function start(){
   if (started) return; started = true;
   $('login').hidden = true; $('app').hidden = false; $('logout').hidden = !N.LIVE;
   N.watchOwner(st => { ownerSt = st; if (typeof host !== 'undefined' && host) host.feed(st.game); theme = st.theme || 'auto'; seats = st.seats || {}; ev = { lucky: st.lucky, best: st.best, vip: st.vip || [], bdays: st.bdays || [] }; if (st.ntfy && !$('ntfyTopic').value) $('ntfyTopic').value = st.ntfy; if (st.wifi && !wifiTouched) { $('wifiS').value = st.wifi.s; $('wifiP').value = st.wifi.p; } renderThemes(); renderMap(); renderGuests(guestsNow); renderLucky(); renderQNow(); if (!dirty) { owners = st.owners.map(o => ({ ...o, lines: [...o.lines] })); renderOwners(); renderWho(); } });
+  // 촬영용 가상 손님
+  const npcNow = () => (ownerSt && ownerSt.npcs) || [];
+  function renderNpc(){ const n = npcNow().length; $('npcNote').textContent = n ? `지금 가상 손님 ${n}명이 스크린에 앉아 있어요 (최대 ${N.NPC_MAX}명)` : '지금 가상 손님 0명'; $('npcOut').disabled = !n; }
+  document.querySelectorAll('[data-npc]').forEach(b => b.onclick = async () => { const have = npcNow(), room = N.NPC_MAX - have.length; if (room <= 0) { $('npcNote').textContent = `가상 손님은 최대 ${N.NPC_MAX}명까지예요.`; return; }
+    const add = N.makeNpcs(Math.min(room, +b.dataset.npc), have.concat(guestsNow || [])); b.disabled = true; try { await N.setNpcs(have.concat(add)); } catch (e) { $('npcNote').textContent = '저장하지 못했어요. 다시 눌러 주세요.'; } b.disabled = false; });
+  $('npcOut').onclick = async () => { try { await N.setNpcs([]); } catch (e) { $('npcNote').textContent = '저장하지 못했어요. 다시 눌러 주세요.'; } };
+  setInterval(renderNpc, 1000); renderNpc();
   N.watchGuests(N.bizDate(), list => { guestsNow = list || []; renderGuests(guestsNow); renderMap(); if (typeof renderOrders === 'function' && ordersNow) renderOrders(); }, true);
   renderOwners(); renderWho(); renderQuick();
   setTimeout(startCoupons, 0); setTimeout(startOrders, 0);

@@ -144,8 +144,9 @@ addEventListener('resize', fit); fit();
 var shiftI = 0; setInterval(() => { const P = [[0, 0], [2, 0], [2, 2], [0, 2], [-2, 2], [-2, 0], [-2, -2], [0, -2], [2, -2]]; const [dx, dy] = P[++shiftI % P.length]; scene.style.transform = `translate(${dx}px, ${dy}px)`; }, 180000);
 function loop(t){
   if (N.bizDate() !== day) { day = N.bizDate(); guests = []; subscribe(); }
-  const list = FULL ? fullGuests() : guests.length ? guests : demoGuests();
-  view.render(ctx, scene.width, scene.height, list, t, { day, count: FULL ? 40 : guests.length, qr, owners: ownerState.owners, live: ownerState.live, seats: ownerState.seats, order: ownerState.order, bday: ownerState.bday, bdays: ownerState.bdays, lucky: ownerState.lucky, best: ownerState.best, vip: ownerState.vip, q: ownerState.q, rec: recName, cheers: cheerList, game: ownerState.game, gameActs, theme: N.resolveTheme(THEME_HASH || ownerState.theme),
+  const npcs = ownerState.npcs || [], all = npcs.length ? guests.concat(npcs).sort((a, b) => (a.ms || 0) - (b.ms || 0)) : guests;   // 촬영용 가상 손님 포함
+  const list = FULL ? fullGuests() : all.length ? all : demoGuests();
+  view.render(ctx, scene.width, scene.height, list, t, { day, count: FULL ? 40 : all.length, qr, owners: ownerState.owners, live: ownerState.live, seats: ownerState.seats, order: ownerState.order, bday: ownerState.bday, bdays: ownerState.bdays, lucky: ownerState.lucky, best: ownerState.best, vip: ownerState.vip, q: ownerState.q, rec: recName, cheers: cheerList, game: ownerState.game, gameActs, theme: N.resolveTheme(THEME_HASH || ownerState.theme),
     footer: (FULL || guests.length) ? '' : '첫 번째 낯선 손님이 되어주세요' });
   requestAnimationFrame(loop);
 }
