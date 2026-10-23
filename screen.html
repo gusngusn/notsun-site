@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>낯선 방명록 스크린</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Do+Hyeon&display=swap">
+<style>
+html,body{height:100%;margin:0;background:#0d090a;overflow:hidden;cursor:none}
+#stage{position:fixed;inset:0;display:grid;place-items:center}
+canvas{display:block;image-rendering:pixelated}
+#hint{position:fixed;left:50%;top:16px;transform:translateX(-50%);font:16px "Do Hyeon",sans-serif;color:#f6eee6;background:#1a1214;border:1px solid #ffb27a;padding:8px 14px;border-radius:5px}
+#snd{position:fixed;left:12px;bottom:10px;font:14px "Do Hyeon",sans-serif;color:#b9a59c;background:rgba(26,18,20,.8);border:1px solid #3a2a2b;padding:6px 10px;border-radius:6px}
+[hidden]{display:none!important}
+#hostLogin{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:rgba(13,9,10,.92);cursor:auto}
+#hostLogin .hl{background:#1a1214;border:1px solid #ffb27a;border-radius:12px;padding:22px;display:grid;gap:10px;width:min(380px,90vw);font:16px "Do Hyeon",sans-serif;color:#f6eee6}#hostLogin .hl>div,#hostLogin form{display:grid;gap:10px}#hostLogin button.sub{background:#3a2a2b;color:#f6eee6}#hostLogin .close a{color:#ffb27a}
+#hostLogin form{background:#1a1214;border:1px solid #ffb27a;border-radius:12px;padding:22px;display:grid;gap:10px;width:min(360px,90vw);font:16px "Do Hyeon",sans-serif;color:#f6eee6}
+#hostLogin input{font:16px sans-serif;padding:10px;border-radius:8px;border:1px solid #3a2a2b;background:#0d090a;color:#f6eee6}
+#hostLogin button{font:17px "Do Hyeon",sans-serif;padding:11px;border-radius:8px;border:0;background:#ffb27a;color:#1a0d0d;cursor:pointer}
+#hostLogin small{color:#b9a59c;line-height:1.4}#hostLogin .err{color:#ff8a7a}
+#hostBadge{position:fixed;right:12px;bottom:10px;font:14px "Do Hyeon",sans-serif;color:#b8f08a;background:rgba(26,18,20,.85);border:1px solid #3a5a2b;padding:6px 10px;border-radius:6px}
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="scene"></canvas></div>
+<div id="hint" hidden></div>
+<div id="snd" hidden>🔈 화면을 한 번 누르면 효과음이 켜져요</div>
+<div id="hostLogin" hidden><div class="hl">
+  <form id="hostForm" hidden><b>🎮 게임 진행용 사장님 로그인</b><small>로그인하면 이 기기가 '게임 진행 스크린'이 돼요. 리모컨에서 게임을 시작하면 이 스크린이 진행해서, 리모컨 화면이 꺼져도 게임이 멈추지 않아요. 로그인은 계속 유지돼요.</small><input id="hostPw" type="password" autocomplete="current-password" placeholder="사장님 비밀번호"><button type="submit">로그인</button><small class="err" id="hostErr"></small></form>
+  <div id="hostAsk" hidden><b>🎮 이 기기를 게임 진행 스크린으로 지정할까요?</b><small>사장님 계정으로 이미 로그인돼 있어요. 매장 프로젝터처럼 항상 켜져 있는 기기만 지정해 주세요. 휴대폰이나 노트북을 지정하면 화면이 꺼질 때 게임이 잠깐 멈출 수 있어요.</small><button type="button" id="hostYes">이 기기로 지정하기</button></div>
+  <div id="hostOn" hidden><b>✅ 이 기기는 게임 진행 스크린이에요</b><small>리모컨에서 게임을 시작하면 이 스크린이 진행해요.</small><button type="button" id="hostOk">확인</button><button type="button" id="hostOff" class="sub">지정 해제</button></div>
+  <small class="close"><a href="#" id="hostSkip">닫기</a></small>
+</div></div>
+<div id="hostBadge" hidden>🎮 이 스크린이 게임을 진행해요</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script src="host.js"></script>
+<script>
+const N = window.Notsun;
+const scene = document.getElementById('scene'), ctx = scene.getContext('2d');
+const view = N.createScene();
+let day = N.bizDate(), guests = [], stop = null;
+const demoGuests = () => [
+  { nick: '퇴근한 곰', msg: '오늘 퇴사함', drink: 'whisky', hair: '#4a2e1f', skin: '#f0c4a0', shirt: '#2f3a52', pants: '#2a2f45', style: 'm001', demo: true },
+  { nick: '첫혼술', msg: '혼술 처음이에요', drink: 'cocktail', hair: '#c99a5b', skin: '#f6d5bb', shirt: '#ef9fbf', pants: '#2a2f45', style: 'f213', demo: true },
+  { nick: '야행성', msg: '옆자리 반가워요', drink: 'beer', hair: '#1c1416', skin: '#e0a97f', shirt: '#f2ede6', pants: '#2a2f45', style: 'm002', demo: true },
+  { nick: '단발머리', msg: '여기 분위기 미쳤다', drink: 'champagne', hair: '#9c3f2a', skin: '#f6d5bb', shirt: '#2c4a3a', pants: '#2a2f45', style: 'f110', demo: true },
+  { nick: '위스키러버', msg: '블루 한 잔 주세요', drink: 'whisky', hair: '#1c1416', skin: '#c98e66', shirt: '#1e1e24', pants: '#2a2f45', style: 'm300', demo: true },
+  { nick: '샴페인요정', msg: '생일이에요!', drink: 'champagne', hair: '#e8e2da', skin: '#f6d5bb', shirt: '#6b8fd6', pants: '#2a2f45', style: 'f313', demo: true }
+];
+// 주소 끝에 #full 을 붙이면 만석(40명) 예시 화면
+const TOK = location.hash.slice(1).split('-'); const FULL = TOK.includes('full'); const THEME_HASH = TOK.find(x => ['default','spring','summer','halloween','christmas','valentine','white','rose','pepero'].includes(x));
+const fullGuests = () => { let sd = 3; const r = n => (sd = (sd * 16807) % 2147483647) % n;
+  const names = ['퇴근한곰','첫혼술','야행성','위스키러버','샴페인요정','단발머리','교동주민','칵테일덕후','맥주한잔','혼술고수','동성로','낯선사람','밤산책','하이볼','오늘생일','수줍음','대구토박이','여행자','퇴사각','불금','고양이집사','야근탈출','새벽감성','첫방문','단골예정','조용히','말걸어줘','심야식당','달빛','레드와인','막잔','혼자왔어요','친구구함','노래방각','책읽는','개발자','간호사','디자이너','대학원생','사장님팬'];
+  const msgs = ['오늘 퇴사함','혼술 처음이에요','옆자리 반가워요','분위기 미쳤다','생일이에요!','한 잔 더?','여기 단골 될 듯','칵테일 맛있다','','','내일 출근 ㅠ','처음 왔어요'];
+  const dr = ['whisky','cocktail','beer','champagne'], H = N.HAIR_COLORS, S = N.SKIN_COLORS, T = N.SHIRT_COLORS;
+  return names.map((nick, i) => { const f = r(2) ? 'f' : 'm';
+    return { nick, msg: msgs[r(msgs.length)], drink: dr[r(4)], hair: H[r(H.length)], skin: S[r(S.length)], shirt: T[r(T.length)], pants: '#2a2f45',
+      style: f + (f === 'f' ? [1, 2, 3][r(3)] : [0, 0, 3][r(3)]) + (f === 'f' ? r(2) : 0) + r(4), demo: true }; }); };
+let ownerState = { owners: null, live: null, theme: 'auto' };
+N.watchOwner(st => { ownerState = st; if (gameHost) gameHost.feed(st.game); });
+// 게임 진행자: 사장님 계정으로 로그인된 스크린이면 리모컨 대신 게임을 진행 (리모컨 화면이 꺼져도 계속)
+var gameHost = null;
+// 게임 진행 스크린: '사장님 계정으로 로그인' + '이 기기를 진행 스크린으로 지정'한 기기만 게임을 진행 (다른 기기에서 우연히 열린 스크린은 진행 안 함)
+const GS_KEY = 'notsun-game-screen';
+const isOwnerUser = () => { try { const u = firebase.auth().currentUser; return !!(u && u.email === N.OWNER_EMAIL); } catch (e) { return false; } };
+const isDesignated = () => { try { return localStorage.getItem(GS_KEY) === '1'; } catch (e) { return false; } };
+const setDesignated = on => { try { on ? localStorage.setItem(GS_KEY, '1') : localStorage.removeItem(GS_KEY); } catch (e) {} };
+function startHost(){ if (gameHost) return; gameHost = createGameHost(N, { id: 'screen-' + Math.random().toString(36).slice(2, 8), canHost: () => !N.LIVE || (isOwnerUser() && isDesignated()) }); if (ownerState) gameHost.feed(ownerState.game);
+  const b = document.getElementById('hostBadge'); b.hidden = false; setTimeout(() => b.hidden = true, 8000); }
+function stopHost(){ if (!gameHost) return; gameHost.stopTimer(); gameHost = null; }
+const $h = id => document.getElementById(id);
+const wantLogin = () => /(^|[#&?-])login\b/.test(location.hash + location.search);
+function showPanel(which){ ['hostForm', 'hostAsk', 'hostOn'].forEach(id => $h(id).hidden = id !== which); $h('hostLogin').hidden = !which; if (which === 'hostForm') setTimeout(() => $h('hostPw').focus(), 50); }
+function cleanUrl(){ try { history.replaceState(null, '', location.pathname); } catch (e) {} }
+function hostRefresh(){
+  if (!N.LIVE) { if (/(^|[#&?-])host\b/.test(location.hash + location.search)) startHost(); return; }   // 데모 시험용
+  const owner = isOwnerUser();
+  if (owner && isDesignated()) startHost(); else stopHost();
+  if (!wantLogin()) return;
+  showPanel(!owner ? 'hostForm' : isDesignated() ? 'hostOn' : 'hostAsk');
+}
+if (N.LIVE && firebase.auth) firebase.auth().onAuthStateChanged(() => hostRefresh()); else hostRefresh();
+addEventListener('hashchange', hostRefresh);   // 이미 열린 화면에서 주소 끝만 #login으로 바꿔도 창이 뜨게
+$h('hostForm').onsubmit = async e => { e.preventDefault(); $h('hostErr').textContent = '';
+  try { await firebase.auth().signInWithEmailAndPassword(N.OWNER_EMAIL, $h('hostPw').value); $h('hostPw').value = ''; setDesignated(true); cleanUrl(); showPanel(''); hostRefresh(); }
+  catch (err) { $h('hostErr').textContent = '로그인하지 못했어요. 비밀번호를 확인해 주세요.'; } };
+$h('hostYes').onclick = () => { setDesignated(true); cleanUrl(); showPanel(''); hostRefresh(); };
+$h('hostOk').onclick = () => { cleanUrl(); showPanel(''); };
+$h('hostOff').onclick = () => { setDesignated(false); cleanUrl(); showPanel(''); hostRefresh(); };
+$h('hostSkip').onclick = e => { e.preventDefault(); cleanUrl(); showPanel(''); };
+// 새 버전이 올라오면 스크린이 스스로 새로고침 (10분마다 확인 · 게임 중에는 안 함)
+var verSig = null;
+async function verCheck(){ try { const t = (await Promise.all(['screen.html', 'common.js', 'host.js'].map(f => fetch(f + '?v=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '')))).join('|');
+  let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0; const sig = t.length + ':' + h;
+  if (verSig === null) verSig = sig; else if (sig !== verSig && !(ownerState && ownerState.game) && $h('hostLogin').hidden) location.reload(); } catch (e) {} }
+setTimeout(verCheck, 5000); setInterval(verCheck, 10 * 60 * 1000);
+// 익명 건배 · 오늘의 추천 메뉴
+var cheerList = [], cheerSeen = null, recName = '', gameActs = [], gameN = 0, gameOff = null;
+setInterval(() => { const g = ownerState.game; const n = g ? g.n : 0; if (n !== gameN) { gameN = n; gameOff && gameOff(); gameActs = []; if (n) { const seen = {}; gameOff = N.watchGameActs(n, l => { const now = Date.now(); l.forEach(a => { seen[a.id] = seen[a.id] || a.ms || now; a.ms = seen[a.id]; }); gameActs = l; }); } } }, 300);
+N.watchCheers(list => { const now = Date.now(); if (cheerSeen) list.filter(c => !cheerSeen.has(c.id)).forEach(c => cheerList.push({ id: c.id, to: c.to, ms: now }));
+  cheerSeen = new Set(list.map(c => c.id)); cheerList = cheerList.filter(c => now - c.ms < 6000); });
+N.watchMenu(cats => { recName = cats.flatMap(c => c.items).filter(it => it.rec && !it.soldout).map(it => it.name).slice(0, 2).join(', '); });
+// 셋탑 하루 종일 켜두기: 영업일이 바뀌면(새벽 6시) 새로고침, 인터넷이 끊겼다 돌아오면 새로고침
+var offAt = 0; addEventListener('offline', () => { offAt = Date.now(); }); addEventListener('online', () => { if (offAt && Date.now() - offAt > 20000) setTimeout(() => location.reload(), 3000); offAt = 0; });
+setInterval(() => { if (N.bizDate() !== day) location.reload(); }, 60000);
+
+// QR: 같은 주소의 index.html (손님 등록 페이지)
+let qr = null;
+try {
+  const url = new URL('index.html', location.href).href;
+  const q = qrcode(0, 'M'); q.addData(url); q.make();
+  const n = q.getModuleCount(), c = document.createElement('canvas'); c.width = c.height = n + 2;
+  const qc = c.getContext('2d'); qc.fillStyle = '#fff'; qc.fillRect(0, 0, n + 2, n + 2); qc.fillStyle = '#000';
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (q.isDark(y, x)) qc.fillRect(x + 1, y + 1, 1, 1);
+  qr = c;
+} catch (e) {}
+function subscribe(){ stop && stop(); stop = N.watchGuests(day, list => { if (list) guests = list; }); }
+subscribe();
+function fit(){ const k = Math.min(innerWidth / 16, innerHeight / 9), dpr = Math.min(2, devicePixelRatio || 1);
+  scene.style.width = k * 16 + 'px'; scene.style.height = k * 9 + 'px'; scene.width = Math.round(k * 16 * dpr); scene.height = Math.round(k * 9 * dpr); }
+addEventListener('resize', fit); fit();
+// 번인 방지: 3분마다 화면 전체를 1~2px 살짝 이동
+var shiftI = 0; setInterval(() => { const P = [[0, 0], [2, 0], [2, 2], [0, 2], [-2, 2], [-2, 0], [-2, -2], [0, -2], [2, -2]]; const [dx, dy] = P[++shiftI % P.length]; scene.style.transform = `translate(${dx}px, ${dy}px)`; }, 180000);
+function loop(t){
+  if (N.bizDate() !== day) { day = N.bizDate(); guests = []; subscribe(); }
+  const list = FULL ? fullGuests() : guests.length ? guests : demoGuests();
+  view.render(ctx, scene.width, scene.height, list, t, { day, count: FULL ? 40 : guests.length, qr, owners: ownerState.owners, live: ownerState.live, seats: ownerState.seats, order: ownerState.order, bday: ownerState.bday, bdays: ownerState.bdays, lucky: ownerState.lucky, best: ownerState.best, vip: ownerState.vip, q: ownerState.q, rec: recName, cheers: cheerList, game: ownerState.game, gameActs, theme: N.resolveTheme(THEME_HASH || ownerState.theme),
+    footer: (FULL || guests.length) ? '' : '첫 번째 낯선 손님이 되어주세요' });
+  requestAnimationFrame(loop);
+}
+(document.fonts ? document.fonts.load('20px "Do Hyeon"').catch(() => {}) : Promise.resolve()).finally(() => requestAnimationFrame(loop));
+try { navigator.wakeLock && navigator.wakeLock.request('screen').catch(() => {}); } catch (e) {}
+// 화면을 한 번 누르면 전체화면
+const hint = document.getElementById('hint');
+if (!N.LIVE) { hint.textContent = '데모 모드: config.js에 Firebase 설정을 넣으면 손님 휴대폰과 연결돼요'; hint.hidden = false; setTimeout(() => hint.hidden = true, 8000); }
+// 화면을 한 번 누르면(리모컨 확인 버튼) 전체화면 + 효과음 켜기
+const sndHint = document.getElementById('snd');
+function unlock(){ const d = document.documentElement; d.requestFullscreen && d.requestFullscreen().catch(() => {}); if (N.enableSound()) { sndHint.textContent = '🔊 효과음 켜짐'; setTimeout(() => sndHint.hidden = true, 2500); } }
+addEventListener('click', unlock); addEventListener('keydown', e => { if (['Enter', ' ', 'NumpadEnter'].includes(e.key) || e.keyCode === 23) unlock(); });
+setTimeout(() => { if (!N.soundOn()) sndHint.hidden = false; }, 1500);
+</script>
+</body>
+</html>

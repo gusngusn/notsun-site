@@ -1,0 +1,9 @@
+{
+  "name": "낯선 픽셀 방명록 스크린",
+  "short_name": "낯선 방명록",
+  "start_url": "screen.html",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#0d090a",
+  "theme_color": "#0d090a"
+}
