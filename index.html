@@ -141,6 +141,7 @@ details.fold{border:1.5px solid var(--glow);background:linear-gradient(180deg,#2
 .mode{font:12px/1.4 "DotGothic16",monospace;color:var(--muted);text-align:center}
 @media (max-width:380px){.studio{grid-template-columns:1fr}.stagebox{height:200px}.stagebox canvas{height:190px;width:118px}}
 .editing > header, .editing > .quick, .editing > #menuOnly, .editing .group:has(#tk){display:none}.more summary{color:var(--muted);cursor:pointer;padding:4px 0;font-size:15px}.more[open]{display:grid;gap:10px}
+.reqcard{display:grid;gap:8px;border:1.5px solid #7ee08a;border-radius:14px;padding:10px 12px;background:#17201a}.reqcard .rqh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}.reqcard .rqh b{font:17px "Do Hyeon",sans-serif;color:#b8f0a0}.reqcard .rqh small{color:#9ab89a;font-size:12px}.rqrow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid #2a3a2c}.rqrow span{display:grid;font-size:15px}.rqrow small{color:#9ab89a;font-size:12px}.rqrow .btn{width:auto;flex:0 0 auto;margin:0}.rqpick{display:flex;flex-wrap:wrap;gap:6px}.reqcard>.btn{justify-self:start}
 .autocard{display:grid;gap:6px;border:1.5px solid #ffb27a;border-radius:14px;padding:10px 12px;background:#24171a}.autocard b{font:17px "Do Hyeon",sans-serif;color:#ffd36a}.autocard small{color:#d8c4b8;font-size:13px;line-height:1.45}.autocard.soon{border-color:#ffd36a;box-shadow:0 0 16px #ffd36a55}.autocard .btn{justify-self:start}
 .gacha.ask .gask{background:#2a1d1f;border:2px solid #c9a25a;border-radius:18px;padding:20px 18px;width:min(300px,86vw);display:grid;gap:10px;text-align:center;color:#ffe2c4}.gacha.ask .gask p{margin:0;color:#b9a59c;font-size:14px;line-height:1.5}.gacha.ask .gask b{font-size:20px}.gback.mini{position:relative;inset:auto;height:120px;width:84px;margin:0 auto;font-size:56px;border-radius:12px;transform:none}
 .gacha{position:fixed;inset:0;z-index:60;background:rgba(8,4,6,.82);display:flex;align-items:center;justify-content:center;perspective:900px}
@@ -248,6 +249,7 @@ body:has(.catcard) .toast{top:104px}
     <p class="total" id="hubTotal" hidden></p>
     <button class="btn primary" id="toMenu2">🍸 메뉴판 · 주문하기</button>
     <div class="row2"><button class="btn" id="lookBtn" type="button" style="white-space:nowrap">✏️ 꾸미기</button><button class="btn" id="cosBtn" type="button" style="white-space:nowrap">🎁 코스튬 뽑기</button></div>
+    <div class="reqcard" id="reqCard"><div class="rqh"><b>🎮 하고 싶은 게임 신청</b><small>3명이 모이면 바로 시작해요</small></div><div id="reqList"></div><button class="btn small" id="reqOpen" type="button">+ 게임 고르기</button><div class="rqpick" id="reqPick" hidden></div></div>
     <div class="autocard" id="autoCard" hidden><b id="autoTxt"></b><small>📱 이 화면을 켜두면 게임이 시작될 때 바로 참여할 수 있어요. 화면이 꺼지면 알림을 못 받아요.</small><button class="btn small" id="keepOn" type="button">🔆 화면 켜두기</button></div>
     <div class="wifi" data-wifi></div>
     <section class="card">
@@ -389,13 +391,29 @@ async function showGacha(){
   box.addEventListener('click', e => { if (e.target === box && box.classList.contains('open')) box.remove(); });
   setTimeout(() => { box.classList.add('open'); try { gAlert(c.rar === 's' || c.rar === 'L' ? 'boom' : 'soft'); } catch (e) {} }, 1300);
 }
-var autoSt = null;
+var autoSt = null, rqDone = {}, rqActs = [], rqOff = null, rqDay = '';
+// 손님 게임 신청: 고르면 신청 · 다른 손님 신청엔 '나도!' · 3명 모이면 스크린이 시작 (10분에 3번까지)
+function rqSub(){ const me = loadMe(); if (!me || rqDay === N.bizDate()) return; rqDay = N.bizDate(); rqOff && rqOff(); rqOff = N.watchGameActs(0, l => { rqActs = l; renderReq(); }); }
+function renderReq(){ const c = $('reqCard'), me = loadMe(); if (!c) return; rqSub(); if (!me || GM) { c.hidden = true; return; } c.hidden = false;
+  const list = N.reqTally(rqActs, rqDone);
+  $('reqList').innerHTML = list.map(t => { const mine = t.gids.has(me.id); return `<div class="rqrow"><span>${t.label} <b>${t.n}/${N.REQ_NEED}</b><small>${chEsc(t.first || '')}님 신청</small></span><button type="button" class="btn small ${mine ? '' : 'primary'}" data-rq="${t.type}" ${mine ? 'disabled' : ''}>${mine ? '✓ 신청함' : '🙋 나도!'}</button></div>`; }).join('') || '<p class="note" style="margin:0">아직 신청된 게임이 없어요. 먼저 골라보세요!</p>';
+  $('reqList').querySelectorAll('[data-rq]').forEach(b => b.onclick = () => sendReq(b.dataset.rq));
+  $('reqPick').innerHTML = N.AUTO_ORDER.map(k => `<button type="button" class="chip" data-pk="${k}">${N.AUTO_LABEL[k]}</button>`).join('');
+  $('reqPick').querySelectorAll('[data-pk]').forEach(b => b.onclick = () => { $('reqPick').hidden = true; sendReq(b.dataset.pk); }); }
+async function sendReq(type){ const me = loadMe(); if (!me) return; let rec = []; try { rec = (JSON.parse(localStorage.getItem('notsun-req-times')) || []).filter(x => Date.now() - x < 600000); } catch (e) {}
+  if (rec.length >= 3) { toast(`잠깐! ${Math.ceil((rec[0] + 600000 - Date.now()) / 60000)}분 뒤에 다시 신청할 수 있어요`); return; }
+  const before = N.reqTally(rqActs, rqDone).find(t => t.type === type);
+  try { await N.requestGame(me.id, me.nick, type); try { localStorage.setItem('notsun-req-times', JSON.stringify([...rec, Date.now()])); } catch (e) {}
+    const n = (before ? before.n : 0) + 1; toast(n >= N.REQ_NEED ? `🎉 ${N.AUTO_LABEL[type]} 곧 시작해요! 스크린을 봐주세요` : `🙋 신청했어요 (${n}/${N.REQ_NEED}) · 옆 사람에게 '나도!' 눌러달라고 해보세요`);
+    if (!before) N.notifyOwner('🙋 손님 게임 신청', `${me.nick}님이 ${N.AUTO_LABEL[type]}을 신청했어요 (1/${N.REQ_NEED}). 3명이 모이면 스크린이 자동으로 시작해요.`); }
+  catch (e) { toast('신청하지 못했어요. 잠시 뒤 다시 해주세요.'); } }
+$('reqOpen').onclick = () => { $('reqPick').hidden = !$('reqPick').hidden; };
 function renderAuto(){ const c = $('autoCard'); if (!c) return; const a = autoSt ? N.autoInfo(autoSt) : null, me = loadMe(); if (!a || !me || GM) { c.hidden = true; return; } c.hidden = false;
   const left = a.left, m = Math.floor(left / 60000), sec = Math.floor(left / 1000) % 60; $('autoTxt').textContent = `🎮 ${String(a.hr).padStart(2, '0')}:00 ${a.label} · ${left < 60000 ? sec + '초' : (m + (sec ? 1 : 0)) + '분'} 뒤`; c.classList.toggle('soon', left < 300000);
   $('keepOn').textContent = keepOn ? '🔆 화면 켜두는 중 (끄기)' : '🔆 화면 켜두기'; }
 setInterval(renderAuto, 1000);
 $('keepOn').onclick = () => { keepOn = !keepOn; if (keepOn && !navigator.wakeLock) toast('이 폰은 자동으로 화면 켜두기를 지원하지 않아요. 화면 자동 잠금 시간을 길게 해주세요.'); gWakeSync(GM); renderAuto(); };
-N.watchOwner(st => { autoSt = st.auto || null; renderAuto(); const ge = st.gend; if (ge && ge.ms && Date.now() - ge.ms < 20000 && ge.n === lastGameN && /^참여자가/.test(ge.msg) && gendSeen !== ge.ms) { gendSeen = ge.ms; toast('🎮 ' + ge.msg); } renderWifi(st.wifi); checkBday(st.bday); if (typeof renderGameFeed === 'function') renderGameFeed(st.game); todayQ = st.q || ''; if (typeof renderQ === 'function') renderQ(); theme = N.resolveTheme(st.theme); const nm = { halloween: '할로윈', christmas: '크리스마스', summer: '여름 바캉스', spring: '봄', valentine: '발렌타인데이', white: '화이트데이', rose: '로즈데이', pepero: '빼빼로데이', seollal: '설날', chuseok: '추석' }[theme]; $('season').textContent = (nm ? `지금은 ${nm} 시즌! ` : '') + '원하면 앉은 뒤 오늘의 코스튬 뽑기 🎁 (레어 16% · 시크릿 3% · 레전드 1%)'; redraw(); const me = loadMe(); if (me && !$('edit').hidden) N.drawPreview($('meEdit'), me.look, me.drink, myCos(me.look.style).k); });
+N.watchOwner(st => { autoSt = st.auto || null; rqDone = st.rqdone || {}; renderAuto(); renderReq(); const ge = st.gend; if (ge && ge.ms && Date.now() - ge.ms < 20000 && ge.n === lastGameN && /^참여자가/.test(ge.msg) && gendSeen !== ge.ms) { gendSeen = ge.ms; toast('🎮 ' + ge.msg); } renderWifi(st.wifi); checkBday(st.bday); if (typeof renderGameFeed === 'function') renderGameFeed(st.game); todayQ = st.q || ''; if (typeof renderQ === 'function') renderQ(); theme = N.resolveTheme(st.theme); const nm = { halloween: '할로윈', christmas: '크리스마스', summer: '여름 바캉스', spring: '봄', valentine: '발렌타인데이', white: '화이트데이', rose: '로즈데이', pepero: '빼빼로데이', seollal: '설날', chuseok: '추석' }[theme]; $('season').textContent = (nm ? `지금은 ${nm} 시즌! ` : '') + '원하면 앉은 뒤 오늘의 코스튬 뽑기 🎁 (레어 16% · 시크릿 3% · 레전드 1%)'; redraw(); const me = loadMe(); if (me && !$('edit').hidden) N.drawPreview($('meEdit'), me.look, me.drink, myCos(me.look.style).k); });
 function chips(id, items, isOn, onPick){
   const el = $(id); el.innerHTML = '';
   items.forEach((it, i) => { const b = document.createElement('button'); b.type = 'button';
@@ -680,7 +698,7 @@ const gq = id => document.getElementById(id);
 async function gDo(kind, extra){ const me = loadMe(); if (!me || !GM) return; await N.gameAct(GM.n, kind, { gid: me.id, nick: me.nick, ...(extra || {}) }); }
 function renderGame(g){
   if (tenRaf) { cancelAnimationFrame(tenRaf); tenRaf = 0; }
-  const prev = GM; GM = g || null; if (g && g.n) lastGameN = g.n; const me = loadMe();
+  const prev = GM; GM = g || null; if (g && g.n) lastGameN = g.n; if (typeof renderReq === 'function') setTimeout(renderReq, 0); const me = loadMe();
   if (!g) { if (tenRaf) cancelAnimationFrame(tenRaf); gShut(); return; }
   if (!prev || prev.n !== g.n) { gHide = false; gLocal = { n: g.n }; if (me) gAlert('soft'); }
   else if (me && (g.round || 0) !== (prev.round || 0) && (g.alive || []).includes(me.id)) gAlert('soft');
@@ -766,6 +784,9 @@ function renderGame(g){
       else { if (pickUI(key, 'ox', g.round, `⭕ ${g.round}번 문제<br><small>${escH(g.q || '')}</small>`, [{ t: 'O', c: '#7ee08a' }, { t: 'X', c: '#ff6a5a' }], 'gopts two big')) return; }
       gOpen(`<h3>선택 완료!</h3><p>내 선택: <b>${isR ? ['✌️ 가위', '✊ 바위', '🖐️ 보'][L[key]] : (L[key] ? 'X' : 'O')}</b></p><p>결과는 스크린에서!</p>`); return; }
     const outMe = (g.out || []).includes(me.id), myPick = (g.picks || {})[me.id];
+    { const rk = g.n + '|' + g.k; if (L.rvK !== rk) { L.rvK = rk; L.rvT = Date.now(); L.rvV = 0; } const wait = 1400 - (Date.now() - L.rvT);
+      if (wait > 0 && (alive || outMe)) { gOpen(`<h3>🥁 두구두구…</h3><p>${isR ? '사장님은 과연 뭘 냈을까요?' : '정답은…?'}</p>`); clearTimeout(L.rvTo); L.rvTo = setTimeout(() => { if (GM && GM.n === g.n && GM.k === g.k) renderGame(GM); }, wait + 30); return; }
+      if (!L.rvV) { L.rvV = 1; try { navigator.vibrate && navigator.vibrate(outMe ? [160, 70, 160] : [40]); } catch (e) {} if (outMe) gBeep([330, 220], .14); else gBeep([990, 1320], .07); } }
     if (!alive && !outMe) { gOpen('<h3>😵 탈락</h3><p>남은 사람들을 응원해 주세요!</p>'); return; }
     if (isR) gOpen(outMe ? `<h3>😵 졌어요!</h3><p>사장님 ${['가위', '바위', '보'][g.hand]} · 나 ${myPick != null ? ['가위', '바위', '보'][myPick] : '안 냄'}</p>` : `<h3>${g.redo ? '😅 모두 져서 다시!' : '🎉 살았다!'}</h3><p>사장님 ${['가위', '바위', '보'][g.hand]} · 나 ${['가위', '바위', '보'][myPick] || ''}</p>`);
     else gOpen(outMe ? `<h3>😵 땡! 정답은 ${g.ans ? 'X' : 'O'}</h3><p>${escH(g.why || '')}</p>` : `<h3>${g.redo ? '😅 모두 틀려서 전원 부활!' : '⭕ 정답!'}</h3><p>정답 ${g.ans ? 'X' : 'O'} · ${escH(g.why || '')}</p>`);
@@ -776,6 +797,13 @@ function renderGame(g){
     gq('gClink').onclick = async () => { L.clinked = true; try { navigator.vibrate && navigator.vibrate(60); } catch (e) {} renderGame(GM); try { await gDo('clink'); } catch (e) { L.clinked = false; renderGame(GM); } };
   }
 }
+// 막판 3초: 아직 안 고른 손님 휴대폰에 째깍 + 진동
+setInterval(() => { const g = GM, me = loadMe(); if (!g || !me || !(g.dur > 0) || gHide || !gLocal || gLocal.n !== g.n) return; const L = gLocal, pk = g.phase + '|' + (g.round || 0);
+  if (L.phK !== pk) { L.phK = pk; L.phT = Date.now(); L.cdLast = 0; }
+  const need = g.phase === 'join' ? !L.joined && !L.passed : (g.type === 'race' && g.phase === 'pick') ? L.horse == null : (g.type === 'bal' && g.phase === 'play') ? L.bal == null : ((g.type === 'rps' && g.phase === 'pick') || (g.type === 'ox' && g.phase === 'q')) ? (g.alive || []).includes(me.id) && L['r' + g.round] == null : false;
+  if (!need) return; const st = Math.min(L.phT, g.ms && Math.abs(Date.now() - g.ms) < 60000 ? g.ms : L.phT), c = Math.ceil(g.dur - (Date.now() - st) / 1000); if (c < 1 || c > 3 || L.cdLast === c) return; L.cdLast = c;
+  try { navigator.vibrate && navigator.vibrate(c === 1 ? [70, 50, 70] : 35); } catch (e) {} gBeep([c === 1 ? 1320 : 990], .07);
+  const h = document.querySelector('#gBody h3'); if (h) { let b = document.getElementById('gCd'); if (!b) { b = document.createElement('b'); b.id = 'gCd'; b.style.cssText = 'display:block;color:#ff6a5a;font-size:22px;margin-top:4px'; h.after(b); } b.textContent = `⏰ ${c}초!`; } }, 250);
 // 손님용 와이파이: 이름 + 비밀번호 복사 (웹페이지에서는 자동 연결이 안 됨)
 var WIFI;  // (초기값을 주지 않음: 처음 화면 그릴 때 먼저 채워질 수 있어서)
 function renderWifi(w){ const escH = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); WIFI = w && w.s ? w : null; document.querySelectorAll('[data-wifi]').forEach(el => { if (!WIFI) { el.innerHTML = ''; return; }

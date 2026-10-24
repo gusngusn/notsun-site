@@ -138,6 +138,8 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
         <label class="tog"><input id="autoOn" type="checkbox" checked><span>⏰ 매시 정각 자동 게임 (스크린이 진행 · 손님 2명 이상일 때)</span></label>
         <div class="autorow"><span>다음 정각 게임 <b id="autoAt">--:00</b></span><select id="autoNext"></select></div>
         <small id="autoLeft" class="sub"></small>
+        <label class="tog"><input id="reqOn" type="checkbox" checked><span>🙋 손님 게임 신청 3명이 모이면 자동 시작</span></label>
+        <div id="reqBox"></div>
       </div>
       <b class="glab">🔥 시끌벅적</b>
       <div class="gbtns">
@@ -306,7 +308,7 @@ $('mode').textContent = N.LIVE ? '' : '데모 모드 (config.js 설정 전 · �
 function start(){
   if (started) return; started = true;
   $('login').hidden = true; $('app').hidden = false; $('logout').hidden = !N.LIVE;
-  N.watchOwner(st => { ownerSt = st; if (typeof host !== 'undefined' && host) host.feed(st.game); theme = st.theme || 'auto'; seats = st.seats || {}; ev = { lucky: st.lucky, best: st.best, vip: st.vip || [], bdays: st.bdays || [] }; if (st.ntfy && !$('ntfyTopic').value) $('ntfyTopic').value = st.ntfy; if (st.wifi && !wifiTouched) { $('wifiS').value = st.wifi.s; $('wifiP').value = st.wifi.p; } renderThemes(); renderMap(); renderGuests(guestsNow); renderLucky(); renderQNow(); if (!dirty) { owners = st.owners.map(o => ({ ...o, lines: [...o.lines] })); renderOwners(); renderWho(); } });
+  N.watchOwner(st => { ownerSt = st; if (typeof reqUi === 'function') setTimeout(reqUi, 0); if (typeof host !== 'undefined' && host) host.feed(st.game); theme = st.theme || 'auto'; seats = st.seats || {}; ev = { lucky: st.lucky, best: st.best, vip: st.vip || [], bdays: st.bdays || [] }; if (st.ntfy && !$('ntfyTopic').value) $('ntfyTopic').value = st.ntfy; if (st.wifi && !wifiTouched) { $('wifiS').value = st.wifi.s; $('wifiP').value = st.wifi.p; } renderThemes(); renderMap(); renderGuests(guestsNow); renderLucky(); renderQNow(); if (!dirty) { owners = st.owners.map(o => ({ ...o, lines: [...o.lines] })); renderOwners(); renderWho(); } });
   // 촬영용 가상 손님
   const npcNow = () => (ownerSt && ownerSt.npcs) || [];
   let npcMsg = 0;
@@ -659,8 +661,16 @@ function autoUi(){ const au = (ownerSt && ownerSt.auto) || { on: true }, a = N.a
   const m = Math.ceil(a.left / 60000); $('autoLeft').textContent = au.on === false ? '꺼져 있어요. 켜면 정각마다 스크린이 게임을 시작해요.' : `${m}분 뒤 시작 · ${a.chosen ? '사장님이 고른 게임' : '순서대로 정해진 게임'} · 정각 10분 전에 알림이 와요 (알림 채널 설정 필요)`;
   $('autoNext').disabled = au.on === false; }
 setInterval(autoUi, 1000);
+// 손님 게임 신청 현황 · 바로 시작
+let rqActsO = []; N.watchGameActs(0, l => { rqActsO = l; reqUi(); });
+function reqUi(){ const au = (ownerSt && ownerSt.auto) || {}; $('reqOn').checked = au.req !== false; const list = N.reqTally(rqActsO, (ownerSt && ownerSt.rqdone) || {});
+  $('reqBox').innerHTML = list.map(t => `<div class="autorow"><span>🙋 ${t.label} <b>${t.n}/${N.REQ_NEED}</b> <small>(${escO(t.first || '')}님 신청)</small></span><button type="button" class="btn small" data-rqs="${t.type}">바로 시작</button><button type="button" class="btn small" data-rqx="${t.type}">넘기기</button></div>`).join('');
+  $('reqBox').querySelectorAll('[data-rqs]').forEach(b => b.onclick = async () => { if (host.game()) { gMsg('이미 진행 중인 게임이 있어요.'); return; } const k = b.dataset.rqs, sp = N.autoSpec(k); const last = (list.find(x => x.type === k) || {}).last; try { await host.start(k, { ...sp[0], req: 1 }, sp[1], sp[2]); await N.markReqDone(k, ownerSt && ownerSt.rqdone, last); gUi(); } catch (e) { gMsg('게임을 시작하지 못했어요.'); } });
+  $('reqBox').querySelectorAll('[data-rqx]').forEach(b => b.onclick = async () => { try { await N.markReqDone(b.dataset.rqx, ownerSt && ownerSt.rqdone, (list.find(x => x.type === b.dataset.rqx) || {}).last); } catch (e) {} }); }
+setInterval(reqUi, 5000);
+$('reqOn').onchange = async () => { const au = (ownerSt && ownerSt.auto) || {}; try { await N.saveAuto({ ...au, req: $('reqOn').checked }); } catch (e) { $('reqOn').checked = !$('reqOn').checked; } };
 $('autoOn').onchange = async () => { const au = (ownerSt && ownerSt.auto) || {}; try { await N.saveAuto({ ...au, on: $('autoOn').checked }); } catch (e) { $('autoOn').checked = !$('autoOn').checked; } autoUi(); };
-$('autoNext').onchange = async () => { const a = N.autoInfo({ on: true }); try { await N.saveAuto({ on: $('autoOn').checked, next: $('autoNext').value, slot: a.at }); } catch (e) {} autoUi(); };
+$('autoNext').onchange = async () => { const a = N.autoInfo({ on: true }); try { await N.saveAuto({ on: $('autoOn').checked, req: $('reqOn').checked, next: $('autoNext').value, slot: a.at }); } catch (e) {} autoUi(); };
 // 리모컨을 밤새 켜 두면: 영업일이 바뀌었을 때(새벽 6시) 게임 중이 아니면 새로 열어서 오늘 주문·손님이 보이게
 const bootDay = N.bizDate(); setInterval(() => { if (N.bizDate() !== bootDay && !host.game()) N.safeReload('owner.html'); }, 60000);
 // 이 리모컨이 진행 중일 때는 화면이 꺼지지 않게
