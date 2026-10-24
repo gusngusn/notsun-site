@@ -2116,15 +2116,15 @@
     const sh = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
     const q = BAL_QS[Math.floor(Math.random() * BAL_QS.length)];
     return ({
-      race: [{ phase: 'pick', dur: 15 }, n => ({ pickUntil: n + 15000 }), '🏇 경마 우승마 고르는 중 (15초)…'],
-      bal: [{ phase: 'play', a: q[0].slice(0, 16), b: q[1].slice(0, 16), dur: 20 }, n => ({ endAt: n + 20000 }), '⚖️ 밸런스 게임 진행 중 (20초)…'],
-      rou: [{ phase: 'join', dur: 15 }, n => ({ joinUntil: n + 15000 }), '🎡 룰렛 참여자 모집 (15초)…'],
-      ox: [{ phase: 'join', dur: 12 }, n => ({ joinUntil: n + 12000, qs: sh(OX_QS).slice(0, 5) }), '⭕ OX 서바이벌 참여자 모집 (12초)…'],
+      race: [{ phase: 'pick', dur: 30 }, n => ({ pickUntil: n + 30000 }), '🏇 경마 우승마 고르는 중 (30초)…'],
+      bal: [{ phase: 'play', a: q[0].slice(0, 16), b: q[1].slice(0, 16), dur: 30 }, n => ({ endAt: n + 30000 }), '⚖️ 밸런스 게임 진행 중 (30초)…'],
+      rou: [{ phase: 'join', dur: 30 }, n => ({ joinUntil: n + 30000 }), '🎡 룰렛 참여자 모집 (30초)…'],
+      ox: [{ phase: 'join', dur: 30 }, n => ({ joinUntil: n + 30000, qs: sh(OX_QS).slice(0, 5) }), '⭕ OX 서바이벌 참여자 모집 (30초)…'],
       toast: [{ phase: 'count' }, n => ({ endAt: n + 13000 }), '🥂 건배 타임!'],
-      rps: [{ phase: 'join', dur: 12 }, n => ({ joinUntil: n + 12000 }), '✊ 가위바위보 참여자 모집 (12초)…'],
-      bomb: [{ phase: 'join', mission: '', dur: 15 }, n => ({ joinUntil: n + 15000 }), '💣 참여자 모집 중 (15초)…'],
-      nun: [{ phase: 'join', dur: 12 }, n => ({ joinUntil: n + 12000 }), '🙊 눈치게임 참여자 모집 (12초)…'],
-      ten: [{ phase: 'play' }, n => ({ endAt: n + 40000 }), '⏱ 10초 맞추기 진행 중 (40초)…'] })[type]; }
+      rps: [{ phase: 'join', dur: 30 }, n => ({ joinUntil: n + 30000 }), '✊ 가위바위보 참여자 모집 (30초)…'],
+      bomb: [{ phase: 'join', mission: '', dur: 30 }, n => ({ joinUntil: n + 30000 }), '💣 참여자 모집 중 (30초)…'],
+      nun: [{ phase: 'join', dur: 30 }, n => ({ joinUntil: n + 30000 }), '🙊 눈치게임 참여자 모집 (30초)…'],
+      ten: [{ phase: 'play' }, n => ({ endAt: n + 60000 }), '⏱ 10초 맞추기 진행 중 (60초)…'] })[type]; }
   const saveAuto = v => saveEvent('auto', { on: v.on !== false, next: AUTO_ORDER.includes(v.next) ? v.next : '', slot: +v.slot || 0 });
   async function notifyOwner(title, message) { if (!ntfyTopic) return; try { await fetch('https://ntfy.sh/', { method: 'POST', body: JSON.stringify({ topic: ntfyTopic, title, message, priority: 4, tags: ['alarm_clock'] }) }); } catch (e) {} }
   // c = 기수 옷 색(휴대폰 버튼 색), coat/sh/mane = 말 털색, sock = 흰 양말

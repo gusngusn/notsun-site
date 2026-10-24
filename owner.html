@@ -670,19 +670,19 @@ const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { c
 var gMsgUntil = 0; const gMsg = t => { $('gState').textContent = t; gMsgUntil = Date.now() + 4000; };
 const gStart = (type, extra, hostState, msg) => async () => { if (host.game()) { gMsg('이미 진행 중인 게임이 있어요. 끝나거나 멈춘 뒤에 시작해 주세요.'); return; }
   try { await host.start(type, extra(), hostState, msg); gUi(); } catch (e) { gMsg('게임을 시작하지 못했어요. 로그인 상태를 확인해 주세요.'); } };
-$('gBomb').onclick = gStart('bomb', () => ({ phase: 'join', mission: $('gMission').value.trim().slice(0, 24), dur: 15 }), n => ({ joinUntil: n + 15000 }), '💣 참여자 모집 중 (15초)…');
-$('gTen').onclick = gStart('ten', () => ({ phase: 'play', reward: gReward() }), n => ({ endAt: n + 40000 }), '⏱ 10초 맞추기 진행 중 (40초)…');
+$('gBomb').onclick = gStart('bomb', () => ({ phase: 'join', mission: $('gMission').value.trim().slice(0, 24), dur: 30 }), n => ({ joinUntil: n + 30000 }), '💣 참여자 모집 중 (30초)…');
+$('gTen').onclick = gStart('ten', () => ({ phase: 'play', reward: gReward() }), n => ({ endAt: n + 60000 }), '⏱ 10초 맞추기 진행 중 (60초)…');
 $('gToast').onclick = gStart('toast', () => ({ phase: 'count' }), n => ({ endAt: n + 13000 }), '🥂 건배 타임!');
 N.BAL_QS.forEach((q, i) => { const o = document.createElement('option'); o.value = i; o.textContent = `${q[0]} vs ${q[1]}`; $('gBalQ').appendChild(o); });
 $('gBalQ').insertAdjacentHTML('afterbegin', '<option value="r">🎲 랜덤 질문</option>'); $('gBalQ').value = 'r';
 $('gBal').onclick = gStart('bal', () => { const ca = $('gBalA').value.trim(), cb = $('gBalB').value.trim(); let q;
     if (ca && cb) q = [ca, cb]; else { const v = $('gBalQ').value; q = v === 'r' ? N.BAL_QS[Math.floor(Math.random() * N.BAL_QS.length)] : N.BAL_QS[+v]; }
-    return { phase: 'play', a: q[0].slice(0, 16), b: q[1].slice(0, 16), dur: 20 }; }, n => ({ endAt: n + 20000 }), '⚖️ 밸런스 게임 진행 중 (20초)…');
-$('gNun').onclick = gStart('nun', () => ({ phase: 'join', dur: 12 }), n => ({ joinUntil: n + 12000 }), '🙊 눈치게임 참여자 모집 (12초)…');
-$('gRou').onclick = gStart('rou', () => ({ phase: 'join', dur: 15, reward: gReward() }), n => ({ joinUntil: n + 15000 }), '🎡 룰렛 참여자 모집 (15초)…');
-$('gRace').onclick = gStart('race', () => ({ phase: 'pick', dur: 15, reward: gReward() }), n => ({ pickUntil: n + 15000 }), '🏇 경마 우승마 고르는 중 (15초)…');
-$('gRps').onclick = gStart('rps', () => ({ phase: 'join', dur: 12, reward: gReward() }), n => ({ joinUntil: n + 12000 }), '✊ 가위바위보 참여자 모집 (12초)…');
-$('gOx').onclick = gStart('ox', () => ({ phase: 'join', dur: 12, reward: gReward() }), n => ({ joinUntil: n + 12000, qs: shuffle(N.OX_QS).slice(0, 5) }), '⭕ OX 서바이벌 참여자 모집 (12초)…');
+    return { phase: 'play', a: q[0].slice(0, 16), b: q[1].slice(0, 16), dur: 30 }; }, n => ({ endAt: n + 30000 }), '⚖️ 밸런스 게임 진행 중 (30초)…');
+$('gNun').onclick = gStart('nun', () => ({ phase: 'join', dur: 30 }), n => ({ joinUntil: n + 30000 }), '🙊 눈치게임 참여자 모집 (30초)…');
+$('gRou').onclick = gStart('rou', () => ({ phase: 'join', dur: 30, reward: gReward() }), n => ({ joinUntil: n + 30000 }), '🎡 룰렛 참여자 모집 (30초)…');
+$('gRace').onclick = gStart('race', () => ({ phase: 'pick', dur: 30, reward: gReward() }), n => ({ pickUntil: n + 30000 }), '🏇 경마 우승마 고르는 중 (30초)…');
+$('gRps').onclick = gStart('rps', () => ({ phase: 'join', dur: 30, reward: gReward() }), n => ({ joinUntil: n + 30000 }), '✊ 가위바위보 참여자 모집 (30초)…');
+$('gOx').onclick = gStart('ox', () => ({ phase: 'join', dur: 30, reward: gReward() }), n => ({ joinUntil: n + 30000, qs: shuffle(N.OX_QS).slice(0, 5) }), '⭕ OX 서바이벌 참여자 모집 (30초)…');
 $('gStop').onclick = () => host.stop('게임을 멈췄어요.');
 // 레시피 (사장님만)
 var recipes = {}, rcpName = '';
