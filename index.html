@@ -126,7 +126,7 @@ details.fold{border:1.5px solid var(--glow);background:linear-gradient(180deg,#2
 .gflash{position:fixed;inset:0;pointer-events:none;z-index:40;opacity:0}.gflash.red{background:radial-gradient(circle,#ff3b2f55,#ff3b2fcc)}.gflash.soft{background:#ffd36a33}.gflash.go{animation:gfl .9s ease-out}
 .gflash.red.go{animation:gfl .45s ease-out 3}@keyframes gfl{0%{opacity:1}100%{opacity:0}}
 .lastbox{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1.5px solid #b8f08a;background:#16200f;border-radius:14px;padding:10px 12px;margin-bottom:10px}.lastbox canvas{width:56px;height:88px;image-rendering:pixelated;background:#2a1416;border-radius:8px}.lastbox .lt{flex:1;min-width:150px;line-height:1.4}.lastbox .lt b{display:block;font:18px "Do Hyeon",sans-serif;color:#d4f7b0}.lastbox .lt span{font-size:15px;color:#e8f0dc}.lastbox em{font-style:normal;color:#fff}.lastbox .lb{display:flex;gap:6px;flex-basis:100%}.lastbox .lb .btn{flex:1}
-.grecaptcha-badge{visibility:hidden}.rcnote{text-align:center;font-size:11px;color:#7a6a64;margin:18px 16px 90px}.rcnote a{color:#9a8a84}
+.grecaptcha-badge{visibility:hidden}.netbar{position:fixed;left:0;right:0;bottom:0;z-index:70;background:#7a1f22;color:#fff;text-align:center;font-size:14px;padding:10px 12px}.rcnote{text-align:center;font-size:11px;color:#7a6a64;margin:18px 16px 90px}.rcnote a{color:#9a8a84}
 .toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);width:max-content;max-width:92vw;z-index:20;background:#2a1d1f;border:1px solid var(--glow);color:#ffe2c4;border-radius:999px;padding:12px 18px;font-size:16px;box-shadow:0 8px 30px #0008;max-width:92vw;text-align:center}
 .mrow .rec{color:#ffd36a;font-size:13px;margin-left:6px}
 .recbox{border:1px solid #ffd36a66;border-radius:12px;padding:10px 14px;background:#1f1710;margin:6px 0}.recbox b{font-weight:400;color:#ffd36a}
@@ -301,6 +301,7 @@ body:has(.catcard) .toast{top:104px}
   <div id="mnotes" style="display:grid;gap:4px;margin-top:10px"></div>
 </main>
 <p class="rcnote">이 사이트는 reCAPTCHA로 보호되며 Google <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">개인정보처리방침</a>과 <a href="https://policies.google.com/terms" target="_blank" rel="noopener">서비스 약관</a>이 적용됩니다.</p>
+<div class="netbar" id="netBar" hidden>📶 인터넷 연결이 끊겼어요 · 와이파이에 연결하면 자동으로 이어져요</div>
 <div class="toast" id="toast" hidden role="status"></div>
 <div class="gflash" id="gFlash" aria-hidden="true"></div>
 <div class="mpop" id="mutualPop" hidden role="dialog" aria-label="서로 하트"><div class="mbox"><div class="mh">💞</div><b>서로 하트!</b><p id="mutualTxt"></p><small>이 알림은 두 분 휴대폰에만 떠요. 스크린과 사장님 화면에는 나오지 않아요.</small><button class="btn primary" id="mutualChat" type="button">💬 짧게 대화하기</button><button class="btn ghost" id="mutualOk" type="button" style="margin-top:8px">나중에</button></div></div>
@@ -458,7 +459,8 @@ async function submit(){
   busy = true; check(); $('err').hidden = true; $('go').textContent = '앉는 중…'; $('quickGo').textContent = '앉는 중…';
   try {
     const v = visitCount();
-    const r = await N.addGuest({ ...cur(), nick: $('nick').value.trim().slice(0, 8), msg: $('msg').value.trim().slice(0, 24), drink, v, talk, bd: $('bdCheck').checked });
+    let r = null; for (let k = 0; k < 3; k++) { try { r = await N.addGuest({ ...cur(), nick: $('nick').value.trim().slice(0, 8), msg: $('msg').value.trim().slice(0, 24), drink, v, talk, bd: $('bdCheck').checked }); break; }
+      catch (e) { if (!N.netErr(e) || k === 2) throw e; $('quickGo').textContent = $('go').textContent = `인터넷이 느려요… 다시 시도 중 (${k + 2}/3)`; await new Promise(res => setTimeout(res, 1500)); } }
     markVisit();
     saveMe(r && r.editable ? { ...r, nick: $('nick').value.trim().slice(0, 8), look: cur(), drink, msg: $('msg').value.trim().slice(0, 24), v, talk } : null);
     showVisit(v);
@@ -466,7 +468,7 @@ async function submit(){
     N.drawPreview($('me'), cur(), drink, ''); setTimeout(askGacha, 400);
     $('doneTitle').textContent = `${$('nick').value.trim()}님, 바에 앉았어요`;
     showMenu('done', `${$('nick').value.trim()}님, 바에 앉았어요! ${v === 1 ? '첫 방문 환영해요 🎉' : `오늘이 ${v}번째 방문이에요 🙌`} 스크린을 확인하고 한 잔 골라보세요.`);
-  } catch (e) { showErr('등록하지 못했어요. 인터넷 연결을 확인하고 다시 눌러주세요.'); }
+  } catch (e) { showErr(navigator.onLine === false ? '인터넷 연결이 끊겼어요. 위 와이파이에 연결한 뒤 다시 눌러주세요.' : N.netErr(e) ? '인터넷이 불안정해서 앉지 못했어요. 와이파이(위 정보)에 연결하거나 잠시 뒤 다시 눌러주세요. 다시 눌러도 두 번 앉지 않아요.' : '등록하지 못했어요. 잠시 뒤 다시 눌러주세요.'); }
   busy = false; $('go').textContent = '이 모습으로 바에 앉기'; $('quickGo').textContent = '바에 앉기'; check();
 }
 $('go').onclick = () => editingLook ? saveLook() : submit(); $('quickGo').onclick = submit;
@@ -599,6 +601,7 @@ function renderHearts(){
     el.appendChild(b); });
 }
 var heartArm = null;
+const netSync = () => { $('netBar').hidden = navigator.onLine !== false; }; addEventListener('online', netSync); addEventListener('offline', netSync); netSync();
 function showMutual(g){ if (mutualSeen().includes(g.id)) return; mutualAdd(g.id); mutualLast = g.id; $('mutualTxt').textContent = `${g.nick}님도 당신에게 하트를 보냈어요`; $('mutualPop').hidden = false; try { navigator.vibrate && navigator.vibrate([60, 80, 60]); } catch (e) {} renderHearts(); }
 $('mutualOk').onclick = () => { $('mutualPop').hidden = true; };
 $('mutualChat').onclick = () => { $('mutualPop').hidden = true; if (mutualLast) openChat(mutualLast); };
@@ -911,7 +914,7 @@ function renderCart(){
 }
 $('cartOpen').onclick = () => { const me = loadMe(); $('cartNickWrap').hidden = !!me; if (!me && !$('cartNick').value) $('cartNick').value = $('nick').value.trim(); if (me) $('cartShow').checked = !me.nolast; $('cartErr').hidden = true; $('cartSheet').hidden = false; };
 $('cartClose').onclick = () => { $('cartSheet').hidden = true; };
-let sending = false;
+let sending = false, orderRid = null, orderSig = '';   // 같은 주문을 다시 눌러도 두 번 들어가지 않게 (주문 번호를 미리 정해 둠)
 $('sendOrder').onclick = async () => {
   if (sending || !cart.length) return; const me = loadMe(); const nick = me ? me.nick : $('cartNick').value.trim();
   if (!nick) { $('cartErr').textContent = '닉네임을 적어주세요.'; $('cartErr').hidden = false; return; }
@@ -921,8 +924,9 @@ $('sendOrder').onclick = async () => {
   let recent = []; try { recent = (JSON.parse(localStorage.getItem('notsun-order-times')) || []).filter(x => Date.now() - x < 60000); } catch (e) {}
   if (recent.length >= 2) { $('cartErr').textContent = `방금 주문하셨어요. ${Math.ceil((recent[0] + 60000 - Date.now()) / 1000)}초 뒤에 다시 보내주세요.`; $('cartErr').hidden = false; return; }
   sending = true; $('sendOrder').disabled = true; $('sendOrder').textContent = '보내는 중…';
-  try { await N.placeOrder({ gid: me ? me.id : '', nick, items: cart, note: $('cartNote').value.trim(), show: $('cartShow').checked }); try { localStorage.setItem('notsun-order-times', JSON.stringify([...recent, Date.now()])); } catch (e) {} cart = []; $('cartNote').value = ''; $('cartSheet').hidden = true; renderCart(); renderMenu(); scrollTo({ top: 0, behavior: 'smooth' }); toast('✅ 주문 보냈어요! 사장님이 확인하면 알려드릴게요'); }
-  catch (e) { $('cartErr').textContent = '주문을 보내지 못했어요. 인터넷을 확인하고 다시 눌러주세요. 계속 안 되면 바에 말씀해 주세요.'; $('cartErr').hidden = false; }
+  const sig = JSON.stringify([cart, $('cartNote').value.trim()]); if (sig !== orderSig || !orderRid) { orderSig = sig; orderRid = N.newOrderId(); }
+  try { for (let k = 0; k < 3; k++) { try { await N.placeOrder({ gid: me ? me.id : '', nick, items: cart, note: $('cartNote').value.trim(), show: $('cartShow').checked, rid: orderRid }); break; } catch (e) { if (!N.netErr(e) || k === 2) throw e; $('sendOrder').textContent = `인터넷이 느려요… 다시 보내는 중 (${k + 2}/3)`; await new Promise(res => setTimeout(res, 1500)); } } orderRid = null; try { localStorage.setItem('notsun-order-times', JSON.stringify([...recent, Date.now()])); } catch (e) {} cart = []; $('cartNote').value = ''; $('cartSheet').hidden = true; renderCart(); renderMenu(); scrollTo({ top: 0, behavior: 'smooth' }); toast('✅ 주문 보냈어요! 사장님이 확인하면 알려드릴게요'); }
+  catch (e) { $('cartErr').textContent = navigator.onLine === false ? '인터넷 연결이 끊겼어요. 와이파이에 연결한 뒤 다시 눌러주세요.' : '주문을 보내지 못했어요. 와이파이에 연결하거나 잠시 뒤 다시 눌러주세요. 다시 눌러도 두 번 들어가지 않아요. 계속 안 되면 바에 말씀해 주세요.'; $('cartErr').hidden = false; }
   sending = false; $('sendOrder').disabled = false; $('sendOrder').textContent = '주문 보내기';
 };
 // 주문 상태가 바뀌면 손님 폰에 알림 (진동 + 소리 + 화면 번쩍임 + 상단 안내). 처음 불러올 때는 울리지 않음

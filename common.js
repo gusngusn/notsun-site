@@ -1861,12 +1861,18 @@
   if (LIVE) { if (!firebase.apps.length) firebase.initializeApp(cfg); try { if (APPCHECK_SITE_KEY && firebase.appCheck && location.protocol === 'https:' && !/^(localhost|127\.|192\.168\.|10\.)/.test(location.hostname)) firebase.appCheck().activate(new firebase.appCheck.ReCaptchaEnterpriseProvider(APPCHECK_SITE_KEY), true); } catch (e) {} fs = firebase.firestore(); auth = firebase.auth ? firebase.auth() : null; }
   // 손님 휴대폰 익명 로그인: 내 캐릭터의 메시지만 고칠 수 있게 하는 열쇠 (실패해도 등록은 됨)
   let authReady = null;
-  function guestUid() {
+  const withTimeout = (p, ms, what) => Promise.race([p, new Promise((_, rej) => setTimeout(() => { const e = new Error('timeout'); e.code = 'timeout'; e.what = what; rej(e); }, ms))]);
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  function guestUid() {   // 익명 로그인: 인터넷이 느리면 8초씩 기다리며 3번까지 다시 시도
     if (!auth) return Promise.resolve(null);
-    if (!authReady) authReady = new Promise(res => { const off = auth.onAuthStateChanged(u => { off(); res(u); }); })
-      .then(u => u || auth.signInAnonymously().then(c => c.user)).then(u => u && u.uid).catch(() => { authReady = null; return null; });
+    if (!authReady) authReady = (async () => {
+      const u0 = await withTimeout(new Promise(res => { const off = auth.onAuthStateChanged(u => { off(); res(u); }); }), 6000, 'auth').catch(() => auth.currentUser);
+      if (u0) return u0.uid;
+      for (let i = 0; i < 3; i++) { try { const c = await withTimeout(auth.signInAnonymously(), 8000, 'auth'); if (c && c.user) return c.user.uid; } catch (e) {} if (auth.currentUser) return auth.currentUser.uid; await sleep(1000 + i * 2000); }
+      return null; })().then(uid => { if (!uid) authReady = null; return uid; });
     return authReady;
   }
+  const netErr = e => !!(e && (e.code === 'timeout' || e.code === 'unavailable' || e.code === 'deadline-exceeded' || e.message === 'auth' || (typeof navigator !== 'undefined' && navigator.onLine === false)));
   const DEMO_KEY = d => 'notsun-demo3-' + d;
   const chan = ('BroadcastChannel' in global) ? new BroadcastChannel('notsun-guestbook') : null;
   const ping = () => chan && chan.postMessage('changed');
@@ -1889,9 +1895,17 @@
     if (!valid(doc)) throw new Error('invalid');
     const day = bizDate();
     if (LIVE) {
-      const uid = await guestUid();
-      const ref = await fs.collection('days').doc(day).collection('guests').add({ ...doc, ...(uid ? { uid } : {}), ts: firebase.firestore.FieldValue.serverTimestamp() });
-      return { day, id: ref.id, editable: !!uid };
+      const uid = await guestUid(); if (!uid) { const e = new Error('auth'); e.code = 'timeout'; throw e; }
+      const col = fs.collection('days').doc(day).collection('guests'), key = 'notsun-pending-guest';
+      let pend = null; try { pend = JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) {}
+      if (pend && pend.day === day && pend.uid === uid && Date.now() - pend.at < 10 * 60000) {   // 전에 보내다 끊긴 등록이 실제로는 됐는지 먼저 확인
+        const snap = await withTimeout(col.doc(pend.id).get(), 8000, 'get').catch(() => null);
+        if (snap && snap.exists && snap.data().uid === uid) { try { localStorage.removeItem(key); } catch (e) {} return { day, id: pend.id, editable: true }; } }
+      const ref = pend && pend.day === day && pend.uid === uid && Date.now() - pend.at < 10 * 60000 ? col.doc(pend.id) : col.doc();
+      try { localStorage.setItem(key, JSON.stringify({ day, uid, id: ref.id, at: Date.now() })); } catch (e) {}
+      await withTimeout(ref.set({ ...doc, uid, ts: firebase.firestore.FieldValue.serverTimestamp() }), 12000, 'add');
+      try { localStorage.removeItem(key); } catch (e) {}
+      return { day, id: ref.id, editable: true };
     }
     const id = 'd' + Date.now(), list = lsGet(DEMO_KEY(day), []); list.push({ ...doc, uid: demoUid(), ms: Date.now(), ms0: Date.now(), id }); lsSet(DEMO_KEY(day), list); ping();
     return { day, id, editable: true };
@@ -2262,14 +2276,16 @@
     lsSet('notsun-menu', v); ping();
   }
   // ---------- 주문 (결제는 계산할 때 · 여기서는 주문 전달만) ----------
-  async function placeOrder({ gid, nick, items, note, show, kind }) {
-    const uid = await myUid(); if (!uid) throw new Error('nokey');
+  async function placeOrder({ gid, nick, items, note, show, kind, rid }) {
+    const uid = await myUid(); if (!uid) { const e = new Error('auth'); e.code = 'timeout'; throw e; }
     const clean = items.slice(0, 20).map(it => ({ name: String(it.name).slice(0, 30), qty: Math.max(1, Math.min(20, it.qty | 0)), price: Math.max(0, it.price | 0), icon: it.icon || 'cocktail' }));
     const total = clean.reduce((a, it) => a + it.qty * it.price, 0);
     const doc = { day: bizDate(), uid, gid: String(gid || ''), nick: String(nick || '').slice(0, 8), items: clean, note: String(note || '').slice(0, 60), total, status: 'new', show: show !== false };
     if (kind === 'call') { doc.kind = 'call'; doc.show = false; }
     let id;
-    if (LIVE) { const ref = await fs.collection('orders').add({ ...doc, ts: firebase.firestore.FieldValue.serverTimestamp() }); id = ref.id; }
+    if (LIVE) { const ref = rid ? fs.collection('orders').doc(rid) : fs.collection('orders').doc(); id = ref.id;
+      if (rid) { const snap = await withTimeout(ref.get(), 8000, 'get').catch(() => null); if (snap && snap.exists) return id; }   // 전에 보낸 게 이미 들어갔으면 다시 안 보냄
+      await withTimeout(ref.set({ ...doc, ts: firebase.firestore.FieldValue.serverTimestamp() }), 12000, 'order'); }
     else { id = 'o' + Date.now(); const all = lsGet('notsun-orders', {}); all[id] = { ...doc, ms: Date.now() }; lsSet('notsun-orders', all); ping(); setTimeout(() => listeners.forEach(f => f()), 0); }
     notifyPhones(doc).catch(() => {});
     return id;
@@ -2544,5 +2560,5 @@
   }
 
   global.Notsun = { setGuestLeft, resetDay, watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, horseSprite, raceProg, raceInfo, RACE_T0, BAL_QS, OX_QS, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, BOTTOMS, ACCS, HAIR_X, TOPS, EYES, ACC_X, SHOES, PANTS_COLORS, EX_RE, setGuestCos, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
-    setCatVisit, watchCatVisit, petCat, safeReload, watchCatPets, THEMES, resolveTheme, costumeFor, drawCostume, cosSeed, OWNER_COS, ownerCostume, cardAura, AURA_FX, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, announceServed, drinkColor, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, saveGameEnd, AUTO_ORDER, AUTO_LABEL, autoInfo, autoSpec, saveAuto, notifyOwner, updateLook, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
+    setCatVisit, watchCatVisit, petCat, safeReload, netErr, newOrderId: () => LIVE ? fs.collection('orders').doc().id : 'o' + Date.now(), watchCatPets, THEMES, resolveTheme, costumeFor, drawCostume, cosSeed, OWNER_COS, ownerCostume, cardAura, AURA_FX, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, announceServed, drinkColor, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, saveGameEnd, AUTO_ORDER, AUTO_LABEL, autoInfo, autoSpec, saveAuto, notifyOwner, updateLook, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
 })(window);
