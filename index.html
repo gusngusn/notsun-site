@@ -140,6 +140,7 @@ details.fold{border:1.5px solid var(--glow);background:linear-gradient(180deg,#2
 .sheet img{width:min(300px,78vw);border-radius:10px;border:1px solid var(--line);-webkit-touch-callout:default}
 .mode{font:12px/1.4 "DotGothic16",monospace;color:var(--muted);text-align:center}
 @media (max-width:380px){.studio{grid-template-columns:1fr}.stagebox{height:200px}.stagebox canvas{height:190px;width:118px}}
+.gacha.ask .gask{background:#2a1d1f;border:2px solid #c9a25a;border-radius:18px;padding:20px 18px;width:min(300px,86vw);display:grid;gap:10px;text-align:center;color:#ffe2c4}.gacha.ask .gask p{margin:0;color:#b9a59c;font-size:14px;line-height:1.5}.gacha.ask .gask b{font-size:20px}.gback.mini{position:relative;inset:auto;height:120px;width:84px;margin:0 auto;font-size:56px;border-radius:12px;transform:none}
 .gacha{position:fixed;inset:0;z-index:60;background:rgba(8,4,6,.82);display:flex;align-items:center;justify-content:center;perspective:900px}
 .gcard{position:relative;width:250px;height:380px;transform-style:preserve-3d;animation:gshake .9s ease-in-out 1;transition:transform .7s cubic-bezier(.3,1.4,.5,1)}
 .gacha.open .gcard{transform:rotateY(180deg);animation:none}
@@ -205,8 +206,12 @@ body:has(.catcard) .toast{top:104px}
   </div>
   <div class="group"><b>머리 색</b><div class="chips" id="hc"></div></div>
   <div class="group"><b>피부</b><div class="chips" id="sk"></div></div>
+  <div class="group"><b>눈</b><div class="chips" id="ey"></div></div>
+  <div class="group"><b>상의</b><div class="chips" id="tp"></div></div>
   <div class="group"><b>옷 색</b><div class="chips" id="sh"></div></div>
   <div class="group"><b>하의</b><div class="chips" id="bt"></div></div>
+  <div class="group"><b>바지·치마 색</b><div class="chips" id="pc"></div></div>
+  <div class="group"><b>신발</b><div class="chips" id="shz"></div></div>
   <div class="group"><b>소품</b><div class="chips" id="ac"></div></div>
   <p class="note">셀카는 색을 뽑는 데만 쓰고 휴대폰 밖으로 보내지 않아요. 안 찍어도 돼요.</p>
   <div class="group"><b>오늘의 한 잔</b><div class="chips" id="dr"></div></div>
@@ -237,6 +242,7 @@ body:has(.catcard) .toast{top:104px}
     <div id="hubOrders" style="display:grid;gap:8px"></div>
     <p class="total" id="hubTotal" hidden></p>
     <button class="btn primary" id="toMenu2">🍸 메뉴판 · 주문하기</button>
+    <button class="btn" id="cosBtn" type="button">🎁 오늘의 코스튬 뽑기</button>
     <div class="wifi" data-wifi></div>
     <section class="card">
       <h2>🙋 사장님 호출</h2>
@@ -343,18 +349,30 @@ body:has(.catcard) .toast{top:104px}
 <script>
 const N = window.Notsun, $ = id => document.getElementById(id);
 $('mode').textContent = N.LIVE ? '' : '데모 모드 (config.js 설정 전 · 이 기기 안에서만 동작)';
-const look = { sex: 'f', hair: N.HAIR_COLORS[1], skin: N.SKIN_COLORS[0], shirt: N.SHIRT_COLORS[6], pants: N.PANTS, hs: 2, bt: 1, ac: 0 };
+const look = { sex: 'f', hair: N.HAIR_COLORS[1], skin: N.SKIN_COLORS[0], shirt: N.SHIRT_COLORS[6], pants: N.PANTS, hs: 2, bt: 1, ac: 0, hx: 0, tp: 0, ey: 0, ax2: 0, sh: 0 };
 let drink = 'cocktail', busy = false, talk = 0;
 const styleOf = () => `${look.sex}${look.hs}${look.bt}${look.ac}`;
-const cur = () => ({ hair: look.hair, skin: look.skin, shirt: look.shirt, pants: look.pants, style: styleOf() });
+const exStr = () => [look.hx, look.tp, look.ey, look.ax2, look.sh].map(n => (n | 0).toString(36)).join('');
+const cur = () => ({ hair: look.hair, skin: look.skin, shirt: look.shirt, pants: look.pants, style: styleOf(), ex: exStr() });
 let theme = 'default';
 // 코스튬 뽑기: 기기 uid + 영업일로 하루 한 번 (앉기 전엔 비밀, 앉으면 공개)
 let myUidV = ''; const uidReady = N.myUid().then(u => { myUidV = u || ''; const me = loadMe(); if (me) { if (!$('edit').hidden) N.drawPreview($('meEdit'), me.look, me.drink, myCos(me.look.style).k); if ($('me')) N.drawPreview($('me'), me.look, me.drink, myCos(me.look.style).k); } }).catch(() => {});
-const myCos = style => N.drawCostume(theme, myUidV ? myUidV + '|' + N.bizDate() : 'x', style || cur().style);
+const rawCos = style => N.drawCostume(theme, myUidV ? myUidV + '|' + N.bizDate() : 'x', style || cur().style);
+const NOCOS = { k: '', rar: 'n', name: '' };
+const myCos = style => { const me = loadMe(); return me && me.cos ? rawCos(style) : NOCOS; };
 function redraw(){ N.drawPreview($('preview'), cur(), drink, ''); N.drawPreview($('qpreview'), cur(), drink, ''); check(); }
+// 코스튬 뽑기는 원하는 손님만: 앉으면 물어보고, 내 자리에서도 언제든 뽑기·벗기·다시 입기
+async function setCos(on){ const me = loadMe(); if (!me) return; saveMe({ ...me, cos: !!on }); try { await N.setGuestCos(me.id, !!on); } catch (e) {} refreshCos(); }
+function refreshCos(){ const me = loadMe(), b = $('cosBtn'); if (b && me) b.textContent = me.cos ? '👕 코스튬 벗기' : me.cosDrawn ? '🎭 코스튬 다시 입기' : '🎁 오늘의 코스튬 뽑기';
+  if (me && !$('edit').hidden) N.drawPreview($('meEdit'), me.look, me.drink, myCos(me.look.style).k); }
+function askGacha(){ const box = document.createElement('div'); box.className = 'gacha ask'; box.setAttribute('role', 'dialog');
+  box.innerHTML = `<div class="gask"><div class="gback mini">?</div><b>오늘의 코스튬 뽑을래요?</b><p>뽑으면 스크린 속 내 캐릭터가 코스튬을 입어요.<br>레어 16% · 시크릿 3% · 레전드 1%</p><button type="button" class="btn primary" data-go>🎁 뽑기</button><button type="button" class="btn" data-no>안 뽑고 내 모습으로</button></div>`;
+  document.body.appendChild(box);
+  box.querySelector('[data-no]').onclick = () => { box.remove(); refreshCos(); };
+  box.querySelector('[data-go]').onclick = async () => { box.remove(); const me = loadMe(); if (me) saveMe({ ...me, cosDrawn: true }); await setCos(true); showGacha(); }; }
 async function showGacha(){
   try { await uidReady; } catch (e) {}
-  const c = myCos(), box = document.createElement('div'); box.className = 'gacha'; box.setAttribute('role', 'dialog');
+  const c = rawCos(), box = document.createElement('div'); box.className = 'gacha'; box.setAttribute('role', 'dialog');
   const lab = { L: ['LEGEND', '레전드 아이돌!'], s: ['SECRET', '시크릿 코스튬!'], r: ['RARE', '레어 코스튬!'], n: ['NORMAL', c.k ? '오늘의 코스튬' : '오늘은 기본 복장'] }[c.rar];
   const fx = N.AURA_FX[c.k], big = c.rar === 's' || c.rar === 'L';
   box.innerHTML = `<div class="gcard"><div class="gback">?</div><div class="gfront ${c.rar}${fx ? ' fx' : ''}"${fx ? ` data-k="${c.k}"` : ''}>${fx ? '<canvas class="gfx" width="125" height="190"></canvas>' : ''}<small>${lab[0]}</small><canvas width="112" height="176"></canvas><b>${lab[1]}</b><span>${c.name ? escH(c.name) : '다음 방문 때 다시 뽑아요'}</span><em>${fx ? `확률 ${c.rar === 'L' ? 1 : 3}%! ${fx.d}` : c.rar === 'L' ? '확률 1%! 무대 조명 받으며 등장해요' : c.rar === 's' ? '확률 3%! 황금빛으로 등장해요' : c.rar === 'r' ? '확률 16%! 스크린에서 반짝여요' : '레어 16% · 시크릿 3% · 레전드 1%'}</em>${c.rar !== 'n' ? '<button type="button" class="btn primary" data-gshare>📸 카드 저장·자랑하기</button>' : ''}<button type="button" class="btn" data-gclose>스크린 보러 가기</button></div></div>`;
@@ -364,7 +382,7 @@ async function showGacha(){
   box.addEventListener('click', e => { if (e.target === box && box.classList.contains('open')) box.remove(); });
   setTimeout(() => { box.classList.add('open'); try { gAlert(c.rar === 's' || c.rar === 'L' ? 'boom' : 'soft'); } catch (e) {} }, 1300);
 }
-N.watchOwner(st => { const ge = st.gend; if (ge && ge.ms && Date.now() - ge.ms < 20000 && ge.n === lastGameN && /^참여자가/.test(ge.msg) && gendSeen !== ge.ms) { gendSeen = ge.ms; toast('🎮 ' + ge.msg); } renderWifi(st.wifi); checkBday(st.bday); if (typeof renderGameFeed === 'function') renderGameFeed(st.game); todayQ = st.q || ''; if (typeof renderQ === 'function') renderQ(); theme = N.resolveTheme(st.theme); const nm = { halloween: '할로윈', christmas: '크리스마스', summer: '여름 바캉스', spring: '봄', valentine: '발렌타인데이', white: '화이트데이', rose: '로즈데이', pepero: '빼빼로데이', seollal: '설날', chuseok: '추석' }[theme]; $('season').textContent = (nm ? `지금은 ${nm} 시즌! ` : '') + '앉으면 오늘의 코스튬 뽑기 🎁 (레어 16% · 시크릿 3% · 레전드 1%)'; redraw(); const me = loadMe(); if (me && !$('edit').hidden) N.drawPreview($('meEdit'), me.look, me.drink, myCos(me.look.style).k); });
+N.watchOwner(st => { const ge = st.gend; if (ge && ge.ms && Date.now() - ge.ms < 20000 && ge.n === lastGameN && /^참여자가/.test(ge.msg) && gendSeen !== ge.ms) { gendSeen = ge.ms; toast('🎮 ' + ge.msg); } renderWifi(st.wifi); checkBday(st.bday); if (typeof renderGameFeed === 'function') renderGameFeed(st.game); todayQ = st.q || ''; if (typeof renderQ === 'function') renderQ(); theme = N.resolveTheme(st.theme); const nm = { halloween: '할로윈', christmas: '크리스마스', summer: '여름 바캉스', spring: '봄', valentine: '발렌타인데이', white: '화이트데이', rose: '로즈데이', pepero: '빼빼로데이', seollal: '설날', chuseok: '추석' }[theme]; $('season').textContent = (nm ? `지금은 ${nm} 시즌! ` : '') + '원하면 앉은 뒤 오늘의 코스튬 뽑기 🎁 (레어 16% · 시크릿 3% · 레전드 1%)'; redraw(); const me = loadMe(); if (me && !$('edit').hidden) N.drawPreview($('meEdit'), me.look, me.drink, myCos(me.look.style).k); });
 function chips(id, items, isOn, onPick){
   const el = $(id); el.innerHTML = '';
   items.forEach((it, i) => { const b = document.createElement('button'); b.type = 'button';
@@ -378,12 +396,16 @@ function buildColorChips(){
   chips('hc', N.HAIR_COLORS.map(c => ({ color: c })), it => it.color === look.hair, it => look.hair = it.color);
   chips('sk', N.SKIN_COLORS.map(c => ({ color: c })), it => it.color === look.skin, it => look.skin = it.color);
   chips('sh', N.SHIRT_COLORS.map(c => ({ color: c })), it => it.color === look.shirt, it => look.shirt = it.color);
+  chips('pc', N.PANTS_COLORS.map(c => ({ color: c })), it => it.color === look.pants, it => look.pants = it.color);
 }
 chips('sx', N.SEXES.map(x => ({ label: x.name, k: x.k })), it => it.k === look.sex, it => { look.sex = it.k; if (it.k === 'm') { look.hs = 0; look.bt = 0; } else { look.hs = 2; look.bt = 1; } buildStyleChips(); });
 function buildStyleChips(){
-chips('hs', N.HAIR_STYLES.map(l => ({ label: l })), (it, i) => i === look.hs, (it, i) => look.hs = i);
+chips('hs', N.HAIR_STYLES.concat(N.HAIR_X).map(l => ({ label: l })), (it, i) => i < 4 ? (!look.hx && i === look.hs) : look.hx === i - 3, (it, i) => { if (i < 4) { look.hs = i; look.hx = 0; } else look.hx = i - 3; });
 chips('bt', N.BOTTOMS.map(l => ({ label: l })), (it, i) => i === look.bt, (it, i) => look.bt = i);
-chips('ac', N.ACCS.map(l => ({ label: l })), (it, i) => i === look.ac, (it, i) => look.ac = i);
+chips('ac', N.ACCS.concat(N.ACC_X).map(l => ({ label: l })), (it, i) => i < 4 ? (!look.ax2 && i === look.ac) : look.ax2 === i - 3, (it, i) => { if (i < 4) { look.ac = i; look.ax2 = 0; } else { look.ac = 0; look.ax2 = i - 3; } });
+chips('tp', N.TOPS.map(l => ({ label: l })), (it, i) => i === look.tp, (it, i) => look.tp = i);
+chips('ey', N.EYES.map(l => ({ label: l })), (it, i) => i === look.ey, (it, i) => look.ey = i);
+chips('shz', N.SHOES.map(l => ({ label: l })), (it, i) => i === look.sh, (it, i) => look.sh = i);
 }
 buildStyleChips();
 function buildDrink(){ chips('dr', N.DRINKS.map(d => ({ label: d.name, k: d.k })), it => it.k === drink, it => drink = it.k); }
@@ -398,7 +420,7 @@ function randomize(){
   look.sex = Math.random() < .5 ? 'f' : 'm';
   look.hs = look.sex === 'f' ? pick([1, 2, 3]) : pick([0, 0, 1, 3]);
   look.bt = look.sex === 'f' ? pick([0, 1]) : 0;
-  look.ac = pick([0, 0, 1, 2, 3]);
+  look.ac = pick([0, 0, 1, 2, 3]); look.hx = Math.random() < .3 ? pick([1, 2, 3, 4, 5, 6]) : 0; look.tp = pick([0, 0, 1, 2, 3, 4, 5]); look.ey = pick([0, 0, 1, 2, 3]); look.ax2 = look.ac ? 0 : (Math.random() < .3 ? pick([1, 2, 3, 4, 5]) : 0); look.sh = pick([0, 0, 1, 2, 3]); look.pants = pick(N.PANTS_COLORS);
   look.hair = pick(N.HAIR_COLORS); look.skin = pick(N.SKIN_COLORS); look.shirt = pick(N.SHIRT_COLORS);
   drink = pick(N.DRINKS).k;
   buildSex(); buildStyleChips(); buildColorChips(); buildDrink(); redraw();
@@ -429,7 +451,7 @@ async function submit(){
     saveMe(r && r.editable ? { ...r, nick: $('nick').value.trim().slice(0, 8), look: cur(), drink, msg: $('msg').value.trim().slice(0, 24), v, talk } : null);
     showVisit(v);
     if (GM) { renderGame(GM); gWakeSync(GM); }   // 게임 도중에 앉은 손님도 바로 참여 화면이 보이게
-    N.drawPreview($('me'), cur(), drink, myCos().k); setTimeout(showGacha, 400);
+    N.drawPreview($('me'), cur(), drink, ''); setTimeout(askGacha, 400);
     $('doneTitle').textContent = `${$('nick').value.trim()}님, 바에 앉았어요`;
     showMenu('done', `${$('nick').value.trim()}님, 바에 앉았어요! ${v === 1 ? '첫 방문 환영해요 🎉' : `오늘이 ${v}번째 방문이에요 🙌`} 스크린을 확인하고 한 잔 골라보세요.`);
   } catch (e) { showErr('등록하지 못했어요. 인터넷 연결을 확인하고 다시 눌러주세요.'); }
@@ -448,6 +470,7 @@ const LAST_KEY = 'notsun-last' + ME_KEY.slice(9);
 function loadLast(){ try { const v = JSON.parse(localStorage.getItem(LAST_KEY)); return v && v.nick && v.look && /^[mf][0-3][01][0-3]$/.test(v.look.style || '') ? v : null; } catch (e) { return null; } }
 function applyLast(v){ const st = v.look.style; look.sex = st[0]; look.hs = +st[1]; look.bt = +st[2]; look.ac = +st[3];
   look.hair = v.look.hair; look.skin = v.look.skin; look.shirt = v.look.shirt; if (v.look.pants) look.pants = v.look.pants;
+  { const e = N.EX_RE.test(v.look.ex || '') ? [...v.look.ex].map(c => parseInt(c, 36)) : [0, 0, 0, 0, 0]; [look.hx, look.tp, look.ey, look.ax2, look.sh] = e; }
   if (N.DRINKS.some(d => d.k === v.drink)) drink = v.drink; talk = [0, 1, 2].includes(v.talk) ? v.talk : 0; $('nick').value = String(v.nick).slice(0, 8);
   buildSex(); buildStyleChips(); buildColorChips(); buildDrink(); redraw(); }
 function offerLast(){ const v = loadLast(), box = $('lastBox'); if (!v || !box) return;
@@ -458,10 +481,11 @@ function offerLast(){ const v = loadLast(), box = $('lastBox'); if (!v || !box) 
 function loadMe(){ try { const v = JSON.parse(localStorage.getItem(ME_KEY)); return v && v.day === N.bizDate() && v.id && v.look ? v : null; } catch (e) { return null; } }
 function showEdit(){
   const me = loadMe(); if (!me) { restart(); return; }
-  N.drawPreview($('meEdit'), me.look, me.drink, myCos(me.look.style).k);
+  N.drawPreview($('meEdit'), me.look, me.drink, myCos(me.look.style).k); refreshCos();
   $('editTitle').textContent = (me.v | 0) > 1 ? `${me.nick}님, 다시 오셨네요` : `${me.nick}님 자리`; $('hubMsg').textContent = me.msg ? `지금 한 줄: "${me.msg}"` : '스크린 속 바에 앉아 있어요.'; $('newMsg').value = ''; renderPrefs(); renderOrders(); renderHearts(); renderQ();
   $('editErr').hidden = true; $('form').hidden = true; $('done').hidden = true; $('edit').hidden = false; scrollTo(0, 0);
 }
+$('cosBtn').onclick = () => { const me = loadMe(); if (!me) return; if (me.cos) setCos(false); else if (me.cosDrawn) setCos(true); else askGacha(); };
 $('toEdit').onclick = () => loadMe() ? showEdit() : ($('toEdit').hidden = true);
 // 내 설정 (대화 아이콘 · 술 이름 표시)
 function renderPrefs(){ const me = loadMe(); if (!me) return; const tk = me.talk || 0;
@@ -535,7 +559,7 @@ function renderHearts(){
   if ($('heartNote').textContent.startsWith('지금은')) $('heartNote').textContent = '';
   open.slice(0, 30).forEach(g => { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip hchip'; const done = sent.includes(g.id), armed = heartArm === g.id;
     b.innerHTML = `<canvas width="34" height="54"></canvas><span>${done ? `💗 ${chEsc(g.nick)} ✓` : armed ? `💗 ${chEsc(g.nick)}님께 보낼까요? 한 번 더 ✓` : `🤍 ${chEsc(g.nick)}`}</span>`; if (done) b.classList.add('on'); if (armed) b.classList.add('arm');
-    try { N.drawPreview(b.querySelector('canvas'), g, g.drink, N.drawCostume(theme, N.cosSeed(g, N.bizDate()), g.style).k, null, true); } catch (e) {}
+    try { N.drawPreview(b.querySelector('canvas'), g, g.drink, g.cos ? N.drawCostume(theme, N.cosSeed(g, N.bizDate()), g.style).k : '', null, true); } catch (e) {}
     b.onclick = async () => {
       if (done) { $('heartNote').textContent = `${g.nick}님께는 이미 하트를 보냈어요.`; return; }
       if (left <= 0) { $('heartNote').textContent = '오늘 하트를 다 보냈어요. 내일 다시 보낼 수 있어요.'; return; }
