@@ -1443,6 +1443,22 @@
       heartFx(ctx, s, t, placed, headY);
       const bdOn = opts.bday && Date.now() - opts.bday.ms < BD_END;
       if (opts.q && !bdOn && !opts.game && !(opts.lucky && opts.lucky.ms && Date.now() - opts.lucky.ms < 16000)) qBanner(ctx, s, t, opts.q);
+      // 매시 정각 게임 카운트다운 (왼쪽 위 작은 알림 → 5분 전부터 크게 → 1분 전 가운데 큰 숫자)
+      const au = opts.auto; if (au && !opts.game && (opts.count || 0) > 0) { const left = Math.max(0, au.at - Date.now()), mm = Math.floor(left / 60000), ss = Math.floor(left / 1000) % 60;
+        ctx.save(); ctx.textBaseline = 'middle';
+        if (left > 60000) { const big = left <= 300000, txt = `🎮 ${String(au.hr).padStart(2, '0')}:00 ${au.label} · ${mm + (ss ? 1 : 0)}분 뒤`, fs = big ? 6.4 : 5.2;
+          ctx.font = `${fs * s}px "Do Hyeon", sans-serif`; const w = ctx.measureText(txt).width + 8 * s, h = (big ? 19 : 9) * s, x = 4 * s, y = 3 * s;
+          ctx.fillStyle = big ? `rgba(30,14,10,${.9})` : 'rgba(14,9,10,.78)'; ctx.beginPath(); ctx.roundRect(x, y, Math.max(w, big ? 120 * s : 0), h, 4 * s); ctx.fill();
+          if (big) { ctx.strokeStyle = `rgba(255,211,106,${.55 + Math.sin(t / 240) * .4})`; ctx.lineWidth = 1 * s; ctx.stroke(); }
+          ctx.fillStyle = big ? '#ffd36a' : '#ffe2c4'; ctx.textAlign = 'left'; ctx.fillText(txt, x + 4 * s, y + (big ? 6 : 4.6) * s);
+          if (big) { ctx.font = `${5 * s}px "Do Hyeon", sans-serif`; ctx.fillStyle = '#fff2e0'; ctx.fillText('📱 폰에서 낯선 화면을 열어두세요 · 시작하면 바로 참여!', x + 4 * s, y + 14 * s); } }
+        else { const k = (left % 1000) / 1000; ctx.textAlign = 'center';
+          ctx.fillStyle = 'rgba(14,9,10,.9)'; ctx.beginPath(); ctx.roundRect(150 * s, 64 * s, 180 * s, 50 * s, 8 * s); ctx.fill(); ctx.strokeStyle = '#ffd36a'; ctx.lineWidth = 1.4 * s; ctx.stroke();
+          ctx.font = `${8 * s}px "Do Hyeon", sans-serif`; ctx.fillStyle = '#ffd36a'; ctx.fillText(`${au.label} 곧 시작!`, 240 * s, 74 * s);
+          ctx.font = `${(20 + (1 - k) * 4) * s}px "Do Hyeon", sans-serif`; ctx.fillStyle = '#ffffff'; ctx.fillText(String(Math.ceil(left / 1000)), 240 * s, 92 * s);
+          ctx.font = `${5.6 * s}px "Do Hyeon", sans-serif`; ctx.fillStyle = '#fff2e0'; ctx.fillText('📱 폰에서 낯선 화면을 열어두세요', 240 * s, 107 * s);
+          if (GS.cdK !== Math.ceil(left / 1000) && left < 10000) { GS.cdK = Math.ceil(left / 1000); tone(left < 1000 ? 1320 : 880, .12, .05, 'square'); } }
+        ctx.restore(); }
     }
     // ---------- 게임 화면 ----------
     const GS = { holder: null, from: null, at: 0, tick: 0, boomKey: '', clinkSfx: new Set() };
@@ -1976,7 +1992,7 @@
   const SHOP_WIFI = { s: 'KT_GiGA_B945', p: '3bbbaxe067' };  // 손님용 와이파이 기본값 (사장 리모컨에서 바꿀 수 있음 · 이름은 대소문자 구분)
   const wifiQrText = w => `WIFI:T:WPA;S:${String(w.s).replace(/([\\;,:"])/g, '\\$1')};P:${String(w.p).replace(/([\\;,:"])/g, '\\$1')};;`;
   function cleanEvents(v) {
-    const today = bizDate(), out = { lucky: null, best: null, vip: [], order: null, served: null, gend: null, ntfy: '', bday: null, bdays: [], q: '', game: null, npcs: [], wifi: { ...SHOP_WIFI } };
+    const today = bizDate(), out = { lucky: null, best: null, vip: [], order: null, served: null, gend: null, auto: { on: true, next: '', slot: 0 }, ntfy: '', bday: null, bdays: [], q: '', game: null, npcs: [], wifi: { ...SHOP_WIFI } };
     const wf = v && v.wifi; if (wf && typeof wf.s === 'string') out.wifi = { s: wf.s.slice(0, 32), p: typeof wf.p === 'string' ? wf.p.slice(0, 63) : '' };
     const lk = v && v.lucky;
     if (lk && lk.day === today && typeof lk.id === 'string') {
@@ -1994,6 +2010,7 @@
     const bdl = v && v.bdays; if (bdl && bdl.day === today && Array.isArray(bdl.ids)) out.bdays = bdl.ids.filter(x => typeof x === 'string').slice(0, 40);
     const od = v && v.order;
     if (od && od.day === today && od.n) { const key = 'o|' + od.n; if (!(key in luckySeen)) luckySeen[key] = performance.now() < 5000 ? 0 : Date.now(); out.order = { gid: od.gid || '', nick: String(od.nick || '').slice(0, 8), icon: od.icon || 'cocktail', dr: typeof od.dr === 'string' ? od.dr.slice(0, 30) : '', ms: luckySeen[key] }; }
+    const au = v && v.auto; if (au && typeof au === 'object') out.auto = { on: au.on !== false, next: AUTO_ORDER.includes(au.next) ? au.next : '', slot: +au.slot || 0 };
     const ge = v && v.gend; if (ge && ge.day === today && ge.k && typeof ge.msg === 'string') { const key = 'e|' + ge.k; if (!(key in luckySeen)) luckySeen[key] = performance.now() < 5000 ? 0 : Date.now(); out.gend = { n: +ge.n || 0, msg: ge.msg.slice(0, 80), ms: luckySeen[key] }; }
     const sv = v && v.served;
     if (sv && sv.day === today && sv.n) { const key = 's|' + sv.n; if (!(key in luckySeen)) luckySeen[key] = performance.now() < 5000 ? 0 : Date.now(); out.served = { gid: typeof sv.gid === 'string' ? sv.gid : '', dr: typeof sv.dr === 'string' ? sv.dr.slice(0, 30) : '', ms: luckySeen[key] }; }
@@ -2085,6 +2102,31 @@
   const setVip = ids => saveEvent('vip', { day: bizDate(), ids: (ids || []).slice(0, 40) });
   // ---------- 게임 데이터 ----------
   const GAME_TYPES = ['bomb', 'ten', 'toast', 'bal', 'nun', 'rou', 'race', 'rps', 'ox'];
+  // 매시 정각 자동 게임: 스크린이 진행 · 사장님이 리모컨에서 다음 게임을 고를 수 있음 (안 고르면 순서대로)
+  const AUTO_ORDER = ['race', 'bal', 'rou', 'ox', 'toast', 'rps', 'bomb', 'nun', 'ten'];
+  const AUTO_LABEL = { race: '🏇 픽셀 경마', bal: '⚖️ 밸런스 게임', rou: '🎡 행운의 룰렛', ox: '⭕ OX 서바이벌', toast: '🥂 다 같이 건배', rps: '✊ 사장님과 가위바위보', bomb: '💣 폭탄 돌리기', nun: '🙊 눈치게임', ten: '⏱ 10초 맞추기' };
+  const HOUR = 3600000;
+  function autoInfo(auto, now) {
+    if (auto && auto.on === false) return null; now = now || Date.now();
+    const at = Math.floor(now / HOUR) * HOUR + HOUR, hr = new Date(at + 9 * HOUR).getUTCHours();
+    const chosen = auto && auto.slot === at && AUTO_ORDER.includes(auto.next);
+    const type = chosen ? auto.next : AUTO_ORDER[hr % AUTO_ORDER.length];
+    return { at, hr, type, label: AUTO_LABEL[type], chosen: !!chosen, left: at - now }; }
+  function autoSpec(type) {
+    const sh = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    const q = BAL_QS[Math.floor(Math.random() * BAL_QS.length)];
+    return ({
+      race: [{ phase: 'pick', dur: 15 }, n => ({ pickUntil: n + 15000 }), '🏇 경마 우승마 고르는 중 (15초)…'],
+      bal: [{ phase: 'play', a: q[0].slice(0, 16), b: q[1].slice(0, 16), dur: 20 }, n => ({ endAt: n + 20000 }), '⚖️ 밸런스 게임 진행 중 (20초)…'],
+      rou: [{ phase: 'join', dur: 15 }, n => ({ joinUntil: n + 15000 }), '🎡 룰렛 참여자 모집 (15초)…'],
+      ox: [{ phase: 'join', dur: 12 }, n => ({ joinUntil: n + 12000, qs: sh(OX_QS).slice(0, 5) }), '⭕ OX 서바이벌 참여자 모집 (12초)…'],
+      toast: [{ phase: 'count' }, n => ({ endAt: n + 13000 }), '🥂 건배 타임!'],
+      rps: [{ phase: 'join', dur: 12 }, n => ({ joinUntil: n + 12000 }), '✊ 가위바위보 참여자 모집 (12초)…'],
+      bomb: [{ phase: 'join', mission: '', dur: 15 }, n => ({ joinUntil: n + 15000 }), '💣 참여자 모집 중 (15초)…'],
+      nun: [{ phase: 'join', dur: 12 }, n => ({ joinUntil: n + 12000 }), '🙊 눈치게임 참여자 모집 (12초)…'],
+      ten: [{ phase: 'play' }, n => ({ endAt: n + 40000 }), '⏱ 10초 맞추기 진행 중 (40초)…'] })[type]; }
+  const saveAuto = v => saveEvent('auto', { on: v.on !== false, next: AUTO_ORDER.includes(v.next) ? v.next : '', slot: +v.slot || 0 });
+  async function notifyOwner(title, message) { if (!ntfyTopic) return; try { await fetch('https://ntfy.sh/', { method: 'POST', body: JSON.stringify({ topic: ntfyTopic, title, message, priority: 4, tags: ['alarm_clock'] }) }); } catch (e) {} }
   // c = 기수 옷 색(휴대폰 버튼 색), coat/sh/mane = 말 털색, sock = 흰 양말
   const RACE_HORSES = [
     { n: '당근이', c: '#ff8a2a', coat: '#c8743a', sh: '#94501f', mane: '#6a2e12', sock: 0, ln: ['당근 주면 뛴다 🥕', '오늘 컨디션 최상!', '1등 하면 당근 두 개'], win: '당근 파티다 🥕' },
@@ -2460,6 +2502,11 @@
     const m = lsGet('notsun-recipes', {}); m[k] = v; lsSet('notsun-recipes', m); ping();
   }
   // 사장: 계산 완료 → 캐릭터 퇴장 (기록은 남김, 실수하면 다시 앉히기)
+  async function updateLook(day, id, lk) {
+    const up = { hair: lk.hair, skin: lk.skin, shirt: lk.shirt, pants: lk.pants, style: lk.style, ex: EX_RE.test(lk.ex || '') ? lk.ex : '00000', drink: lk.drink };
+    if (!isHex(up.hair) || !isHex(up.skin) || !isHex(up.shirt) || !isHex(up.pants) || !STYLE_RE.test(up.style) || !DRINKS.some(d => d.k === up.drink)) throw new Error('invalid');
+    if (LIVE) { await fs.collection('days').doc(day).collection('guests').doc(id).update(up); return; }
+    const list = lsGet(DEMO_KEY(day), []), g = list.find(x => x.id === id); if (g) { Object.assign(g, up); lsSet(DEMO_KEY(day), list); ping(); setTimeout(() => listeners.forEach(f => f()), 0); } }
   async function setGuestCos(gid, on) {
     if (!gid) return; const day = bizDate();
     if (LIVE) { await fs.collection('days').doc(day).collection('guests').doc(gid).update({ cos: !!on }); return; }
@@ -2497,5 +2544,5 @@
   }
 
   global.Notsun = { setGuestLeft, resetDay, watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, horseSprite, raceProg, raceInfo, RACE_T0, BAL_QS, OX_QS, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, BOTTOMS, ACCS, HAIR_X, TOPS, EYES, ACC_X, SHOES, PANTS_COLORS, EX_RE, setGuestCos, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
-    setCatVisit, watchCatVisit, petCat, safeReload, watchCatPets, THEMES, resolveTheme, costumeFor, drawCostume, cosSeed, OWNER_COS, ownerCostume, cardAura, AURA_FX, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, announceServed, drinkColor, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, saveGameEnd, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
+    setCatVisit, watchCatVisit, petCat, safeReload, watchCatPets, THEMES, resolveTheme, costumeFor, drawCostume, cosSeed, OWNER_COS, ownerCostume, cardAura, AURA_FX, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, announceServed, drinkColor, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, saveGameEnd, AUTO_ORDER, AUTO_LABEL, autoInfo, autoSpec, saveAuto, notifyOwner, updateLook, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
 })(window);

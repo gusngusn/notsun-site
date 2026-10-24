@@ -84,6 +84,7 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
 #app section{scroll-margin-top:60px}
 #app>*{min-width:0}
 .row.gone{opacity:.45}.btn.pay{background:#2e7d4f;color:#fff}
+.autobox{border:1px solid #5a4446;border-radius:12px;padding:10px 12px;margin:8px 0 12px;display:grid;gap:8px;background:#1f1517}.autorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.autorow select{flex:1;min-width:150px;padding:8px;border-radius:10px;background:#2a1d1f;color:#ffe2c4;border:1px solid #5a4446;font-size:15px}
 .coslab{display:flex;align-items:center;gap:6px;font-size:14px;margin:4px 0;flex-wrap:wrap}.coslab select{flex:1;min-width:0;padding:8px;border-radius:10px;background:#2a1d1f;color:#ffe2c4;border:1px solid #5a4446;font-size:14px}
 .grecaptcha-badge{visibility:hidden}</style>
 </head>
@@ -133,6 +134,11 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
     <section id="gameSec">
       <h2>🎮 게임</h2>
       <p class="sub">버튼을 누르면 스크린에서 게임이 시작되고, 손님은 휴대폰으로 참여해요. 참여는 원하는 손님만 해요.</p>
+      <div class="autobox">
+        <label class="tog"><input id="autoOn" type="checkbox" checked><span>⏰ 매시 정각 자동 게임 (스크린이 진행 · 손님 2명 이상일 때)</span></label>
+        <div class="autorow"><span>다음 정각 게임 <b id="autoAt">--:00</b></span><select id="autoNext"></select></div>
+        <small id="autoLeft" class="sub"></small>
+      </div>
       <b class="glab">🔥 시끌벅적</b>
       <div class="gbtns">
         <button class="btn primary" id="gBomb" type="button">💣 폭탄 돌리기</button>
@@ -646,6 +652,15 @@ const G_LABEL = { bomb: '💣 폭탄 돌리기', ten: '⏱ 10초 맞추기', toa
 function gUi(){ const g = host.game(); $('gStop').hidden = !g; if (!g && Date.now() < (typeof gMsgUntil === 'number' ? gMsgUntil : 0)) return; if (!g) { const ge = typeof ownerSt !== 'undefined' && ownerSt && ownerSt.gend, txt = ge && ge.ms && Date.now() - ge.ms < 120000 ? `진행 중인 게임이 없어요 · 방금 끝난 게임: ${ge.msg}` : '진행 중인 게임이 없어요.'; if ($('gState').textContent !== txt) $('gState').textContent = txt; return; } if (host.isHost()) { $('gState').textContent = host.state() + ' (이 화면을 켜 두세요)'; return; }
   $('gState').textContent = !g.host ? `${G_LABEL[g.type] || '게임'} · 진행할 기기를 찾는 중…` : /^screen/.test(g.host) ? `${G_LABEL[g.type] || '게임'} · 🎮 매장 스크린이 진행 중이에요 (리모컨은 꺼도 돼요)` : `${G_LABEL[g.type] || '게임'} · 다른 리모컨이 진행 중이에요`; }
 setInterval(gUi, 700);
+// 매시 정각 자동 게임: 켜기/끄기 + 다음 게임 고르기 (정각 10분 전에 이 폰으로 알림이 와요 · 안 고르면 순서대로)
+N.AUTO_ORDER.forEach(k => { const o = document.createElement('option'); o.value = k; o.textContent = N.AUTO_LABEL[k]; $('autoNext').appendChild(o); });
+function autoUi(){ const au = (ownerSt && ownerSt.auto) || { on: true }, a = N.autoInfo({ ...au, on: true }); $('autoOn').checked = au.on !== false;
+  $('autoAt').textContent = String(a.hr).padStart(2, '0') + ':00'; if (document.activeElement !== $('autoNext')) $('autoNext').value = a.type;
+  const m = Math.ceil(a.left / 60000); $('autoLeft').textContent = au.on === false ? '꺼져 있어요. 켜면 정각마다 스크린이 게임을 시작해요.' : `${m}분 뒤 시작 · ${a.chosen ? '사장님이 고른 게임' : '순서대로 정해진 게임'} · 정각 10분 전에 알림이 와요 (알림 채널 설정 필요)`;
+  $('autoNext').disabled = au.on === false; }
+setInterval(autoUi, 1000);
+$('autoOn').onchange = async () => { const au = (ownerSt && ownerSt.auto) || {}; try { await N.saveAuto({ ...au, on: $('autoOn').checked }); } catch (e) { $('autoOn').checked = !$('autoOn').checked; } autoUi(); };
+$('autoNext').onchange = async () => { const a = N.autoInfo({ on: true }); try { await N.saveAuto({ on: $('autoOn').checked, next: $('autoNext').value, slot: a.at }); } catch (e) {} autoUi(); };
 // 리모컨을 밤새 켜 두면: 영업일이 바뀌었을 때(새벽 6시) 게임 중이 아니면 새로 열어서 오늘 주문·손님이 보이게
 const bootDay = N.bizDate(); setInterval(() => { if (N.bizDate() !== bootDay && !host.game()) N.safeReload('owner.html'); }, 60000);
 // 이 리모컨이 진행 중일 때는 화면이 꺼지지 않게

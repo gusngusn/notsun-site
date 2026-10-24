@@ -140,6 +140,8 @@ details.fold{border:1.5px solid var(--glow);background:linear-gradient(180deg,#2
 .sheet img{width:min(300px,78vw);border-radius:10px;border:1px solid var(--line);-webkit-touch-callout:default}
 .mode{font:12px/1.4 "DotGothic16",monospace;color:var(--muted);text-align:center}
 @media (max-width:380px){.studio{grid-template-columns:1fr}.stagebox{height:200px}.stagebox canvas{height:190px;width:118px}}
+.editing > header, .editing > .quick, .editing > #menuOnly, .editing .group:has(#tk){display:none}.more summary{color:var(--muted);cursor:pointer;padding:4px 0;font-size:15px}.more[open]{display:grid;gap:10px}
+.autocard{display:grid;gap:6px;border:1.5px solid #ffb27a;border-radius:14px;padding:10px 12px;background:#24171a}.autocard b{font:17px "Do Hyeon",sans-serif;color:#ffd36a}.autocard small{color:#d8c4b8;font-size:13px;line-height:1.45}.autocard.soon{border-color:#ffd36a;box-shadow:0 0 16px #ffd36a55}.autocard .btn{justify-self:start}
 .gacha.ask .gask{background:#2a1d1f;border:2px solid #c9a25a;border-radius:18px;padding:20px 18px;width:min(300px,86vw);display:grid;gap:10px;text-align:center;color:#ffe2c4}.gacha.ask .gask p{margin:0;color:#b9a59c;font-size:14px;line-height:1.5}.gacha.ask .gask b{font-size:20px}.gback.mini{position:relative;inset:auto;height:120px;width:84px;margin:0 auto;font-size:56px;border-radius:12px;transform:none}
 .gacha{position:fixed;inset:0;z-index:60;background:rgba(8,4,6,.82);display:flex;align-items:center;justify-content:center;perspective:900px}
 .gcard{position:relative;width:250px;height:380px;transform-style:preserve-3d;animation:gshake .9s ease-in-out 1;transition:transform .7s cubic-bezier(.3,1.4,.5,1)}
@@ -177,7 +179,7 @@ body:has(.catcard) .toast{top:104px}
   <header>
     <div class="brand">NOTSUN · PIXEL GUESTBOOK</div>
     <h1>낯선 바에 내 캐릭터 앉히기</h1>
-    <p class="sub">캐릭터를 꾸미고 한 줄을 남기면 매장 스크린 속 바에 앉아요.</p>
+    <p class="sub">닉네임만 쓰면 매장 스크린 속 바에 앉아요. 꾸미기는 앉은 뒤에 해도 돼요.</p>
     <p class="sub" id="season" style="color:var(--glow);margin-top:6px"></p>
     <div class="wifi" data-wifi></div>
   </header>
@@ -185,13 +187,15 @@ body:has(.catcard) .toast{top:104px}
     <div class="lastbox" id="lastBox" hidden></div>
     <div class="qtop">
       <div class="qbox"><canvas id="qpreview" width="70" height="110" aria-label="랜덤 캐릭터"></canvas><button class="dice" id="dice" type="button" aria-label="캐릭터 다시 뽑기">🎲</button></div>
-      <div><p class="qtitle">10초 만에 앉기</p><p class="qsub">닉네임만 쓰면 캐릭터는 랜덤으로 만들어져요. 마음에 안 들면 🎲를 눌러요.</p></div>
+      <div><p class="qtitle">닉네임만 쓰면 끝</p><p class="qsub">캐릭터는 랜덤으로 만들어져요. 앉은 뒤 '내 캐릭터 꾸미기'에서 바꿀 수 있어요.</p></div>
     </div>
     <label class="f">닉네임 <input id="nick" type="text" maxlength="8" placeholder="예: 퇴근한 곰"></label>
+    <button class="btn primary" id="quickGo" disabled>바에 앉기</button>
+    <details class="more"><summary>+ 한 줄 · 생일 (안 써도 돼요)</summary>
     <label class="f">오늘의 한 줄 (안 써도 돼요) <input id="msg" type="text" maxlength="24" placeholder="예: 오늘 퇴사함"></label>
     <label style="display:flex;gap:8px;align-items:center;color:var(--ink);font-size:16px"><input id="bdCheck" type="checkbox" style="width:20px;height:20px">🎂 오늘 생일이에요 <small style="color:var(--muted);font-size:12px">사장님께 알려드려요</small></label>
-    <button class="btn primary" id="quickGo" disabled>빠르게 앉기</button>
-    <button class="btn ghost" id="openCustom" type="button" aria-expanded="false">✏️ 직접 꾸미기 (머리·옷·술·대화)</button>
+    </details>
+    <button class="btn ghost" id="openCustom" type="button" aria-expanded="false" hidden>✏️ 직접 꾸미기</button>
   </section>
   <button class="btn ghost" id="menuOnly" type="button" style="border:none;color:var(--muted);font-size:15px;padding:6px">캐릭터 없이 메뉴판만 볼게요 →</button>
   <div id="custom" hidden style="display:grid;gap:16px">
@@ -217,6 +221,7 @@ body:has(.catcard) .toast{top:104px}
   <div class="group"><b>오늘의 한 잔</b><div class="chips" id="dr"></div></div>
   <div class="group"><b>오늘의 대화</b><div class="chips" id="tk"></div><p class="note">고르면 스크린 속 내 캐릭터 머리 위에 아이콘이 떠요. 💬 말 걸어도 돼요 · 🌙 오늘은 조용히 · 상관없어요는 표시 없음</p></div>
   <button class="btn primary" id="go" disabled>이 모습으로 바에 앉기</button>
+  <button class="btn ghost" id="lookCancel" type="button" hidden>취소</button>
   </div>
   <p class="err" id="err" hidden></p>
   <div class="mode" id="mode"></div>
@@ -242,7 +247,8 @@ body:has(.catcard) .toast{top:104px}
     <div id="hubOrders" style="display:grid;gap:8px"></div>
     <p class="total" id="hubTotal" hidden></p>
     <button class="btn primary" id="toMenu2">🍸 메뉴판 · 주문하기</button>
-    <button class="btn" id="cosBtn" type="button">🎁 오늘의 코스튬 뽑기</button>
+    <div class="row2"><button class="btn" id="lookBtn" type="button" style="white-space:nowrap">✏️ 꾸미기</button><button class="btn" id="cosBtn" type="button" style="white-space:nowrap">🎁 코스튬 뽑기</button></div>
+    <div class="autocard" id="autoCard" hidden><b id="autoTxt"></b><small>📱 이 화면을 켜두면 게임이 시작될 때 바로 참여할 수 있어요. 화면이 꺼지면 알림을 못 받아요.</small><button class="btn small" id="keepOn" type="button">🔆 화면 켜두기</button></div>
     <div class="wifi" data-wifi></div>
     <section class="card">
       <h2>🙋 사장님 호출</h2>
@@ -363,7 +369,7 @@ const myCos = style => { const me = loadMe(); return me && me.cos ? rawCos(style
 function redraw(){ N.drawPreview($('preview'), cur(), drink, ''); N.drawPreview($('qpreview'), cur(), drink, ''); check(); }
 // 코스튬 뽑기는 원하는 손님만: 앉으면 물어보고, 내 자리에서도 언제든 뽑기·벗기·다시 입기
 async function setCos(on){ const me = loadMe(); if (!me) return; saveMe({ ...me, cos: !!on }); try { await N.setGuestCos(me.id, !!on); } catch (e) {} refreshCos(); }
-function refreshCos(){ const me = loadMe(), b = $('cosBtn'); if (b && me) b.textContent = me.cos ? '👕 코스튬 벗기' : me.cosDrawn ? '🎭 코스튬 다시 입기' : '🎁 오늘의 코스튬 뽑기';
+function refreshCos(){ const me = loadMe(), b = $('cosBtn'); if (b && me) b.textContent = me.cos ? '👕 코스튬 벗기' : me.cosDrawn ? '🎭 다시 입기' : '🎁 코스튬 뽑기';
   if (me && !$('edit').hidden) N.drawPreview($('meEdit'), me.look, me.drink, myCos(me.look.style).k); }
 function askGacha(){ const box = document.createElement('div'); box.className = 'gacha ask'; box.setAttribute('role', 'dialog');
   box.innerHTML = `<div class="gask"><div class="gback mini">?</div><b>오늘의 코스튬 뽑을래요?</b><p>뽑으면 스크린 속 내 캐릭터가 코스튬을 입어요.<br>레어 16% · 시크릿 3% · 레전드 1%</p><button type="button" class="btn primary" data-go>🎁 뽑기</button><button type="button" class="btn" data-no>안 뽑고 내 모습으로</button></div>`;
@@ -382,7 +388,13 @@ async function showGacha(){
   box.addEventListener('click', e => { if (e.target === box && box.classList.contains('open')) box.remove(); });
   setTimeout(() => { box.classList.add('open'); try { gAlert(c.rar === 's' || c.rar === 'L' ? 'boom' : 'soft'); } catch (e) {} }, 1300);
 }
-N.watchOwner(st => { const ge = st.gend; if (ge && ge.ms && Date.now() - ge.ms < 20000 && ge.n === lastGameN && /^참여자가/.test(ge.msg) && gendSeen !== ge.ms) { gendSeen = ge.ms; toast('🎮 ' + ge.msg); } renderWifi(st.wifi); checkBday(st.bday); if (typeof renderGameFeed === 'function') renderGameFeed(st.game); todayQ = st.q || ''; if (typeof renderQ === 'function') renderQ(); theme = N.resolveTheme(st.theme); const nm = { halloween: '할로윈', christmas: '크리스마스', summer: '여름 바캉스', spring: '봄', valentine: '발렌타인데이', white: '화이트데이', rose: '로즈데이', pepero: '빼빼로데이', seollal: '설날', chuseok: '추석' }[theme]; $('season').textContent = (nm ? `지금은 ${nm} 시즌! ` : '') + '원하면 앉은 뒤 오늘의 코스튬 뽑기 🎁 (레어 16% · 시크릿 3% · 레전드 1%)'; redraw(); const me = loadMe(); if (me && !$('edit').hidden) N.drawPreview($('meEdit'), me.look, me.drink, myCos(me.look.style).k); });
+var autoSt = null;
+function renderAuto(){ const c = $('autoCard'); if (!c) return; const a = autoSt ? N.autoInfo(autoSt) : null, me = loadMe(); if (!a || !me || GM) { c.hidden = true; return; } c.hidden = false;
+  const left = a.left, m = Math.floor(left / 60000), sec = Math.floor(left / 1000) % 60; $('autoTxt').textContent = `🎮 ${String(a.hr).padStart(2, '0')}:00 ${a.label} · ${left < 60000 ? sec + '초' : (m + (sec ? 1 : 0)) + '분'} 뒤`; c.classList.toggle('soon', left < 300000);
+  $('keepOn').textContent = keepOn ? '🔆 화면 켜두는 중 (끄기)' : '🔆 화면 켜두기'; }
+setInterval(renderAuto, 1000);
+$('keepOn').onclick = () => { keepOn = !keepOn; if (keepOn && !navigator.wakeLock) toast('이 폰은 자동으로 화면 켜두기를 지원하지 않아요. 화면 자동 잠금 시간을 길게 해주세요.'); gWakeSync(GM); renderAuto(); };
+N.watchOwner(st => { autoSt = st.auto || null; renderAuto(); const ge = st.gend; if (ge && ge.ms && Date.now() - ge.ms < 20000 && ge.n === lastGameN && /^참여자가/.test(ge.msg) && gendSeen !== ge.ms) { gendSeen = ge.ms; toast('🎮 ' + ge.msg); } renderWifi(st.wifi); checkBday(st.bday); if (typeof renderGameFeed === 'function') renderGameFeed(st.game); todayQ = st.q || ''; if (typeof renderQ === 'function') renderQ(); theme = N.resolveTheme(st.theme); const nm = { halloween: '할로윈', christmas: '크리스마스', summer: '여름 바캉스', spring: '봄', valentine: '발렌타인데이', white: '화이트데이', rose: '로즈데이', pepero: '빼빼로데이', seollal: '설날', chuseok: '추석' }[theme]; $('season').textContent = (nm ? `지금은 ${nm} 시즌! ` : '') + '원하면 앉은 뒤 오늘의 코스튬 뽑기 🎁 (레어 16% · 시크릿 3% · 레전드 1%)'; redraw(); const me = loadMe(); if (me && !$('edit').hidden) N.drawPreview($('meEdit'), me.look, me.drink, myCos(me.look.style).k); });
 function chips(id, items, isOn, onPick){
   const el = $(id); el.innerHTML = '';
   items.forEach((it, i) => { const b = document.createElement('button'); b.type = 'button';
@@ -412,7 +424,7 @@ function buildDrink(){ chips('dr', N.DRINKS.map(d => ({ label: d.name, k: d.k })
 buildDrink();
 chips('tk', [{ label: '상관없어요', k: 0 }, { label: '💬 말 걸어도 돼요', k: 1 }, { label: '🌙 오늘은 조용히', k: 2 }], it => it.k === talk, it => talk = it.k);
 buildColorChips(); redraw();
-function check(){ const off = !$('nick').value.trim() || busy; $('go').disabled = off; $('quickGo').disabled = off; }
+function check(){ if (typeof editingLook !== 'undefined' && editingLook) { $('go').disabled = false; return; } const off = !$('nick').value.trim() || busy; $('go').disabled = off; $('quickGo').disabled = off; }
 // 랜덤 캐릭터
 const pick = a => a[Math.floor(Math.random() * a.length)];
 function buildSex(){ chips('sx', N.SEXES.map(x => ({ label: x.name, k: x.k })), it => it.k === look.sex, it => { look.sex = it.k; if (it.k === 'm') { look.hs = 0; look.bt = 0; } else { look.hs = 2; look.bt = 1; } buildStyleChips(); }); }
@@ -455,9 +467,9 @@ async function submit(){
     $('doneTitle').textContent = `${$('nick').value.trim()}님, 바에 앉았어요`;
     showMenu('done', `${$('nick').value.trim()}님, 바에 앉았어요! ${v === 1 ? '첫 방문 환영해요 🎉' : `오늘이 ${v}번째 방문이에요 🙌`} 스크린을 확인하고 한 잔 골라보세요.`);
   } catch (e) { showErr('등록하지 못했어요. 인터넷 연결을 확인하고 다시 눌러주세요.'); }
-  busy = false; $('go').textContent = '이 모습으로 바에 앉기'; $('quickGo').textContent = '빠르게 앉기'; check();
+  busy = false; $('go').textContent = '이 모습으로 바에 앉기'; $('quickGo').textContent = '바에 앉기'; check();
 }
-$('go').onclick = submit; $('quickGo').onclick = submit;
+$('go').onclick = () => editingLook ? saveLook() : submit(); $('quickGo').onclick = submit;
 $('nick').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); $('msg').focus(); } });
 function restart(){ const old = loadMe(); if (old && old.id) N.setGuestLeft(old.id, true).catch(() => {}); saveMe(null); randomize(); $('nick').value = ''; $('msg').value = ''; $('done').hidden = true; $('edit').hidden = true; $('menu').hidden = true; $('cartbar').hidden = true; $('form').hidden = false; scrollTo(0, 0); check(); }
 $('again').onclick = restart; $('again2').onclick = restart;
@@ -485,6 +497,18 @@ function showEdit(){
   $('editTitle').textContent = (me.v | 0) > 1 ? `${me.nick}님, 다시 오셨네요` : `${me.nick}님 자리`; $('hubMsg').textContent = me.msg ? `지금 한 줄: "${me.msg}"` : '스크린 속 바에 앉아 있어요.'; $('newMsg').value = ''; renderPrefs(); renderOrders(); renderHearts(); renderQ();
   $('editErr').hidden = true; $('form').hidden = true; $('done').hidden = true; $('edit').hidden = false; scrollTo(0, 0);
 }
+var editingLook = false;
+$('lookCancel').onclick = () => endLookEdit();
+$('lookBtn').onclick = () => { const me = loadMe(); if (!me) return; const st = me.look.style; look.sex = st[0]; look.hs = +st[1]; look.bt = +st[2]; look.ac = +st[3];
+  look.hair = me.look.hair; look.skin = me.look.skin; look.shirt = me.look.shirt; look.pants = me.look.pants || N.PANTS;
+  { const e = N.EX_RE.test(me.look.ex || '') ? [...me.look.ex].map(c => parseInt(c, 36)) : [0, 0, 0, 0, 0]; [look.hx, look.tp, look.ey, look.ax2, look.sh] = e; }
+  if (N.DRINKS.some(d => d.k === me.drink)) drink = me.drink; buildSex(); buildStyleChips(); buildColorChips(); buildDrink(); redraw();
+  editingLook = true; $('form').classList.add('editing'); $('custom').hidden = false; $('go').textContent = '이 모습으로 바꾸기'; $('go').disabled = false; $('lookCancel').hidden = false;
+  $('edit').hidden = true; $('form').hidden = false; scrollTo(0, 0); };
+async function saveLook(){ const me = loadMe(); if (!me) return; $('go').disabled = true; $('go').textContent = '바꾸는 중…';
+  try { const lk = cur(); await N.updateLook(me.day, me.id, { ...lk, drink }); saveMe({ ...me, look: lk, drink }); try { localStorage.setItem(LAST_KEY, JSON.stringify({ nick: me.nick, look: lk, drink, talk: me.talk || 0, at: Date.now() })); } catch (e) {} endLookEdit(); toast('✨ 스크린 속 내 캐릭터가 바뀌었어요'); }
+  catch (e) { $('go').disabled = false; $('go').textContent = '이 모습으로 바꾸기'; toast('바꾸지 못했어요. 잠시 뒤 다시 해주세요.'); } }
+function endLookEdit(){ editingLook = false; $('form').classList.remove('editing'); $('custom').hidden = true; $('go').textContent = '이 모습으로 바에 앉기'; $('lookCancel').hidden = true; showEdit(); }
 $('cosBtn').onclick = () => { const me = loadMe(); if (!me) return; if (me.cos) setCos(false); else if (me.cosDrawn) setCos(true); else askGacha(); };
 $('toEdit').onclick = () => loadMe() ? showEdit() : ($('toEdit').hidden = true);
 // 내 설정 (대화 아이콘 · 술 이름 표시)
@@ -625,8 +649,8 @@ var lastGameN = 0, gendSeen = 0, GM = null, gHide = false, gLocal = {}, tenT0 = 
 // 진행 기기의 '살아있음' 신호(hb)만 바뀐 경우는 다시 그리지 않음 (10초 맞추기 화면 등이 깜빡이지 않게)
 function renderGameFeed(g){ const sig = g ? JSON.stringify({ ...g, hb: 0 }) : ''; if (sig === gSig && GM) return; gSig = sig; renderGame(g); gWakeSync(g); }
 // 게임 중에는 휴대폰 화면이 꺼지지 않게 (꺼지면 진동·알림이 멈춤)
-var gWake = null;
-async function gWakeSync(g){ const want = !!(g && loadMe() && document.visibilityState === 'visible');
+var gWake = null, keepOn = false;
+async function gWakeSync(g){ const want = !!((g || keepOn) && loadMe() && document.visibilityState === 'visible');
   try { if (want && !gWake && navigator.wakeLock) { gWake = await navigator.wakeLock.request('screen'); gWake.addEventListener('release', () => { gWake = null; }); } else if (!want && gWake) { const w = gWake; gWake = null; await w.release(); } } catch (e) {} }
 document.addEventListener('visibilitychange', () => gWakeSync(GM));
 // 알림: 진동(안드로이드) + 화면 번쩍임 + 소리 (아이폰은 웹 진동이 안 돼서 번쩍임·소리로)
@@ -944,7 +968,7 @@ N.watchMyCoupons(list => {
 $('winOk').onclick = () => { $('winPop').hidden = true; scrollTo(0, 0); };
 randomize();
 // QR로 다시 들어오면: 오늘 캐릭터가 있으면 '내 자리' 화면 (주문 · 한 줄 · 설정)
-if (loadMe()) showEdit(); else offerLast();
+if (loadMe()) showEdit(); else { offerLast(); const lv = loadLast(); if (lv) { applyLast(lv); check(); } }
 </script>
 </body>
 </html>

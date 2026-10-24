@@ -128,6 +128,16 @@ N.watchCheers(list => { const now = Date.now(); if (cheerSeen) list.filter(c => 
 N.watchMenu(cats => { recName = cats.flatMap(c => c.items).filter(it => it.rec && !it.soldout).map(it => it.name).slice(0, 2).join(', '); });
 // 셋탑 하루 종일 켜두기: 영업일이 바뀌면(새벽 6시) 새로고침, 인터넷이 끊겼다 돌아오면 새로고침
 // (인터넷이 돌아오면 실시간 연결은 스스로 다시 붙음 → 새로고침하지 않음)
+// 매시 정각 자동 게임: 이 스크린이 진행 담당일 때만 · 10분 전 사장님 폰 알림 · 손님 2명 이상일 때 시작
+const canRunAuto = () => !!gameHost && (!N.LIVE || (isOwnerUser() && isDesignated()));
+let autoPrev = null; const autoDone = k => { try { const v = JSON.parse(localStorage.getItem('notsun-auto-done') || '{}'); return !!v[k]; } catch (e) { return false; } };
+const autoMark = k => { try { const v = JSON.parse(localStorage.getItem('notsun-auto-done') || '{}'); v[k] = 1; Object.keys(v).sort().slice(0, -30).forEach(x => delete v[x]); localStorage.setItem('notsun-auto-done', JSON.stringify(v)); } catch (e) {} };
+setInterval(async () => { if (!ownerState || !canRunAuto()) { autoPrev = null; return; } const now = Date.now(), a = N.autoInfo(ownerState.auto, now);
+  const real = guests.filter(g => !g.left && !g.npc).length;
+  if (a && a.left <= 600000 && !autoDone('n' + a.at) && real >= 1) { autoMark('n' + a.at); N.notifyOwner(`⏰ ${String(a.hr).padStart(2, '0')}:00 정각 게임`, `${a.label} 예정이에요. 다른 게임으로 바꾸려면 리모컨 → 게임 → '다음 정각 게임'에서 골라주세요.`); }
+  if (autoPrev && now >= autoPrev.at && now - autoPrev.at < 90000 && !autoDone('s' + autoPrev.at)) { autoMark('s' + autoPrev.at);
+    if (!ownerState.game && real >= 2) { const sp = N.autoSpec(autoPrev.type); try { await gameHost.start(autoPrev.type, { ...sp[0], auto: 1 }, sp[1], sp[2]); } catch (e) {} } }
+  autoPrev = a; }, 1000);
 const bootDay = N.bizDate(); setInterval(() => { if (N.bizDate() !== bootDay && !(ownerState && ownerState.game)) N.safeReload('screen.html'); }, 60000);
 
 // QR: 같은 주소의 index.html (손님 등록 페이지)
@@ -152,7 +162,7 @@ function loop(t){
   if (N.bizDate() !== day) { day = N.bizDate(); guests = []; subscribe(); }
   const npcs = ownerState.npcs || [], all = npcs.length ? guests.concat(npcs).sort((a, b) => (a.ms || 0) - (b.ms || 0)) : guests;   // 촬영용 가상 손님 포함
   const list = FULL ? fullGuests() : all.length ? all : demoGuests();
-  view.render(ctx, scene.width, scene.height, list, t, { catHost: !N.LIVE || (typeof isOwnerUser === 'function' && isOwnerUser() && isDesignated()), catPets, day, count: FULL ? 40 : all.length, qr, owners: ownerState.owners, live: ownerState.live, seats: ownerState.seats, order: ownerState.order, served: ownerState.served, bday: ownerState.bday, bdays: ownerState.bdays, lucky: ownerState.lucky, best: ownerState.best, vip: ownerState.vip, q: ownerState.q, rec: recName, cheers: cheerList, game: ownerState.game, gameActs, theme: N.resolveTheme(THEME_HASH || ownerState.theme),
+  view.render(ctx, scene.width, scene.height, list, t, { catHost: !N.LIVE || (typeof isOwnerUser === 'function' && isOwnerUser() && isDesignated()), catPets, day, count: FULL ? 40 : all.length, qr, owners: ownerState.owners, live: ownerState.live, seats: ownerState.seats, order: ownerState.order, served: ownerState.served, auto: (typeof canRunAuto === 'function' && canRunAuto()) ? N.autoInfo(ownerState.auto) : null, bday: ownerState.bday, bdays: ownerState.bdays, lucky: ownerState.lucky, best: ownerState.best, vip: ownerState.vip, q: ownerState.q, rec: recName, cheers: cheerList, game: ownerState.game, gameActs, theme: N.resolveTheme(THEME_HASH || ownerState.theme),
     footer: (FULL || guests.length) ? '' : '첫 번째 낯선 손님이 되어주세요' });
   requestAnimationFrame(loop);
 }
