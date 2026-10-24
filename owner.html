@@ -84,6 +84,7 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
 #app section{scroll-margin-top:60px}
 #app>*{min-width:0}
 .row.gone{opacity:.45}.btn.pay{background:#2e7d4f;color:#fff}
+.coslab{display:flex;align-items:center;gap:6px;font-size:14px;margin:4px 0;white-space:nowrap}.coslab select{flex:1;min-width:0;padding:8px;border-radius:10px;background:#2a1d1f;color:#ffe2c4;border:1px solid #5a4446;font-size:14px}
 </style>
 </head>
 <body>
@@ -382,7 +383,7 @@ function renderOwners(){
     const wrap = document.createElement('div'); wrap.className = 'owner';
     const cv = document.createElement('canvas'); cv.width = 96; cv.height = 150;
     const opts = document.createElement('div'); opts.className = 'opts';
-    const draw = () => N.drawPreview(cv, o, '');
+    const draw = () => N.drawPreview(cv, o, '', N.ownerCostume(o, i, N.resolveTheme(theme)));
     const setStyle = (pos, v) => { const s = o.style.split(''); s[pos] = String(v); o.style = s.join(''); draw(); };
     const name = document.createElement('input'); name.type = 'text'; name.maxLength = 8; name.value = o.nick; name.setAttribute('aria-label', `사장 ${i + 1} 이름`);
     name.oninput = () => { o.nick = name.value; dirty = true; renderWho(); };
@@ -393,6 +394,13 @@ function renderOwners(){
       chipRow(N.SKIN_COLORS, it => it === o.skin, it => { o.skin = it; draw(); }, true),
       chipRow(['#151517', '#f2ede6', '#7a1f22', '#2f3a52'], it => it === o.shirt, it => { o.shirt = it; draw(); }, true),
       chipRow(N.ACCS, (it, j) => +o.style[3] === j, (it, j) => setStyle(3, j)));
+    // 🎭 사장 코스튬 고르기 (시크릿·레전드도 가능)
+    const cosLab = document.createElement('label'); cosLab.className = 'coslab'; cosLab.textContent = '🎭 코스튬 ';
+    const sel = document.createElement('select'); sel.setAttribute('aria-label', `사장 ${i + 1} 코스튬`);
+    [['', '시즌 기본 (바텐더 + 시즌 의상)'], ['none', '바텐더 복장만']].forEach(([v, t]) => { const op = document.createElement('option'); op.value = v; op.textContent = t; sel.appendChild(op); });
+    const groups = {}; N.OWNER_COS.forEach(c => { if (!groups[c.tier]) { groups[c.tier] = document.createElement('optgroup'); groups[c.tier].label = c.tier; sel.appendChild(groups[c.tier]); } const op = document.createElement('option'); op.value = c.k; op.textContent = (c.tier === '레전드' ? '🎤 ' : c.tier === '시크릿' ? '🌟 ' : '') + c.name; groups[c.tier].appendChild(op); });
+    sel.value = o.cos || ''; sel.onchange = () => { o.cos = sel.value; dirty = true; draw(); };
+    cosLab.appendChild(sel); opts.append(cosLab);
     for (let k = 0; k < 3; k++) {
       const l = document.createElement('input'); l.type = 'text'; l.maxLength = 24; l.value = o.lines[k] || ''; l.placeholder = `평소 대사 ${k + 1}`; l.setAttribute('aria-label', `사장 ${i + 1} 대사 ${k + 1}`);
       l.oninput = () => { o.lines[k] = l.value; dirty = true; }; opts.append(l);

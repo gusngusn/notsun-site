@@ -135,6 +135,7 @@ try {
   for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (q.isDark(y, x)) qc.fillRect(x + 1, y + 1, 1, 1);
   qr = c;
 } catch (e) {}
+let catPets = []; N.watchCatPets(N.bizDate(), pe => { catPets.push(pe); if (catPets.length > 20) catPets.shift(); });
 function subscribe(){ stop && stop(); stop = N.watchGuests(day, list => { if (list) guests = list; }); }
 subscribe();
 function fit(){ const k = Math.min(innerWidth / 16, innerHeight / 9), dpr = Math.min(2, devicePixelRatio || 1);
@@ -146,7 +147,7 @@ function loop(t){
   if (N.bizDate() !== day) { day = N.bizDate(); guests = []; subscribe(); }
   const npcs = ownerState.npcs || [], all = npcs.length ? guests.concat(npcs).sort((a, b) => (a.ms || 0) - (b.ms || 0)) : guests;   // 촬영용 가상 손님 포함
   const list = FULL ? fullGuests() : all.length ? all : demoGuests();
-  view.render(ctx, scene.width, scene.height, list, t, { day, count: FULL ? 40 : all.length, qr, owners: ownerState.owners, live: ownerState.live, seats: ownerState.seats, order: ownerState.order, bday: ownerState.bday, bdays: ownerState.bdays, lucky: ownerState.lucky, best: ownerState.best, vip: ownerState.vip, q: ownerState.q, rec: recName, cheers: cheerList, game: ownerState.game, gameActs, theme: N.resolveTheme(THEME_HASH || ownerState.theme),
+  view.render(ctx, scene.width, scene.height, list, t, { catHost: !N.LIVE || (typeof isOwnerUser === 'function' && isOwnerUser() && isDesignated()), catPets, day, count: FULL ? 40 : all.length, qr, owners: ownerState.owners, live: ownerState.live, seats: ownerState.seats, order: ownerState.order, bday: ownerState.bday, bdays: ownerState.bdays, lucky: ownerState.lucky, best: ownerState.best, vip: ownerState.vip, q: ownerState.q, rec: recName, cheers: cheerList, game: ownerState.game, gameActs, theme: N.resolveTheme(THEME_HASH || ownerState.theme),
     footer: (FULL || guests.length) ? '' : '첫 번째 낯선 손님이 되어주세요' });
   requestAnimationFrame(loop);
 }

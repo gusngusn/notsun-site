@@ -138,6 +138,26 @@ details.fold{border:1.5px solid var(--glow);background:linear-gradient(180deg,#2
 .sheet img{width:min(300px,78vw);border-radius:10px;border:1px solid var(--line);-webkit-touch-callout:default}
 .mode{font:12px/1.4 "DotGothic16",monospace;color:var(--muted);text-align:center}
 @media (max-width:380px){.studio{grid-template-columns:1fr}.stagebox{height:200px}.stagebox canvas{height:190px;width:118px}}
+.gacha{position:fixed;inset:0;z-index:60;background:rgba(8,4,6,.82);display:flex;align-items:center;justify-content:center;perspective:900px}
+.gcard{position:relative;width:250px;height:380px;transform-style:preserve-3d;animation:gshake .9s ease-in-out 1;transition:transform .7s cubic-bezier(.3,1.4,.5,1)}
+.gacha.open .gcard{transform:rotateY(180deg);animation:none}
+.gback,.gfront{position:absolute;inset:0;border-radius:18px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.gback{background:repeating-linear-gradient(45deg,#3a1f24 0 12px,#2a161a 12px 24px);border:2px solid #c9a25a;color:#ffd36a;font-size:96px;font-weight:900}
+.gfront{transform:rotateY(180deg);background:#2a1d1f;border:2px solid #8a7a6a;padding:14px;text-align:center;color:#ffe2c4}
+.gfront small{letter-spacing:.3em;font-weight:900;color:#c8b8a8}.gfront b{font-size:24px}.gfront span{font-size:18px}.gfront em{font-style:normal;font-size:12px;color:#b9a59c}
+.gfront canvas{width:112px;height:176px;image-rendering:pixelated}
+.gfront.r{border-color:#6ab0ff;box-shadow:0 0 30px #6ab0ff88}.gfront.r small{color:#8fc8ff}
+.gfront.L{overflow:hidden;border-color:#ff8ad0;box-shadow:0 0 50px #ff6ad0cc,0 0 90px #6ad8ff88;background:radial-gradient(circle at 50% 35%,#4a1a5a,#2a1d1f 70%)}.gfront.L small,.gfront.L b{color:#ffb0ec}
+.gfront.L::before{content:'';position:absolute;left:50%;top:38%;width:320px;height:320px;margin:-160px 0 0 -160px;background:repeating-conic-gradient(rgba(255,110,200,.4) 0 9deg,transparent 9deg 20deg,rgba(110,220,255,.4) 20deg 29deg,transparent 29deg 40deg);border-radius:50%;-webkit-mask:radial-gradient(circle,#000 30%,transparent 70%);mask:radial-gradient(circle,#000 30%,transparent 70%);animation:grays 4s linear infinite;pointer-events:none}.gfront.L>*{position:relative}
+.gfront.s::before{content:'';position:absolute;left:50%;top:38%;width:300px;height:300px;margin:-150px 0 0 -150px;background:repeating-conic-gradient(rgba(255,226,120,.38) 0 10deg,transparent 10deg 26deg);border-radius:50%;-webkit-mask:radial-gradient(circle,#000 30%,transparent 70%);mask:radial-gradient(circle,#000 30%,transparent 70%);animation:grays 6s linear infinite;pointer-events:none}
+.gfront.s>*{position:relative}
+@keyframes grays{to{transform:rotate(360deg)}}
+.gfront.s{overflow:hidden;border-color:#ffd23a;box-shadow:0 0 50px #ffd23acc;background:radial-gradient(circle at 50% 35%,#5a4210,#2a1d1f 70%)}.gfront.s small,.gfront.s b{color:#ffd23a}
+@keyframes gshake{0%,100%{transform:rotate(0)}20%{transform:rotate(-6deg)}40%{transform:rotate(6deg)}60%{transform:rotate(-4deg)}80%{transform:rotate(4deg)}}
+.catcard{position:fixed;left:12px;right:12px;bottom:14px;z-index:55;background:#2a1d1f;border:2px solid #ffb0cc;border-radius:18px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 10px 30px #000a;animation:catin .4s ease-out}
+.catcard .ct{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.catcard .ct small{color:#b9a59c}.catcard .btn{white-space:nowrap;width:auto;flex:0 0 auto;margin:0}.catcard .pn{position:absolute;right:16px;top:-12px;font-size:14px}
+.phrt{position:absolute;right:40px;bottom:40px;font-style:normal;font-size:26px;animation:phup 1.2s ease-out forwards;pointer-events:none}
+@keyframes phup{to{transform:translateY(-70px) scale(1.4);opacity:0}}@keyframes catin{from{transform:translateY(40px);opacity:0}}
 </style>
 </head>
 <body>
@@ -316,8 +336,19 @@ let drink = 'cocktail', busy = false, talk = 0;
 const styleOf = () => `${look.sex}${look.hs}${look.bt}${look.ac}`;
 const cur = () => ({ hair: look.hair, skin: look.skin, shirt: look.shirt, pants: look.pants, style: styleOf() });
 let theme = 'default';
-function redraw(){ const cs = N.costumeFor(theme, $('nick').value.trim()); N.drawPreview($('preview'), cur(), drink, cs); N.drawPreview($('qpreview'), cur(), drink, cs); check(); }
-N.watchOwner(st => { renderWifi(st.wifi); checkBday(st.bday); if (typeof renderGameFeed === 'function') renderGameFeed(st.game); todayQ = st.q || ''; if (typeof renderQ === 'function') renderQ(); theme = N.resolveTheme(st.theme); const nm = { halloween: '할로윈', christmas: '크리스마스', summer: '여름 바캉스', spring: '봄', valentine: '발렌타인데이', white: '화이트데이', rose: '로즈데이', pepero: '빼빼로데이' }[theme]; $('season').textContent = nm ? `지금은 ${nm} 시즌! 스크린에선 시즌 코스튬을 입고 등장해요.` : ''; redraw(); const me = loadMe(); if (me && !$('edit').hidden) N.drawPreview($('meEdit'), me.look, me.drink, N.costumeFor(theme, me.nick)); });
+// 코스튬 뽑기: 기기 uid + 영업일로 하루 한 번 (앉기 전엔 비밀, 앉으면 공개)
+let myUidV = ''; N.myUid().then(u => { myUidV = u || ''; }).catch(() => {});
+const myCos = style => N.drawCostume(theme, myUidV ? myUidV + '|' + N.bizDate() : 'x', style || cur().style);
+function redraw(){ N.drawPreview($('preview'), cur(), drink, ''); N.drawPreview($('qpreview'), cur(), drink, ''); check(); }
+function showGacha(){
+  const c = myCos(), box = document.createElement('div'); box.className = 'gacha'; box.setAttribute('role', 'dialog');
+  const lab = { L: ['LEGEND', '레전드 아이돌!'], s: ['SECRET', '시크릿 코스튬!'], r: ['RARE', '레어 코스튬!'], n: ['NORMAL', c.k ? '오늘의 코스튬' : '오늘은 기본 복장'] }[c.rar];
+  box.innerHTML = `<div class="gcard"><div class="gback">?</div><div class="gfront ${c.rar}"><small>${lab[0]}</small><canvas width="112" height="176"></canvas><b>${lab[1]}</b><span>${c.name ? escH(c.name) : '다음 방문 때 다시 뽑아요'}</span><em>${c.rar === 'L' ? '확률 1%! 무대 조명 받으며 등장해요' : c.rar === 's' ? '확률 3%! 황금빛으로 등장해요' : c.rar === 'r' ? '확률 16%! 스크린에서 반짝여요' : '레어 16% · 시크릿 3% · 레전드 1%'}</em><button type="button" class="btn">스크린 보러 가기</button></div></div>`;
+  document.body.appendChild(box); N.drawPreview(box.querySelector('canvas'), cur(), drink, c.k);
+  box.querySelector('.btn').onclick = () => box.remove();
+  setTimeout(() => { box.classList.add('open'); try { gAlert(c.rar === 's' || c.rar === 'L' ? 'boom' : 'soft'); } catch (e) {} }, 1300);
+}
+N.watchOwner(st => { renderWifi(st.wifi); checkBday(st.bday); if (typeof renderGameFeed === 'function') renderGameFeed(st.game); todayQ = st.q || ''; if (typeof renderQ === 'function') renderQ(); theme = N.resolveTheme(st.theme); const nm = { halloween: '할로윈', christmas: '크리스마스', summer: '여름 바캉스', spring: '봄', valentine: '발렌타인데이', white: '화이트데이', rose: '로즈데이', pepero: '빼빼로데이', seollal: '설날', chuseok: '추석' }[theme]; $('season').textContent = (nm ? `지금은 ${nm} 시즌! ` : '') + '앉으면 오늘의 코스튬 뽑기 🎁 (레어 16% · 시크릿 3% · 레전드 1%)'; redraw(); const me = loadMe(); if (me && !$('edit').hidden) N.drawPreview($('meEdit'), me.look, me.drink, myCos(me.look.style).k); });
 function chips(id, items, isOn, onPick){
   const el = $(id); el.innerHTML = '';
   items.forEach((it, i) => { const b = document.createElement('button'); b.type = 'button';
@@ -382,7 +413,7 @@ async function submit(){
     saveMe(r && r.editable ? { ...r, nick: $('nick').value.trim().slice(0, 8), look: cur(), drink, msg: $('msg').value.trim().slice(0, 24), v, talk } : null);
     showVisit(v);
     if (GM) { renderGame(GM); gWakeSync(GM); }   // 게임 도중에 앉은 손님도 바로 참여 화면이 보이게
-    N.drawPreview($('me'), cur(), drink, N.costumeFor(theme, $('nick').value.trim()));
+    N.drawPreview($('me'), cur(), drink, myCos().k); setTimeout(showGacha, 400);
     $('doneTitle').textContent = `${$('nick').value.trim()}님, 바에 앉았어요`;
     showMenu('done', `${$('nick').value.trim()}님, 바에 앉았어요! 스크린을 확인하고 한 잔 골라보세요.`);
   } catch (e) { showErr('등록하지 못했어요. 인터넷 연결을 확인하고 다시 눌러주세요.'); }
@@ -405,13 +436,13 @@ function applyLast(v){ const st = v.look.style; look.sex = st[0]; look.hs = +st[
   buildSex(); buildStyleChips(); buildColorChips(); buildDrink(); redraw(); }
 function offerLast(){ const v = loadLast(), box = $('lastBox'); if (!v || !box) return;
   box.innerHTML = `<canvas id="lastPrev" width="56" height="88" aria-label="지난번 캐릭터"></canvas><div class="lt"><b>👋 또 오셨네요!</b><span>지난번 캐릭터 <em>${escH(v.nick)}</em>${(() => { const c = String(v.nick).trim().slice(-1).charCodeAt(0) - 0xAC00; return c >= 0 && c < 11172 && c % 28 !== 0 && c % 28 !== 8 ? '으로' : '로'; })()} 바로 앉을까요?</span></div><div class="lb"><button class="btn primary small" id="lastGo" type="button">이 캐릭터로 앉기</button><button class="btn small" id="lastNew" type="button">새로 만들기</button></div>`;
-  box.hidden = false; try { N.drawPreview($('lastPrev'), v.look, v.drink, N.costumeFor(theme, v.nick)); } catch (e) {}
+  box.hidden = false; try { N.drawPreview($('lastPrev'), v.look, v.drink, ''); } catch (e) {}
   $('lastGo').onclick = () => { applyLast(v); box.hidden = true; submit(); };
   $('lastNew').onclick = () => { box.hidden = true; $('nick').focus(); }; }
 function loadMe(){ try { const v = JSON.parse(localStorage.getItem(ME_KEY)); return v && v.day === N.bizDate() && v.id && v.look ? v : null; } catch (e) { return null; } }
 function showEdit(){
   const me = loadMe(); if (!me) { restart(); return; }
-  N.drawPreview($('meEdit'), me.look, me.drink, N.costumeFor(theme, me.nick));
+  N.drawPreview($('meEdit'), me.look, me.drink, myCos(me.look.style).k);
   $('editTitle').textContent = `${me.nick}님, 다시 오셨네요`; $('hubMsg').textContent = me.msg ? `지금 한 줄: "${me.msg}"` : '스크린 속 바에 앉아 있어요.'; $('newMsg').value = ''; renderPrefs(); renderOrders(); renderHearts(); renderQ();
   $('editErr').hidden = true; $('form').hidden = true; $('done').hidden = true; $('edit').hidden = false; scrollTo(0, 0);
 }
@@ -453,6 +484,16 @@ function chEsc(t){ return String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<
 var mutualLast = null, chatWith = null, chatState = {}, chatSubs = {}, chatUnread = {}, chatSeenN = {}, chatStopArm = 0;
 function chatSeenKey(){ const me = loadMe(); return 'notsun-chatseen-' + (me ? me.day + me.id : ''); }
 try { chatSeenN = JSON.parse(localStorage.getItem(chatSeenKey())) || {}; } catch (e) { chatSeenN = {}; }
+// 🐈 고양이가 내 자리에 오면 쓰다듬기
+let catVisit = null, petLast = 0, petN = 0;
+function renderCatVisit(){ const me = loadMe(), v = catVisit, on = !!(me && v && v.gid && v.gid === me.id && Date.now() < v.until);
+  let card = document.getElementById('catCard');
+  if (!on) { if (card) card.remove(); return; }
+  if (!card) { card = document.createElement('div'); card.id = 'catCard'; card.className = 'catcard'; card.innerHTML = `<div class="ct"><b>🐈 ${chEsc(v.name || '고양이')}이가 옆에 왔어요!</b><small>스크린을 보면서 쓰다듬어 주세요</small></div><button type="button" class="btn">🖐 쓰다듬기</button><span class="pn"></span>`; document.body.appendChild(card);
+    card.querySelector('.btn').onclick = async () => { const n2 = Date.now(); if (n2 - petLast < 600) return; petLast = n2; petN++; card.querySelector('.pn').textContent = '💗'.repeat(Math.min(5, petN)) + (petN > 5 ? ' +' + (petN - 5) : '');
+      try { navigator.vibrate && navigator.vibrate([20, 30, 20]); } catch (e) {} const h = document.createElement('i'); h.className = 'phrt'; h.textContent = '💗'; card.appendChild(h); setTimeout(() => h.remove(), 1200); try { await N.petCat(me.id, v.cat); } catch (e) {} }; }
+}
+N.watchCatVisit(v => { catVisit = v; petN = 0; renderCatVisit(); }); setInterval(renderCatVisit, 3000);
 N.watchGuests(N.bizDate(), list => { allGuests = list || []; renderHearts(); heartWatch(); });
 function mutualSeen(){ try { return JSON.parse(localStorage.getItem(mutualKey())) || []; } catch (e) { return []; } }
 function mutualAdd(id){ const m = mutualSeen(); if (!m.includes(id)) { m.push(id); try { localStorage.setItem(mutualKey(), JSON.stringify(m)); } catch (e) {} } }
@@ -682,7 +723,7 @@ let cardFile = null;
 async function openCard(){
   const me = loadMe(); const info = me || { look: cur(), drink, nick: $('nick').value.trim() || '낯선 손님', msg: $('msg').value.trim() };
   try { await Promise.all(['76px "Do Hyeon"', '40px "DotGothic16"'].map(f => document.fonts ? document.fonts.load(f) : 0)); } catch (e) {}
-  const c = N.makeCard(info.look, info.drink, N.costumeFor(theme, info.nick), info.nick, info.msg, theme, info.v || visitCount());
+  const c = N.makeCard(info.look, info.drink, myCos(info.look.style).k, info.nick, info.msg, theme, info.v || visitCount());
   const url = c.toDataURL('image/png'); $('cardImg').src = url; $('saveCard').href = url;
   cardFile = null; c.toBlob(b => { if (b) cardFile = new File([b], 'notsun_내캐릭터.png', { type: 'image/png' }); const ok = cardFile && navigator.canShare && navigator.canShare({ files: [cardFile] }); $('shareCard').hidden = !ok; }, 'image/png');
   $('shareCard').hidden = true; $('sheet').hidden = false;
