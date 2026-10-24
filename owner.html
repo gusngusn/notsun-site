@@ -31,7 +31,7 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
 .sw{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0}
 .sw[aria-pressed="true"]{border-color:var(--glow)}
 .btn:focus-visible,input:focus-visible,.chip:focus-visible,.sw:focus-visible{outline:3px solid #fff;outline-offset:2px}
-.owner{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:start;border-top:1px solid var(--line);padding-top:12px}
+.owner{display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;align-items:start;border-top:1px solid var(--line);padding-top:12px}
 .owner canvas{width:96px;height:150px;image-rendering:pixelated;background:linear-gradient(#6e1a1c 0 70%,#16121a 70%);border-radius:6px}
 .owner .opts{display:grid;gap:8px;min-width:0}
 .quick{display:flex;gap:6px;flex-wrap:wrap}
@@ -84,8 +84,8 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
 #app section{scroll-margin-top:60px}
 #app>*{min-width:0}
 .row.gone{opacity:.45}.btn.pay{background:#2e7d4f;color:#fff}
-.coslab{display:flex;align-items:center;gap:6px;font-size:14px;margin:4px 0;white-space:nowrap}.coslab select{flex:1;min-width:0;padding:8px;border-radius:10px;background:#2a1d1f;color:#ffe2c4;border:1px solid #5a4446;font-size:14px}
-</style>
+.coslab{display:flex;align-items:center;gap:6px;font-size:14px;margin:4px 0;flex-wrap:wrap}.coslab select{flex:1;min-width:0;padding:8px;border-radius:10px;background:#2a1d1f;color:#ffe2c4;border:1px solid #5a4446;font-size:14px}
+.grecaptcha-badge{visibility:hidden}</style>
 </head>
 <body>
 <main>
@@ -104,7 +104,7 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
   </section>
 
   <div id="app" hidden style="display:grid;gap:18px">
-    <nav class="onav" aria-label="바로가기"><a href="#orderSec">🧾 주문</a><a href="#gameSec">🎮 게임</a><a href="#menuSec">📋 메뉴</a><a href="#eventSec">🎉 이벤트</a><a href="#setSec">⚙️ 설정</a></nav>
+    <nav class="onav" aria-label="바로가기"><a href="#orderSec">🧾 주문</a><a href="#gameSec">🎮 게임</a><a href="#menuSec">📋 메뉴</a><a href="#eventSec">🎉 이벤트</a><a href="#guestSec">👥 손님</a><a href="#couponSec">🎟 쿠폰</a><a href="#setSec">⚙️ 설정</a></nav>
     <section id="orderSec">
       <h2>주문 <span class="badge" id="newCount" hidden>0</span></h2>
       <button class="btn primary" id="alertOn">🔔 주문 알림 소리 켜기</button>
@@ -132,7 +132,7 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
 
     <section id="gameSec">
       <h2>🎮 게임</h2>
-      <p class="sub">버튼을 누르면 스크린에서 게임이 시작되고, 손님은 휴대폰으로 참여해요. 참여는 원하는 손님만 해요. <b>게임이 끝날 때까지 이 화면을 켜 두세요</b> (이 리모컨이 진행을 맡아요).</p>
+      <p class="sub">버튼을 누르면 스크린에서 게임이 시작되고, 손님은 휴대폰으로 참여해요. 참여는 원하는 손님만 해요.</p>
       <b class="glab">🔥 시끌벅적</b>
       <div class="gbtns">
         <button class="btn primary" id="gBomb" type="button">💣 폭탄 돌리기</button>
@@ -180,7 +180,7 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
       <div class="linkbox"><code id="liveUrl"></code><button class="btn small" id="copyLive" type="button">복사</button></div>
     </section>
 
-    <section>
+    <section id="couponSec">
       <h2>무료 쿠폰</h2>
       <p class="sub">럭키 손님에게 자동으로 발급돼요. 다음 방문부터 30일 동안 쓸 수 있어요. 손님이 휴대폰 쿠폰 화면을 보여주면 코드를 확인하고 '사용 처리'를 누르세요.</p>
       <input id="couponFind" type="text" maxlength="8" placeholder="쿠폰번호나 닉네임으로 찾기" aria-label="쿠폰 찾기">
@@ -225,7 +225,7 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
       <div class="chips"><button class="chip" id="seatReset" type="button">처음 배치로 되돌리기</button></div>
     </section>
 
-    <section>
+    <section id="guestSec">
       <h2>오늘 손님 관리</h2>
       <p class="sub">🎂축하: 스크린에 생일 축하 띄우기(🎂생일 표시는 손님이 체크한 것) · ★한줄: 오늘의 한 줄 · VIP: 금테 표시 · 숨기기: 스크린에서 사라짐</p>
       <div class="list" id="guests"></div>
@@ -279,6 +279,7 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="config.js"></script>
 <script src="common.js"></script>
 <script src="host.js"></script>
@@ -450,7 +451,7 @@ function renderMap(){
     Object.assign(d.style, { left: pct(z.x, 480), top: py(z.y), width: pct(z.w, 480), height: pct(z.h, 150) }); if (z.label) d.textContent = z.label; el.appendChild(d); });
   ZONE_NAMES.forEach(([t, x, y]) => { const d = document.createElement('div'); d.className = 'zone'; d.textContent = t;
     Object.assign(d.style, { left: pct(x - 40, 480), top: py(y - 7), width: pct(80, 480), height: pct(14, 150), fontSize: '11px', color: '#8f7268' }); el.appendChild(d); });
-  const placed = N.placeGuests(N.onScreen(guestsNow), seats), at = {};
+  const placed = N.placeGuests(N.onScreen(guestsNow, true), seats), at = {};
   placed.forEach(p => { if (p.slot) at[p.slot.code] = p.g; });
   N.SEATS.forEach(sl => {
     const g = at[sl.code], b = document.createElement('button'); b.type = 'button'; b.className = 'seat';
@@ -467,7 +468,7 @@ async function tapSeat(code, occupant){
   if (!selId) { if (occupant) { selId = occupant.id; renderMap(); renderGuests(guestsNow); } return; }
   if (occupant && occupant.id === selId) { selId = null; renderMap(); renderGuests(guestsNow); return; }
   // 지금 화면 배치를 그대로 고정한 뒤 두 자리를 맞바꿈 (다른 손님이 밀리지 않게)
-  const placed = N.placeGuests(N.onScreen(guestsNow), seats), cur = {};
+  const placed = N.placeGuests(N.onScreen(guestsNow, true), seats), cur = {};
   placed.forEach(p => { if (p.slot) cur[p.g.id] = p.slot.code; });
   const next = { ...cur }, from = cur[selId];
   next[selId] = code;
@@ -481,7 +482,7 @@ $('seatReset').onclick = async () => { if ($('seatReset').dataset.sure !== '1') 
 var luckyRolling = false, lastCode = '';
 function renderLucky(){ if (luckyRolling) return; const l = ev.lucky; $('luckyNow').textContent = l ? `마지막 당첨: ${l.nick}님 (${new Date(l.serverMs || l.ms).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })})` : ''; }
 $('luckyBtn').onclick = async () => {
-  const all = N.placeGuests(N.onScreen(guestsNow), seats).map(p => p.g).filter(g => g.id);
+  const all = N.placeGuests(N.onScreen(guestsNow, true), seats).map(p => p.g).filter(g => g.id);
   if (!all.length) { $('luckyNow').textContent = '오늘 등록한 손님이 아직 없어요.'; return; }
   // 쿠폰을 받을 수 있는 손님(휴대폰 열쇠가 있는 손님)을 우선으로 뽑음
   const keyed = all.filter(g => g.uid), pool = keyed.length ? keyed : all;
@@ -551,7 +552,7 @@ async function keepAwake(){ try { if ('wakeLock' in navigator && document.visibi
 document.addEventListener('visibilitychange', () => { if (alertOk && document.visibilityState === 'visible') keepAwake(); });
 $('alertOn').onclick = () => { try { const AC = window.AudioContext || window.webkitAudioContext; actx = actx || new AC(); actx.resume && actx.resume(); } catch (e) {} alertOk = true; ding(); keepAwake();
   $('alertOn').textContent = '🔔 알림 켜짐 (테스트 소리 다시 듣기)'; $('alertState').textContent = '켜졌어요. 화면이 꺼지지 않게 해둘게요. 다른 앱을 쓰거나 화면을 끄면 소리가 안 나니, 잠금화면 알림(ntfy)도 같이 쓰세요.'; };
-function seatOf(gid){ if (!gid) return ''; const p = N.placeGuests(N.onScreen(guestsNow), seats).find(x => x.g.id === gid); return p && p.slot ? seatName(p.slot.code) : ''; }
+function seatOf(gid){ if (!gid) return ''; const p = N.placeGuests(N.onScreen(guestsNow, true), seats).find(x => x.g.id === gid); return p && p.slot ? seatName(p.slot.code) : ''; }
 function renderOrders(){
   const el = $('orders'); el.innerHTML = '';
   const nNew = ordersNow.filter(o => o.status === 'new').length; $('newCount').hidden = !nNew; $('newCount').textContent = nNew;
@@ -575,14 +576,14 @@ function renderOrders(){
       addDel(c, o); box.appendChild(c); return; }
     const seat = seatOf(o.gid), tm = new Date(o.ms).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
     const st = { new: '새 주문', accepted: '접수됨 · 만드는 중', done: '완료', rejected: '거절함' }[o.status];
-    c.innerHTML = `<div class="hd"><b>${seat ? seat + ' · ' : ''}${escO(o.nick || '손님')}</b><small>${tm} · ${st}</small></div><ul>${o.items.map((it, ix) => `<li>${escO(it.name)} ×${it.qty}${hasRecipe(it) ? ` <button class="rcp" type="button" data-ix="${ix}">📖 레시피</button>` : ''}</li>`).join('')}</ul>` + (o.note ? `<div class="note2">요청: ${escO(o.note)}</div>` : '') + `<small style="color:var(--muted)">합계 ${wonO(o.total)} · 결제는 계산할 때</small>`;
+    c.innerHTML = `<div class="hd"><b>${seat ? seat + ' · ' : ''}${escO(o.nick || '손님')}</b><small>${tm} · ${st}</small></div><ul>${o.items.map((it, ix) => `<li>${escO(it.name)} ×${it.qty | 0}${hasRecipe(it) ? ` <button class="rcp" type="button" data-ix="${ix}">📖 레시피</button>` : ''}</li>`).join('')}</ul>` + (o.note ? `<div class="note2">요청: ${escO(o.note)}</div>` : '') + `<small style="color:var(--muted)">합계 ${wonO(o.total)} · 결제는 계산할 때</small>`;
     c.querySelectorAll('.rcp').forEach(b => b.onclick = () => openRecipe(o.items[+b.dataset.ix].name));
     const bt = document.createElement('div'); bt.className = 'obtns';
     const mk = (label, cls, fn) => { const b = document.createElement('button'); b.className = 'btn ' + cls; b.textContent = label; b.onclick = async () => { b.disabled = true; try { await fn(); } catch (e) { b.textContent = '실패'; b.disabled = false; } }; bt.appendChild(b); };
-    if (o.status === 'new') { mk('접수', 'primary', async () => { await N.setOrderStatus(o.id, 'accepted'); o.status = 'accepted'; await N.announceOrder(o.gid, o.nick, (o.items[0] || {}).icon);
+    if (o.status === 'new') { mk('접수', 'primary', async () => { await N.setOrderStatus(o.id, 'accepted'); o.status = 'accepted'; await N.announceOrder(o.gid, o.nick, (o.items[0] || {}).icon, o.show ? ((o.items.find(it => it.icon !== 'food') || o.items[0]) || {}).name : '');
         const drink = o.items.find(it => it.icon !== 'food'); if (o.show && o.gid && drink) N.setGuestLast(o.gid, drink.name).catch(() => {}); renderOrders(); });
       mk('거절', '', async () => { await N.setOrderStatus(o.id, 'rejected'); o.status = 'rejected'; renderOrders(); }); }
-    if (o.status === 'accepted') mk('완료 (가져다 드림)', 'primary', async () => { await N.setOrderStatus(o.id, 'done'); o.status = 'done'; renderOrders(); });
+    if (o.status === 'accepted') mk('완료 (가져다 드림)', 'primary', async () => { await N.setOrderStatus(o.id, 'done'); o.status = 'done'; const dk = o.items.find(it => it.icon !== 'food'); if (dk) N.announceServed(o.show ? o.gid : '', dk.name).catch(() => {}); renderOrders(); });
     if (bt.children.length) c.appendChild(bt);
     addDel(c, o); box.appendChild(c);
   };
@@ -639,18 +640,21 @@ setInterval(() => { (ordersNow || []).filter(o => { const age = Date.now() - o.m
   realerted.add(o.id); if (alertOk) ding(); try { navigator.vibrate && navigator.vibrate([300, 150, 300, 150, 500]); } catch (e) {}
   try { await N.markRealert(o.id); o.re = true; await N.renotify(o); } catch (e) {} }); }, 20000 + Math.floor(Math.random() * 5000));
 // ---------- 게임 (진행은 사장님 계정으로 로그인한 매장 스크린이 우선 · 스크린이 없으면 이 리모컨이 진행) ----------
-var host = createGameHost(N, { id: 'owner-' + Math.random().toString(36).slice(2, 8), onState: t => { if (host && host.isHost()) $('gState').textContent = t; }, canHost: () => document.visibilityState === 'visible' });
+var host = createGameHost(N, { id: 'owner-' + Math.random().toString(36).slice(2, 8), onState: () => {}, canHost: () => document.visibilityState === 'visible' });
 if (ownerSt) host.feed(ownerSt.game);   // 화면을 연 순간 이미 진행 중인 게임
 const G_LABEL = { bomb: '💣 폭탄 돌리기', ten: '⏱ 10초 맞추기', toast: '🥂 다 같이 건배', bal: '⚖️ 밸런스 게임', nun: '🙊 눈치게임', rou: '🎡 행운의 룰렛', race: '🏇 픽셀 경마', rps: '✊ 사장님과 가위바위보', ox: '⭕ OX 서바이벌' };
-function gUi(){ const g = host.game(); $('gStop').hidden = !g; if (!g) return; if (host.isHost()) { $('gState').textContent = host.state() + ' (이 화면을 켜 두세요)'; return; }
+function gUi(){ const g = host.game(); $('gStop').hidden = !g; if (!g && Date.now() < (typeof gMsgUntil === 'number' ? gMsgUntil : 0)) return; if (!g) { const ge = typeof ownerSt !== 'undefined' && ownerSt && ownerSt.gend, txt = ge && ge.ms && Date.now() - ge.ms < 120000 ? `진행 중인 게임이 없어요 · 방금 끝난 게임: ${ge.msg}` : '진행 중인 게임이 없어요.'; if ($('gState').textContent !== txt) $('gState').textContent = txt; return; } if (host.isHost()) { $('gState').textContent = host.state() + ' (이 화면을 켜 두세요)'; return; }
   $('gState').textContent = !g.host ? `${G_LABEL[g.type] || '게임'} · 진행할 기기를 찾는 중…` : /^screen/.test(g.host) ? `${G_LABEL[g.type] || '게임'} · 🎮 매장 스크린이 진행 중이에요 (리모컨은 꺼도 돼요)` : `${G_LABEL[g.type] || '게임'} · 다른 리모컨이 진행 중이에요`; }
 setInterval(gUi, 700);
+// 리모컨을 밤새 켜 두면: 영업일이 바뀌었을 때(새벽 6시) 게임 중이 아니면 새로 열어서 오늘 주문·손님이 보이게
+const bootDay = N.bizDate(); setInterval(() => { if (N.bizDate() !== bootDay && !host.game()) N.safeReload('owner.html'); }, 60000);
 // 이 리모컨이 진행 중일 때는 화면이 꺼지지 않게
 let gWake = null; setInterval(async () => { const want = host.isHost() && document.visibilityState === 'visible'; try { if (want && !gWake && navigator.wakeLock) { gWake = await navigator.wakeLock.request('screen'); gWake.addEventListener('release', () => { gWake = null; }); } else if (!want && gWake) { await gWake.release(); gWake = null; } } catch (e) {} }, 1500);
 const gReward = () => $('gPrize').checked ? $('reward').value.trim().slice(0, 20) : '';
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-const gStart = (type, extra, hostState, msg) => async () => { if (host.game()) { $('gState').textContent = '이미 진행 중인 게임이 있어요. 끝나거나 멈춘 뒤에 시작해 주세요.'; return; }
-  try { await host.start(type, extra(), hostState, msg); gUi(); } catch (e) { $('gState').textContent = '게임을 시작하지 못했어요. 로그인 상태를 확인해 주세요.'; } };
+var gMsgUntil = 0; const gMsg = t => { $('gState').textContent = t; gMsgUntil = Date.now() + 4000; };
+const gStart = (type, extra, hostState, msg) => async () => { if (host.game()) { gMsg('이미 진행 중인 게임이 있어요. 끝나거나 멈춘 뒤에 시작해 주세요.'); return; }
+  try { await host.start(type, extra(), hostState, msg); gUi(); } catch (e) { gMsg('게임을 시작하지 못했어요. 로그인 상태를 확인해 주세요.'); } };
 $('gBomb').onclick = gStart('bomb', () => ({ phase: 'join', mission: $('gMission').value.trim().slice(0, 24), dur: 15 }), n => ({ joinUntil: n + 15000 }), '💣 참여자 모집 중 (15초)…');
 $('gTen').onclick = gStart('ten', () => ({ phase: 'play', reward: gReward() }), n => ({ endAt: n + 40000 }), '⏱ 10초 맞추기 진행 중 (40초)…');
 $('gToast').onclick = gStart('toast', () => ({ phase: 'count' }), n => ({ endAt: n + 13000 }), '🥂 건배 타임!');

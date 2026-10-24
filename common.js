@@ -67,7 +67,7 @@
     chuseok: { n: [['hanbok', 'u'], ['hanbok2', 'u'], ['hanbok3', 'u']], r: [['gat', 'm'], ['jokduri', 'f'], ['rabbit+hanbok2', 'u']] }
   };
   const COSTUMES = Object.fromEntries(Object.entries(GACHA).filter(([k]) => k !== 'default').map(([k, v]) => [k, v.n.map(x => x[0])]));
-  const COS_NAME = { idolm: '아이돌', idolf: '아이돌', idolm2: '아이돌', idolf2: '아이돌', trot: '트로트 스타', rock: '록스타', rapper: '래퍼', topstar: '톱배우', goldking: '황금 왕', goldqueen: '황금 여왕', unicorn: '유니콘', hero: '가면 히어로', villain: '마왕', starhero: '별 히어로', plague: '역병 의사', gwishin: '처녀귀신', astronaut: '우주비행사', robot: '로봇', alien: '외계인',
+  const COS_NAME = { idolm: '아이돌 (블랙·남)', idolf: '아이돌 (블랙·여)', idolm2: '아이돌 (벨벳·남)', idolf2: '아이돌 (벨벳·여)', trot: '트로트 스타', rock: '록스타', rapper: '래퍼', topstar: '톱배우', goldking: '황금 왕', goldqueen: '황금 여왕', unicorn: '유니콘', hero: '가면 히어로', villain: '마왕', starhero: '별 히어로', plague: '역병 의사', gwishin: '처녀귀신', astronaut: '우주비행사', robot: '로봇', alien: '외계인',
     vampire: '뱀파이어', witch: '마녀', mummy: '미라', ghost: '유령', pumpkinhead: '호박머리', frank: '괴물', skeleton: '해골', zombie: '좀비', werewolf: '늑대인간', devil: '꼬마 악마', reaper: '저승사자', jiangshi: '강시', cat: '고양이', pirate: '해적',
     shades: '선글라스', flower: '꽃핀', heartband: '하트 머리띠', straw: '밀짚모자', scarf: '목도리', horns: '뿔', snowman: '눈사람', ginger: '진저브레드', xtree: '트리', wings: '천사 날개', santasuit: '산타', antler: '루돌프', elf: '요정', sweater: '스웨터', earmuff: '귀마개', swim: '수영복', hanbok: '색동 한복', hanbok2: '파스텔 한복', hanbok3: '단아한 한복', bokjumeoni: '복주머니', gat: '선비 (갓·도포)', jokduri: '족두리 신부', rabbit: '달토끼', lei: '꽃목걸이', rosehair: '장미', candy: '막대사탕', pepero: '빼빼로', party: '고깔모자' };
   // 사장 코스튬 고르기: '' = 시즌 기본(바텐더 복장 + 시즌 의상), 'none' = 바텐더 복장만, 그 외 = 고른 코스튬
@@ -88,7 +88,7 @@
   const cosSeed = (g, day) => g.uid ? g.uid + '|' + (day || bizDate()) : (g.id || g.nick || '');
   const costumeFor = (theme, seed, style) => drawCostume(theme, seed, style).k;
   const BLOCK = ['시발', '씨발', 'ㅅㅂ', '병신', 'ㅂㅅ', '좆', '개새', '섹스', '꺼져', '죽어'];
-  const clean = s => !BLOCK.some(w => String(s || '').replace(/\s/g, '').includes(w));
+  const clean = s => { const t = String(s || '').replace(/\s/g, '').replace(/섹스온더비치/g, ''); return !BLOCK.some(w => t.includes(w)); };
   const bizDate = () => new Date(Date.now() + 9 * 3600e3 - 6 * 3600e3).toISOString().slice(0, 10);
   const isHex = c => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
   const STYLE_RE = /^[mf][0-3][01][0-3]$/;
@@ -492,10 +492,51 @@
     for (let i = 0; i < 10; i++) { c.rotate(Math.PI / 5); c.fillStyle = `rgba(${cols[i % cols.length]},${(i % 2 ? .35 : .5) * a})`; c.beginPath(); c.moveTo(0, 0); c.lineTo(r, -r * .16); c.lineTo(r, r * .16); c.closePath(); c.fill(); }
     c.restore(); const g = c.createRadialGradient(cx, cy, 0, cx, cy, r * .7); g.addColorStop(0, `rgba(255,248,210,${.75 * a})`); g.addColorStop(1, 'rgba(255,214,90,0)'); c.fillStyle = g; c.fillRect(cx - r, cy - r, r * 2, r * 2);
   }
-  function drawPreview(canvas, look, drink, costume) {
+
+  // 코스튬별 광채: 황금왕=태양 광선+금화 / 여왕=로즈골드 후광+다이아 반짝 / 유니콘=무지개 링+별
+  //               아이돌(블랙)=흰 핀조명+은빛 글리터 / 아이돌(벨벳)=금빛 무대조명+컨페티
+  function aura(c, key, cx, cy, r, t, a) {
+    t = t || 0; const u = Math.max(1, Math.round(r / 30)), sq = (x, y, col, k) => { c.fillStyle = col; c.fillRect(Math.round(x), Math.round(y), u * (k || 1), u * (k || 1)); };
+    const h01 = n => { const v = Math.sin(n * 127.1 + 311.7) * 43758.5453; return v - Math.floor(v); };
+    const glow = (col, k) => { const g = c.createRadialGradient(cx, cy, 0, cx, cy, r * (k || .7)); g.addColorStop(0, `rgba(${col},${.7 * a})`); g.addColorStop(1, `rgba(${col},0)`); c.fillStyle = g; c.fillRect(cx - r, cy - r, r * 2, r * 2); };
+    const star = (x, y, col, big) => { sq(x, y, col); sq(x - u, y, col); sq(x + u, y, col); sq(x, y - u, col); sq(x, y + u, col); if (big) { sq(x - 2 * u, y, col); sq(x + 2 * u, y, col); sq(x, y - 2 * u, col); sq(x, y + 2 * u, col); } };
+    const beam = (x0, y0, x1, x2, y1, col) => { const g = c.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, `rgba(${col},${.05 * a})`); g.addColorStop(.7, `rgba(${col},${.42 * a})`); g.addColorStop(1, `rgba(${col},${.12 * a})`); c.fillStyle = g; c.beginPath(); c.moveTo(x0 - u, y0); c.lineTo(x0 + u, y0); c.lineTo(x2, y1); c.lineTo(x1, y1); c.closePath(); c.fill(); };
+    if (key === 'goldking') { radiance(c, cx, cy, r, t, a, false);
+      for (let i = 0; i < 6; i++) { const p = ((t / 2600) + h01(i)) % 1, x = cx + (h01(i + 9) - .5) * r * 1.3, y = cy + r * .7 - p * r * 1.6, al = Math.sin(p * Math.PI) * a;
+        sq(x, y, `rgba(255,200,60,${al})`, 2); sq(x, y, `rgba(255,250,200,${al})`); } return; }
+    if (key === 'goldqueen') { glow('255,170,200', .85); glow('255,230,240', .45);
+      c.strokeStyle = `rgba(255,190,215,${.55 * a})`; c.lineWidth = u; c.beginPath(); c.ellipse(cx, cy, r * .78, r * .9, 0, 0, Math.PI * 2); c.stroke();
+      for (let i = 0; i < 7; i++) { const an = t / 1400 + i * Math.PI * 2 / 7, x = cx + Math.cos(an) * r * .78, y = cy + Math.sin(an) * r * .9, tw = (Math.sin(t / 180 + i * 2) + 1) / 2;
+        star(x, y, `rgba(255,${200 + 55 * tw | 0},${230 + 25 * tw | 0},${(.45 + .55 * tw) * a})`, tw > .75); } return; }
+    if (key === 'unicorn') { const R = ['255,122,168', '255,180,106', '255,228,106', '106,224,168', '106,184,255', '180,138,255'];
+      glow('240,220,255', .6); c.lineWidth = u * 1.5;
+      R.forEach((col, i) => { const rr = r * (.45 + i * .085) + Math.sin(t / 300 - i * .8) * u * 1.5; c.strokeStyle = `rgba(${col},${.42 * a})`; c.beginPath(); c.arc(cx, cy, rr, Math.PI * 1.02, Math.PI * 1.98); c.stroke(); });
+      for (let i = 0; i < 8; i++) { const ph = (t / 900 + h01(i) * 7), tw = (Math.sin(ph * 2) + 1) / 2, x = cx + (h01(i + 3) - .5) * r * 1.8, y = cy + (h01(i + 5) - .5) * r * 1.7;
+        if (tw > .35) star(x, y, `rgba(${R[i % 6]},${tw * a})`, tw > .85); } return; }
+    if (key === 'idolm' || key === 'idolf') { const top = cy - r * 1.9, bot = cy + r * .95, sw = Math.sin(t / 900) * r * .25, col = key === 'idolf' ? '255,150,215' : '235,240,255';
+      beam(cx - r * 1.1, top, cx - r * .55 + sw, cx + r * .15 + sw, bot, col); beam(cx + r * 1.1, top, cx - r * .15 - sw, cx + r * .55 - sw, bot, key === 'idolf' ? '200,150,255' : '150,200,255');
+      glow(key === 'idolf' ? '255,120,200' : '140,160,255', .55);
+      if (key === 'idolf') for (let i = 0; i < 5; i++) { const p = ((t / 2200) + h01(i)) % 1, x = cx + (h01(i + 4) - .5) * r * 1.4 + Math.sin(p * 9 + i) * u * 2, y = cy + r * .5 - p * r * 1.5, al = Math.sin(p * Math.PI) * a, cc = `rgba(255,${110 + i * 20},${190 + i * 10},${al})`;
+        sq(x - u, y, cc); sq(x + u, y, cc); sq(x - 2 * u, y + u, cc); sq(x - u, y + u, cc); sq(x, y + u, cc); sq(x + u, y + u, cc); sq(x + 2 * u, y + u, cc); sq(x - u, y + 2 * u, cc); sq(x, y + 2 * u, cc); sq(x + u, y + 2 * u, cc); sq(x, y + 3 * u, cc); sq(x, y, cc); }
+      else for (let i = 0; i < 10; i++) { const tw = (Math.sin(t / 140 + i * 2.7) + 1) / 2; if (tw > .6) sq(cx + (h01(i + 1) - .5) * r * 1.5, cy + (h01(i + 7) - .5) * r * 1.6, `rgba(230,240,255,${tw * a})`, tw > .92 ? 2 : 1); }
+      return; }
+    if (key === 'idolm2' || key === 'idolf2') { const top = cy - r * 1.9, bot = cy + r * .95, sw = Math.sin(t / 1100) * r * .2;
+      beam(cx, top, cx - r * .55 + sw, cx + r * .55 + sw, bot, '255,215,130'); glow('255,190,90', .6);
+      const CF = ['255,90,90', '90,200,255', '255,220,80', '120,230,140', '255,140,220'];
+      for (let i = 0; i < 12; i++) { const p = ((t / 2400) + h01(i)) % 1, x = cx + (h01(i + 2) - .5) * r * 1.8 + Math.sin(p * 8 + i) * u * 2, y = cy - r * 1.1 + p * r * 2, al = Math.min(1, (1 - p) * 2) * a;
+        c.fillStyle = `rgba(${CF[i % 5]},${al})`; c.fillRect(Math.round(x), Math.round(y), u * (Math.floor(t / 160 + i) % 2 ? 2 : 1), u); } return; }
+    radiance(c, cx, cy, r, t, a, LEGEND_KEYS.has(key));
+  }
+  // 코스튬별 연출 정보 (스크린 배너 · 폰 카드 공용)
+  const AURA_FX = { goldking: { t: '★ 황금 왕 강림! ★', c: '#ffd23a', d: '금빛 햇살·금화와 함께 등장' }, goldqueen: { t: '★ 황금 여왕 등장! ★', c: '#ffb0d8', d: '다이아 반짝이와 함께 등장' },
+    unicorn: { t: '★ 유니콘 등장! ★', c: '#c8b0ff', d: '무지개 타고 등장' }, idolm: { t: '★ LEGEND 아이돌 데뷔! ★', c: '#cfe0ff', d: '핀조명 받으며 등장' },
+    idolf: { t: '★ LEGEND 아이돌 데뷔! ★', c: '#ff9ad8', d: '하트 날리며 등장' }, idolm2: { t: '★ LEGEND 아이돌 데뷔! ★', c: '#ffc860', d: '컨페티 무대로 등장' }, idolf2: { t: '★ LEGEND 아이돌 데뷔! ★', c: '#ffc860', d: '컨페티 무대로 등장' } };
+  function cardAura(canvas, key, t) { const c = canvas.getContext('2d'); c.clearRect(0, 0, canvas.width, canvas.height); c.imageSmoothingEnabled = false; c.save(); c.globalCompositeOperation = 'lighter'; aura(c, key, canvas.width / 2, canvas.height * .36, canvas.width * .5, t, 1); c.restore(); }
+  function sfxCos(k) { if (LEGEND_KEYS.has(k)) { noiseHit(1.3, .12, 1200); sfxFanfare(); } else if (k === 'unicorn') [1047, 1319, 1568, 2093, 2637, 3136].forEach((f, i) => tone(f, .18, .06, 'triangle', i * .07)); else sfxFanfare(); }
+  function drawPreview(canvas, look, drink, costume, t, noAura) {
     const ctx = canvas.getContext('2d'), s = sprite(look, false, drink, 'n', costume);
     ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.imageSmoothingEnabled = false;
-    if (SECRET_KEYS.has(costume) || LEGEND_KEYS.has(costume)) radiance(ctx, canvas.width / 2, canvas.height * .42, canvas.width * .62, 0, 1, LEGEND_KEYS.has(costume));
+    if (!noAura && (SECRET_KEYS.has(costume) || LEGEND_KEYS.has(costume))) aura(ctx, costume, canvas.width / 2, canvas.height * .42, canvas.width * .62, t == null ? 1800 : t, 1);
     const k = Math.floor(Math.min(canvas.width / s.width, canvas.height / s.height));
     ctx.drawImage(s, (canvas.width - s.width * k) / 2 + (s.width / 2 - CX - 2) * k, (canvas.height - s.height * k) / 2, s.width * k, s.height * k);
   }
@@ -524,6 +565,11 @@
   const sfxDrum = () => noiseHit(0.06, 0.09, 300);
   const sfxHeart = () => { tone(1319, 0.18, 0.05, 'sine'); tone(1760, 0.3, 0.05, 'sine', 0.1); };
   const sfxClink = () => { tone(2093, 0.25, 0.06, 'sine'); tone(2637, 0.35, 0.05, 'sine', 0.06); tone(3136, 0.4, 0.035, 'sine', 0.12); };
+  // 술 이름으로 잔 색 고르기 (메뉴판 이름 기준, 모르는 술은 분홍)
+  const DRINK_COL = [[/블루|사파이어/, '#3aa8ff'], [/미도리|준벅|멜론|그린|모히또/, '#7ae07a'], [/피치|복숭아/, '#ffb08a'], [/선라이즈|오렌지|스크류|퍼지/, '#ffa040'],
+    [/밀크|깔루아|베일리스|화이트러시안|요거/, '#f2e4cc'], [/블랙러시안|갓파더|콕|리브레|롱아일랜드|위스키|잭|버번|하이볼/, '#c8782a'], [/진토닉|진피즈|톰콜린스|토닉|스푸모니|사이다|소다/, '#e6f6ff'],
+    [/와인|칼리모초|상그리아|레드/, '#a01e3c'], [/샤르도네|화이트와인|샴페인|스파클/, '#f2e48a'], [/맥주|비어|라거|에일/, '#f0c040'], [/딸기|섹스온더비치|잭로즈|체리|라즈베리|코스모/, '#ff4a7a'], [/마티니|드라이/, '#f4f8ec'], [/보치볼|아마레또/, '#e8a050']];
+  function drinkColor(name) { const n = String(name || ''); for (const [re, c] of DRINK_COL) if (re.test(n)) return c; return '#ff6a9a'; }
   const sfxDing = () => { tone(1319, 0.5, 0.09, 'sine'); tone(1047, 0.7, 0.09, 'sine', 0.32); };
   function sfxBirthday() {
     const N2 = { G4: 392, A4: 440, B4: 494, C5: 523, D5: 587, E5: 659, F5: 698, G5: 784 }, b = 0.36;
@@ -531,6 +577,8 @@
     let at = 0.3; song.forEach(([n, d]) => { tone(N2[n], d * b * .95, .07, 'triangle', at); tone(N2[n] * 2, d * b * .6, .025, 'sine', at); at += d * b; });
     noiseHit(.8, .12, 4000, at); tone(1047, .5, .06, 'triangle', at); tone(1319, .7, .05, 'triangle', at + .1);
   }
+  function sfxIce() { noiseHit(0.035, 0.05, 3500); tone(2400 + Math.random() * 900, 0.03, 0.015, 'triangle'); }
+  const sfxTing = () => { tone(2093, 0.25, 0.05, 'sine'); tone(2637, 0.35, 0.04, 'sine', 0.06); };
   function sfxFanfare() {
     noiseHit(0.9, 0.18, 4000); [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.22, 0.09, 'square', i * 0.11));
     [784, 1047].forEach((f, i) => tone(f, 0.6, 0.07, 'triangle', 0.5 + i * 0.02)); tone(1319, 0.8, 0.05, 'triangle', 0.5);
@@ -660,7 +708,7 @@
   // 자리 40석: 메인바 7 · ㄱ테이블 10 · ㄴ테이블 10 · 스탠딩 13
   const L = (layer, xs, foot, extra) => xs.map(x => ({ x, foot, layer, ...extra }));
   const SLOTS = {
-    stool: L('stool', [14, 40, 66, 92, 118, 144, 170], 210, { sit: true, zone: 'bar' }),
+    stool: L('stool', [20, 45, 70, 95, 120, 145, 170], 210, { sit: true, zone: 'bar' }),
     gBack: L('gBack', [232, 262, 292, 322, 352, 382, 412], 180, { zone: 'g' }),
     gIn: L('gIn', [262, 318, 374], 216, { zone: 'g' }),
     // ㄴ은 ㄱ을 180° 돌린 모양 (가운데 x=337 기준 대칭) → 자리도 ㄱ과 같은 7+3
@@ -668,7 +716,7 @@
     nLeft: [],
     nIn: L('nIn', [300, 356, 412], 246, { zone: 'n' }),
     standBack: L('standBack', [247, 287, 327, 367, 407, 447], 162, { zone: 'stand' }),
-    standFront: L('standFront', [14, 42, 70, 98, 126, 154, 182], 266, { zone: 'stand' })
+    standFront: L('standFront', [20, 47, 74, 101, 128, 155, 182], 266, { zone: 'stand' })
   };
   const ORDER = [];
   const seq = [['stool'], ['gBack'], ['nFront']];
@@ -681,11 +729,22 @@
     .forEach(([k, arr]) => arr.forEach((slot, i) => { slot.code = k + (i + 1); SEATS.push(slot); }));
   const SEAT_BY_CODE = Object.fromEntries(SEATS.map(x => [x.code, x]));
   // 사장이 지정한 자리는 고정, 나머지 손님은 빈자리를 차례대로
+  // 자리 배정: 온 순서대로 빈자리에 앉고, 계산하고 나간 손님 자리는 '나간 뒤에 온' 손님부터 씀 → 누가 나가도 다른 손님 자리가 바뀌지 않음
+  // (모든 기기가 같은 기록으로 같은 결과를 얻음 · 사장님이 지정한 자리는 우선)
+  const msOf = v => v && v.toMillis ? v.toMillis() : (+v || 0);
   function placeGuests(guests, seats) {
-    const seated = guests.slice(-ORDER.length), map = seats || {}, taken = new Set(), fixed = new Map();
-    seated.forEach(g => { const c = g.id && map[g.id]; if (c && SEAT_BY_CODE[c] && !taken.has(c)) { taken.add(c); fixed.set(g, SEAT_BY_CODE[c]); } });
-    const free = ORDER.filter(x => !taken.has(x.code)); let fi = 0;
-    return seated.map(g => ({ g, slot: fixed.get(g) || free[fi++] }));
+    const arrOf = g => msOf(g.ts) || msOf(g.ms0) || (g.npc ? msOf(g.ms) : 0);
+    guests = guests.map((g, i) => [g, i]).sort((a, b) => (arrOf(a[0]) || 9e15) - (arrOf(b[0]) || 9e15) || a[1] - b[1]).map(x => x[0]);   // 한 줄 바꿔도 순서 그대로
+    const map = seats || {}, present = guests.filter(g => !g.left), fixed = new Map(), fixedCodes = new Set();
+    present.forEach(g => { const c = g.id && map[g.id]; if (c && SEAT_BY_CODE[c] && !fixedCodes.has(c)) { fixedCodes.add(c); fixed.set(g, SEAT_BY_CODE[c]); } });
+    const occ = new Map(), at = new Map();   // 자리코드 → 손님, 손님 → 자리
+    guests.forEach(g => { if (fixed.has(g)) return; const arr = arrOf(g);
+      for (const [code, o] of occ) if (o.left && arr && msOf(o.lts) && msOf(o.lts) <= arr) { occ.delete(code); at.delete(o); }
+      const fc = g.left && g.id && map[g.id]; if (fc && SEAT_BY_CODE[fc] && !fixedCodes.has(fc) && !occ.has(fc)) { occ.set(fc, g); at.set(g, SEAT_BY_CODE[fc]); return; }   // 지정석에 있다 나간 손님: 그 자리를 나간 시각까지 붙잡아 둠
+      let slot = ORDER.find(x => !fixedCodes.has(x.code) && !occ.has(x.code));
+      if (!slot) { const old = [...occ.entries()].find(([, o]) => !o.left) || [...occ.entries()][0]; if (!old) return; slot = SEAT_BY_CODE[old[0]]; at.delete(old[1]); occ.delete(old[0]); }
+      occ.set(slot.code, g); at.set(g, slot); });
+    return present.filter(g => fixed.has(g) || at.has(g)).map(g => ({ g, slot: fixed.get(g) || at.get(g) }));
   }
   function createScene() {
     // 고해상도 모드(시험용): ?hires=1 이면 버퍼를 2배로 → 캐릭터를 Scale2x로 다듬어 고양이와 같은 잔 픽셀로
@@ -704,7 +763,7 @@
     let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
     const noise = Array.from({ length: W / 2 }, () => rnd() * 8 - 4);
     const bottles = Array.from({ length: 12 }, () => Array.from({ length: 4 }, () => ({ h: 7 + Math.floor(rnd() * 5), c: ['#7a3a12', '#c98a2a', '#3a5a2a', '#e8d8b0', '#5a1f1a', '#2a2a40'][Math.floor(rnd() * 6)] })));
-    const px = (x, y, w, h, c) => { b.fillStyle = c; b.fillRect(x, y, w, h); };
+    const px = (x, y, w, h, c) => { b.fillStyle = c; b.fillRect(x, y, w, h); }, pxB = px;
     const OWNER_X = [62, 128];
     function room() {
       px(0, 0, W, H, '#0e0a0b');
@@ -768,18 +827,22 @@
       if (st !== 'jump' && st !== 'walk') c.until = now + { sleep: rr(25000, 60000), stretch: 2400, sit: rr(5000, 11000), groom: rr(4000, 7000) }[st];
       c.st = st; }
     let catLast = 0;
-    let catHostOn = false, nextVisit = Date.now() + 90000;
+    let catHostOn = false, nextVisit = Date.now() + 30000; const catVisited = new Map();
     const petFx = [];
     try { window.__notsunCatVisitNow = () => { nextVisit = 0; }; } catch (e) {}   // 테스트·촬영용
     function catVisitTick(placed, opts) {
       catHostOn = !!opts.catHost; const now = Date.now();
-      (opts.catPets || []).forEach(pe => { if (!pe._seen) { pe._seen = true; petFx.push({ cat: pe.cat, ms: now }); sfxHeart(); } });
+      (opts.catPets || []).forEach(pe => { if (!pe._seen) { pe._seen = true; petFx.push({ cat: pe.cat, ms: now }); sfxHeart(); const cv = cats[pe.cat] && cats[pe.cat].visit; if (cv) { cv.pet = now; cv.mad = 0; } } });
+      if (opts.game && catHostOn) cats.forEach(c => { if (c.visit && c.visit.until > now) { c.visit.until = now - 1; c.visit.quiet = 1; } });
       if (!catHostOn || now < nextVisit || cats.some(c => c.visit)) return;
-      nextVisit = now + 150000 + Math.random() * 120000;   // 2.5~4.5분마다 한 번
+      if (opts.game) { nextVisit = now + 20000; return; }
+
+      nextVisit = now + 45000 + 35000 + Math.random() * 35000;   // 방문 45초 + 쉬는 35~70초 → 1분 반~2분마다 한 번
       const cand = placed.filter(p => p.g.id && !p.g.npc && p.g.uid); if (!cand.length) return;
-      const p = cand[Math.floor(Math.random() * cand.length)], ci = Math.random() < .5 ? 0 : 1, c = cats[ci]; if (c.st === 'jump') return;
+      const oldest = Math.min(...cand.map(q => catVisited.get(q.g.id) || 0)), pool = cand.filter(q => (catVisited.get(q.g.id) || 0) === oldest);   // 아직 못 만난 손님부터 골고루
+      const p = pool[Math.floor(Math.random() * pool.length)], ci = Math.random() < .5 ? 0 : 1, c = cats[ci]; if (c.st === 'jump') return; catVisited.set(p.g.id, now);
       const tx = Math.max(14, Math.min(W - 14, p.x + (p.x > W / 2 ? -24 : 24))), ty = p.foot;
-      c.visit = { gid: p.g.id, until: now + 45000 }; c.jp = { from: { x: c.x, y: c.p >= 0 ? PERCH[c.p].y : c.vy }, to: { x: tx, y: ty }, np: -1, t0: now }; c.dir = tx >= c.x ? 1 : -1; c.st = 'jump'; c.until = now + 900;
+      c.visit = { gid: p.g.id, until: now + 45000, t0: now + 900, pet: 0 }; c.jp = { from: { x: c.x, y: c.p >= 0 ? PERCH[c.p].y : c.vy }, to: { x: tx, y: ty }, np: -1, t0: now }; c.dir = tx >= c.x ? 1 : -1; c.st = 'jump'; c.until = now + 900;
       setCatVisit({ gid: p.g.id, cat: ci, name: c.name, until: now + 45000 }).catch(() => {});
     }
     function drawCats(cx2, cs) {
@@ -791,15 +854,22 @@
         if (c.st === 'jump') { const e = Math.min(1, (now - c.jp.t0) / 900); x = c.jp.from.x + (c.jp.to.x - c.jp.from.x) * e; y = c.jp.from.y + (c.jp.to.y - c.jp.from.y) * e - Math.sin(e * Math.PI) * 18; if (e >= 1) { c.p = c.jp.np; c.x = c.jp.to.x; if (c.p < 0) c.vy = c.jp.to.y; y = c.p >= 0 ? PERCH[c.p].y : c.vy; x = c.x; if (c.visit && c.p < 0) { c.st = 'sit'; c.until = c.visit.until; } else catNext(c, now); } }
         else if (c.visit && now > c.visit.until) { const v = c.visit; c.visit = null; if (catHostOn) setCatVisit(null).catch(() => {}); const P2 = PERCH[2]; c.jp = { from: { x: c.x, y }, to: { x: rr(P2.x0, P2.x1), y: P2.y }, np: 2, t0: now }; c.dir = c.jp.to.x >= c.x ? 1 : -1; c.st = 'jump'; c.until = now + 900; }
         else if (now > c.until) catNext(c, now);
+        const idle = c.visit && c.p < 0 && c.st !== 'jump' ? now - Math.max(c.visit.t0, c.visit.pet || 0) : 0, mad = idle > 18000;
+        if (mad && !c.visit.mad) { c.visit.mad = 1; noiseHit(.35, .05, 2600); tone(180, .2, .04, 'sawtooth'); }
+        if (mad && idle > 33000 && catHostOn && !c.visit.quiet) { c.huff = now; c.visit.until = now - 1; }
+        if (mad) x += Math.floor(now / 60) % 2 ? .4 : -.4;
         const pose = c.st === 'walk' ? (Math.floor(now / 220) % 2 ? 'walk1' : 'walk2') : c.st === 'jump' ? 'stretch' : c.st === 'groom' ? (Math.floor(now / 380) % 2 ? 'groom' : 'sit') : c.st === 'stretch' ? 'stretch' : c.st === 'sleep' ? 'sleep' : 'sit';
         const petting = petFx.some(f => f.cat === ci && now - f.ms < 1600);
-        const blink = petting || (c.st === 'sit' && Math.floor((now + ci * 777) / 160) % 23 === 0);
+        const blink = petting || mad || (c.st === 'sit' && Math.floor((now + ci * 777) / 160) % 23 === 0);
         const rows = CAT_HI[ci][blink ? 'blink' : pose], pal = CAT_PAL[ci], w = Math.max(...rows.map(r => r.length)), h = rows.length;
         const u = Math.max(1, Math.round(.75 * cs)), ox = Math.round(x * cs - w * u / 2), oy = Math.round(y * cs - h * u) + 1, breathe = c.st === 'sleep' && Math.floor(now / 900) % 2 ? u : 0;
-        c.lx = x; c.ly = oy / cs;
+        const top = Math.max(0, rows.findIndex(r => [...r].some(ch => pal[ch]))); c.lx = x; c.ly = (oy + top * u) / cs;
         rows.forEach((r, j) => [...r].forEach((ch, i) => { const col = pal[ch]; if (!col) return; cx2.fillStyle = col; cx2.fillRect(ox + (c.dir > 0 ? i : w - 1 - i) * u, oy + j * u + (j < h * .55 ? breathe : 0), u, u); }));
         petFx.forEach(f => { if (f.cat !== ci) return; const e = (now - f.ms) / 1600; if (e > 1) return; const hx = ox + w * u / 2 + Math.sin(e * 9 + f.ms) * 4 * u, hy = oy - e * 18 * u, k2 = u; cx2.globalAlpha = 1 - e; cx2.fillStyle = '#ff5a8a';   // 하트 뿅
           [[1, 0], [2, 0], [4, 0], [5, 0], [0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [1, 2], [2, 2], [3, 2], [4, 2], [5, 2], [2, 3], [3, 3], [4, 3], [3, 4]].forEach(([a2, b2]) => cx2.fillRect(hx + a2 * k2, hy + b2 * k2, k2, k2)); cx2.globalAlpha = 1; });
+        if (mad && Math.floor(now / 300) % 3) { const mx = ox + (c.dir > 0 ? w * u - 2 * u : -2 * u), my = oy + 2 * u, R = '#ff3a3a';   // 💢 화남 표시
+          [[1, 0], [1, 1], [0, 1], [3, 0], [3, 1], [4, 1], [0, 3], [1, 3], [1, 4], [4, 3], [3, 3], [3, 4]].forEach(([a2, b2]) => { cx2.fillStyle = R; cx2.fillRect(mx + a2 * u, my + b2 * u, u, u); }); }
+        if (c.huff && now - c.huff < 1600) { const k = (now - c.huff) / 1600; cx2.save(); cx2.globalAlpha = 1 - k; cx2.font = `${6.5 * cs}px "Do Hyeon", sans-serif`; cx2.textAlign = 'center'; cx2.lineWidth = 1.2 * cs; cx2.strokeStyle = '#1a0f10'; cx2.strokeText('흥!', ox + w * u / 2, oy - k * 10 * cs); cx2.fillStyle = '#ff6a6a'; cx2.fillText('흥!', ox + w * u / 2, oy - k * 10 * cs); cx2.restore(); }
         if (c.st === 'sleep') { const k = (now / 1400 + ci) % 1; cx2.fillStyle = `rgba(255,255,255,${1 - k})`; const zx = ox + (c.dir > 0 ? w * u : -6 * u) + k * 8 * u, zy = oy + h * u * .4 - k * 14 * u; cx2.fillRect(zx, zy, 4 * u, u); cx2.fillRect(zx + 2 * u, zy + u, u, u); cx2.fillRect(zx + u, zy + 2 * u, u, u); cx2.fillRect(zx, zy + 3 * u, 4 * u, u); }   // z
       });
     }
@@ -1044,8 +1114,8 @@
       // 계산 완료한 손님: 화면에 앉아 있던 걸 본 경우에만 퇴장 연출 (새로고침 때 다시 재생 안 함)
       const leaving = []; guests.forEach(g => { if (!g.left || !g.id) return; if (!leftAt.has(g.id)) leftAt.set(g.id, lastPos.has(g.id) ? Date.now() : 0); const ms = leftAt.get(g.id); if (ms) leaving.push({ id: g.id, nick: g.nick, ms }); });
       guests.forEach(g => { if (g.id && !g.left && leftAt.has(g.id)) leftAt.delete(g.id); });
-      guests = guests.filter(g => !g.left);
-      const placed = placeGuests(guests, opts.seats).map(({ g, slot }, i) => ({ g, ...slot, i }));
+      const allG = guests; guests = guests.filter(g => !g.left);
+      const placed = placeGuests(allG, opts.seats).map(({ g, slot }, i) => ({ g, ...slot, i }));
       placed.forEach(p => { const id = p.g.id; if (!id) return; const was = lastSeat.get(id); if (was && was !== p.code && seen.has(id)) seen.set(id, t); lastSeat.set(id, p.code); lastPos.set(id, { x: p.x, foot: p.foot, sit: p.sit }); });
       const bob = i => (Math.sin(t / 650 + i * 1.9) > 0.7 ? -1 : 0);
       // 자연스러운 움직임: 깜빡임, 한 모금, 흔들흔들, 등장 점프, 짠!
@@ -1065,24 +1135,65 @@
       const bdaySet = new Set(opts.bdays || []);
       const draw = p => { const bd = p.g.id && bdaySet.has(p.g.id), dc = bd ? { k: 'party', rar: 'n' } : drawCostume(th, cosSeed(p.g, opts.day), p.g.style); p._cs = dc.k; p._rar = dc.rar;
         const ey = enterY(p);
-        if ((dc.rar === 's' || dc.rar === 'L') && p.entering !== undefined && p.g.id && !secretSeen.has(p.g.id)) { secretSeen.add(p.g.id); if (t > 4000) { secretAnn = { nick: p.g.nick, name: dc.name, ms: Date.now(), L: dc.rar === 'L' }; setTimeout(sfxFanfare, 300); } }
-        if (dc.rar === 's' || dc.rar === 'L') { b.save(); b.globalCompositeOperation = 'lighter'; radiance(b, p.x + swayX(p), p.foot + bob(p.i) + ey - (p.sit ? 24 : 27), dc.rar === 'L' ? 36 : 30, t, .55 + Math.sin(t / 420) * .15, dc.rar === 'L'); b.restore(); }
+        if ((dc.rar === 's' || dc.rar === 'L') && p.entering !== undefined && p.g.id && !secretSeen.has(p.g.id)) { secretSeen.add(p.g.id); if (t > 4000) { secretAnn = { nick: p.g.nick, name: dc.name, ms: Date.now(), L: dc.rar === 'L', k: dc.k }; setTimeout(() => sfxCos(dc.k), 300); } }
+        if (dc.rar === 's' || dc.rar === 'L') { b.save(); b.globalCompositeOperation = 'lighter'; aura(b, dc.k, p.x + swayX(p), p.foot + bob(p.i) + ey - (p.sit ? 24 : 27), dc.rar === 'L' ? 34 : 30, t, .6 + Math.sin(t / 420) * .15); b.restore(); }
         blit(sprite(p.g, !!p.sit, p.g.drink, frameOf(p), dc.k), p.x + swayX(p), p.foot + bob(p.i) + ey + luckyHop(p, lk, t)); };
       // 사장 반응: 주문 → 셰이킹 · 시크릿/레전드 등장·생일·하트 → 박수 · 새벽 1~6시 → 가끔 하품
       const nowMs = Date.now(), hr = new Date().getHours();
       const orderOn = opts.order && opts.order.ms && nowMs - opts.order.ms < 6000;
-      const clapOn = (secretAnn && nowMs - secretAnn.ms < 3800) || (opts.bday && opts.bday.ms && nowMs - opts.bday.ms > 600 && nowMs - opts.bday.ms < 5000) || heartFloats.some(h => nowMs - h.ms < 1800);
+      const clapOn = (secretAnn && nowMs - secretAnn.ms < 3800) || (opts.bday && opts.bday.ms && nowMs - opts.bday.ms > 600 && nowMs - opts.bday.ms < 5000) || heartFloats.some(h => nowMs - h.ms >= 0 && nowMs - h.ms < 1800);
       const late = hr >= 1 && hr < 6;
+      // 셰이커: 픽셀 회전 (u,v = 4x9 원본)
+      const shakerAt = (cx2, cy2, ang) => { const co = Math.cos(ang), si = Math.sin(ang);
+        for (let dy = -6; dy <= 6; dy++) for (let dx = -6; dx <= 6; dx++) { const u2 = dx * co + dy * si + 2, v2 = -dx * si + dy * co + 4.5; if (u2 < 0 || u2 >= 4 || v2 < 0 || v2 >= 9) continue;
+          const uu = Math.floor(u2), vv = Math.floor(v2); if (vv < 2 && (uu < 1 || uu > 2)) continue;
+          px(Math.round(cx2 + dx), Math.round(cy2 + dy), 1, 1, vv < 2 ? '#eef1f4' : vv === 4 ? '#8a939a' : uu === 0 ? '#f6f8fa' : uu === 3 ? '#9aa3aa' : '#cfd5da'); } };
+      const sparkle = (x, y, k, P2) => { const q = P2 || px, c2 = `rgba(255,250,200,${k})`; q(x, y - 2, 1, 5, c2); q(x - 2, y, 5, 1, c2); q(x, y, 1, 1, '#ffffff'); };
+      const martini = (gx, fill, col, garnish, P2, gy0) => { const px = P2 || pxB, gy = gy0 || 136, rows = [9, 7, 5, 3, 1];
+        rows.forEach((w, j) => { const x0 = gx - (w >> 1); px(x0, gy + j, 1, 1, 'rgba(220,240,255,.9)'); px(x0 + w - 1, gy + j, 1, 1, 'rgba(220,240,255,.9)'); if (w > 2 && (4 - j) < fill * 5) px(x0 + 1, gy + j, w - 2, 1, col); });
+        px(gx - 4, gy, 9, 1, 'rgba(230,245,255,.95)'); px(gx, gy + 5, 1, 4, 'rgba(220,240,255,.9)'); px(gx - 2, gy + 9, 5, 1, 'rgba(220,240,255,.95)');
+        if (garnish) { px(gx + 3, gy - 2, 2, 2, '#ffd84a'); px(gx + 2, gy - 1, 1, 1, '#7ac04a'); } };
+      // 주문 들어오면 6초 루틴: 머리 위 셰이킹 → 공중 던지기/어깨 셰이킹 → 다른 셰이킹 → 잔에 따르기 (주문마다 순서가 바뀜)
+      const styleOf = i => {
+        if (orderOn) { const e = nowMs - opts.order.ms, sd = Math.floor(opts.order.ms / 1000) + i * 5, first = sd % 2 ? 'over' : 'side', mid = ['toss', 'spin', first === 'over' ? 'side' : 'over'][Math.floor(sd / 2) % 3];
+          const seq = [[first, 1500], [mid, 1500], [first === 'over' ? 'side' : 'over', 1100], ['pour', 1900]]; let acc = 0;
+          for (const [k, d] of seq) { if (e < acc + d) return { k, e: e - acc, d, sd }; acc += d; } return null; }
+        const cyc = (t + i * 7000) % 16000; if (cyc < 2400) return { k: ['over', 'side', 'toss', 'spin'][Math.floor((t + i * 7000) / 16000) % 4], e: cyc, d: 2400, sd: 0 };
+        return null; };
+      const COCK = ['#ff6a9a', '#ffb43a', '#6ad0ff', '#c07aff', '#7ae07a'], frontFx = [];
+      if (orderOn && !clapOn && t - (GS.iceT || 0) > 115) { const e0 = nowMs - opts.order.ms; if (e0 < 4100) { GS.iceT = t; sfxIce(); } else if (e0 > 5700 && GS.tingK !== opts.order.ms) { GS.tingK = opts.order.ms; sfxTing(); } }
+      const sv = opts.served, svE = sv && sv.ms ? nowMs - sv.ms : 1e9, svT = svE < 3400 && sv.gid ? placed.find(p => p.g.id === sv.gid) : null;
       owners.forEach((o, i) => {
-        const shaking = orderOn || (t + i * 7000) % 16000 < 2200, wobble = shaking && !clapOn ? (Math.floor(t / 90) % 2) : 0;
-        const yawn = late && (t + i * 17000) % 38000 < 2600;
-        const fr = clapOn ? (Math.floor(t / 170) % 2 ? 'c' : 'C') : shaking ? 'k' : yawn ? 'y' : ((t + i * 2100) % 5200 < 140 ? 'b' : 'n');
-        const ox = OWNER_X[i] + Math.round(Math.sin(t / 3200 + i * 2) * 6);
+        const lift = i === 0 && svE < 1100 && !clapOn, st = clapOn || lift ? null : styleOf(i), yawn = late && (t + i * 17000) % 38000 < 2600;
+        let wobble = 0, jx = 0, fr;
+        if (clapOn) fr = Math.floor(t / 170) % 2 ? 'c' : 'C';
+        else if (lift) fr = 's';
+        else if (st) { fr = st.k === 'over' ? 'k' : 's'; if (st.k === 'over') wobble = Math.floor(t / 90) % 2; if (st.k === 'side') jx = Math.floor(t / 75) % 2 ? 1 : -1; }
+        else fr = yawn ? 'y' : ((t + i * 2100) % 5200 < 140 ? 'b' : 'n');
+        const ox = OWNER_X[i] + Math.round(Math.sin(t / 3200 + i * 2) * 6) + jx, foot = 160 + bob(i + 20) - wobble;
         owners[i]._x = ox;
         const oc = ownerCostume(o, i, th);
-        if (SECRET_KEYS.has(oc) || LEGEND_KEYS.has(oc)) { b.save(); b.globalCompositeOperation = 'lighter'; radiance(b, ox, 160 + bob(i + 20) - 27, 30, t, .5 + Math.sin(t / 420) * .15, LEGEND_KEYS.has(oc)); b.restore(); }
-        blit(sprite(o, false, '', fr, oc), ox, 160 + bob(i + 20) - wobble);
+        if (SECRET_KEYS.has(oc) || LEGEND_KEYS.has(oc)) { b.save(); b.globalCompositeOperation = 'lighter'; aura(b, oc, ox, 160 + bob(i + 20) - 27, 30, t, .5 + Math.sin(t / 420) * .15); b.restore(); }
+        blit(sprite(o, false, '', fr, oc), ox, foot);
+        if (lift) { const fem = String(o.style || '')[0] === 'f', hx = ox + (fem ? 5.5 : 6.5), hy = foot - 28, col = drinkColor(sv.dr), tw3 = Math.floor(t / 120) % 2;
+          frontFx.push(P2 => { martini(Math.round(hx + 1), 1, col, true, P2, hy - 10); if (tw3) sparkle(Math.round(hx + 7), hy - 13, .9, P2); }); }
+        if (st && st.k !== 'over') { const fem = String(o.style || '')[0] === 'f', hx = ox + (fem ? 5.5 : 6.5), hy = foot - 28, k = st.k, p = st.e / st.d;
+          if (k === 'side') { const a2 = Math.floor(t / 75) % 2 ? .55 : -.25; shakerAt(hx + 4, hy - 6, a2);
+            px(hx - 1, hy - 8, 2, 1, 'rgba(255,255,255,.5)'); px(hx - 2, hy - 5, 2, 1, 'rgba(255,255,255,.35)'); px(hx + 9, hy - 8, 2, 1, 'rgba(255,255,255,.5)'); px(hx + 10, hy - 5, 2, 1, 'rgba(255,255,255,.35)'); }
+          if (k === 'toss') { const q = (st.e % 1150) / 1150;
+            if (q < .72) { const hh = Math.sin(q / .72 * Math.PI) * 26; shakerAt(hx + 4, hy - 6 - hh, q / .72 * Math.PI * 4); if (hh > 6) px(hx + 3, hy - hh + 3, 1, 3, 'rgba(255,255,255,.25)'); }
+            else { shakerAt(hx + 4, hy - 6, 0); if (q < .9) sparkle(hx + 8, hy - 12, 1 - (q - .72) / .18); } }
+          if (k === 'spin') { const sp = (st.e / 260) * Math.PI; shakerAt(hx + 4, hy - 6, sp); if (Math.floor(t / 120) % 2) sparkle(hx + 4 + Math.round(Math.cos(sp) * 7), hy - 6 + Math.round(Math.sin(sp) * 7), .7); }
+          if (k === 'pour') { const col = orderOn && opts.order.dr ? drinkColor(opts.order.dr) : COCK[(st.sd + i) % 5], gx = ox + 19, tilt = Math.min(1, st.e / 300), ang = tilt * 2.35, mcx = hx + 6, mcy = hy - 3;
+            shakerAt(mcx, mcy, ang); const mx = Math.round(mcx + 4.5 * Math.sin(ang)), my = Math.round(mcy - 4.5 * Math.cos(ang)), fill = Math.max(0, Math.min(1, (st.e - 350) / 1150));
+            if (tilt >= 1 && fill < 1) { for (let yy = my + 1; yy < 136 + 4 - fill * 4; yy++) px(mx + ((yy + Math.floor(t / 60)) % 3 === 0 ? 1 : 0), yy, 1, 1, col); }
+            const gX = Math.max(gx, mx), tw2 = fill >= 1 && Math.floor(t / 110) % 2; frontFx.push(P2 => { martini(gX, fill, col, fill >= 1, P2); if (tw2) sparkle(gX + 6, 133, .9, P2); }); } }
       });
+      if (svE >= 1100 && svE < 2900 && svT) { const col = drinkColor(sv.dr), sx = owners[0]._x + 8, sy = 160 - 28 - 10, tx = svT.x + 6, ty = svT.foot - (svT.sit ? 41 : 45) + 6;
+        if (svE < 2000) { const q = (svE - 1100) / 900, e2 = q * q * (3 - 2 * q), x = Math.round(sx + (tx - sx) * e2), y = Math.round(sy + (ty - sy) * e2 - Math.sin(q * Math.PI) * 34);
+          frontFx.push(P2 => { martini(x, 1, col, true, P2, y); P2(x - 1 - Math.round(q * 4), y + 4, 1, 1, 'rgba(255,250,200,.6)'); }); }
+        else { const k = 1 - (svE - 2000) / 900; frontFx.push(P2 => { martini(tx, 1, col, true, P2, ty); for (let a = 0; a < 6; a++) { const r = 6 + (1 - k) * 8, an = a * Math.PI / 3 + svE / 400; sparkle(Math.round(tx + Math.cos(an) * r), Math.round(ty + 4 + Math.sin(an) * r), k, P2); } }); }
+        if (GS.svK !== sv.ms && svE > 2000) { GS.svK = sv.ms; sfxTing(); } }
       barFront();
       const lay = (...ls) => placed.filter(p => ls.includes(p.layer)).sort((p, q) => p.foot - q.foot).forEach(draw);
       lay('standBack'); lay('gBack');
@@ -1101,9 +1212,13 @@
       const sg = ctx.createRadialGradient(98 * s, 104 * s, 0, 98 * s, 104 * s, 120 * s); sg.addColorStop(0, 'rgba(255,140,90,.18)'); sg.addColorStop(1, 'rgba(255,140,90,0)'); ctx.fillStyle = sg; ctx.fillRect(0, 0, 240 * s, 220 * s);
       ctx.restore();
       drawCats(ctx, s);   // 고양이는 고해상도로 화면에 직접 (조명 효과 뒤에)
+      if (frontFx.length) { ctx.save(); const P2 = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x * s, y * s, w * s, h * s); }; frontFx.forEach(fn => fn(P2)); ctx.restore(); }   // 잔·반짝임은 고양이보다 앞에
       wallSign(ctx, s, t);
-      cats.forEach(c => { if (c.st === 'jump' || c.lx === undefined) return; ctx.save(); ctx.font = `${4.4 * s}px "Do Hyeon", sans-serif`; ctx.textAlign = 'center'; const tw = ctx.measureText(c.name).width + 4 * s, ty = (c.ly - 3) * s;   // 고양이 이름표
-        ctx.fillStyle = 'rgba(20,12,14,.55)'; ctx.beginPath(); ctx.roundRect(c.lx * s - tw / 2, ty - 4.4 * s, tw, 6 * s, 3 * s); ctx.fill(); ctx.fillStyle = '#ffe2c4'; ctx.fillText(c.name, c.lx * s, ty); ctx.restore(); });
+      cats.forEach((c, ci) => { if (c.st === 'jump' || c.lx === undefined) return; ctx.save(); ctx.font = `${6.4 * s}px "Do Hyeon", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';   // 고양이 이름표 (머리 바로 위, 목걸이 색 테두리)
+        const tw = ctx.measureText(c.name).width + 5 * s, th = 8.4 * s, cy = Math.max(th / 2 + s, (c.ly - 6.2) * s), cx = Math.max(tw / 2 + 2 * s, Math.min(W * s - tw / 2 - 2 * s, c.lx * s)), kc = CAT_PAL[ci].K;
+        ctx.fillStyle = 'rgba(20,12,14,.78)'; ctx.beginPath(); ctx.roundRect(cx - tw / 2, cy - th / 2, tw, th, 4 * s); ctx.fill(); ctx.strokeStyle = kc; ctx.lineWidth = .8 * s; ctx.stroke();
+        const ax = Math.max(cx - tw / 2 + 3 * s, Math.min(cx + tw / 2 - 3 * s, c.lx * s)); ctx.beginPath(); ctx.moveTo(ax - 1.6 * s, cy + th / 2); ctx.lineTo(ax + 1.6 * s, cy + th / 2); ctx.lineTo(ax, cy + th / 2 + 2 * s); ctx.closePath(); ctx.fillStyle = kc; ctx.fill();
+        ctx.fillStyle = '#fff2e0'; ctx.fillText(c.name, cx, cy + .3 * s); ctx.restore(); });
       // 시크릿 = 황금 오라 + 도는 별, 레어 = 가끔 반짝
       placed.forEach(p => { if (!p._rar || p._rar === 'n') return; const cx = p.x * s, cy = (p.foot - (p.sit ? 22 : 24)) * s;
         if (p._rar === 's' || p._rar === 'L') { ctx.save(); ctx.globalCompositeOperation = 'lighter'; const pulse = .55 + Math.sin(t / 380) * .2, gr = 26 * s, gg = ctx.createRadialGradient(cx, cy, 0, cx, cy, gr); gg.addColorStop(0, `rgba(255,214,90,${.42 * pulse})`); gg.addColorStop(1, 'rgba(255,214,90,0)'); ctx.fillStyle = gg; ctx.fillRect(cx - gr, cy - gr, gr * 2, gr * 2);
@@ -1125,8 +1240,10 @@
       // 시크릿 등장 배너 (4초)
       if (secretAnn && Date.now() - secretAnn.ms < 4200) { const e = (Date.now() - secretAnn.ms) / 4200, a = Math.min(1, e * 6, (1 - e) * 5);
         ctx.save(); ctx.globalAlpha = a; ctx.textAlign = 'center'; const by = 92 * s, bw = 230 * s, bh = 34 * s;
-        ctx.fillStyle = 'rgba(20,12,4,.88)'; ctx.beginPath(); ctx.roundRect(240 * s - bw / 2, by - bh / 2, bw, bh, 8 * s); ctx.fill(); ctx.strokeStyle = `rgba(255,214,90,${.6 + Math.sin(Date.now() / 120) * .4})`; ctx.lineWidth = 1.6 * s; ctx.stroke();
-        ctx.font = `${11 * s}px "Do Hyeon", sans-serif`; ctx.fillStyle = '#ffd23a'; ctx.fillText(secretAnn.L ? '★ LEGEND 아이돌 등장! ★' : '★ SECRET 코스튬 등장! ★', 240 * s, by - 4 * s);
+        ctx.fillStyle = 'rgba(20,12,4,.88)'; ctx.beginPath(); ctx.roundRect(240 * s - bw / 2, by - bh / 2, bw, bh, 8 * s); ctx.fill(); const fx = AURA_FX[secretAnn.k] || { t: secretAnn.L ? '★ LEGEND 아이돌 등장! ★' : '★ SECRET 코스튬 등장! ★', c: '#ffd23a' };
+        ctx.save(); ctx.clip(); ctx.globalCompositeOperation = 'lighter'; aura(ctx, secretAnn.k, 240 * s, by, bw * .55, Date.now(), .55); ctx.restore();
+        ctx.beginPath(); ctx.roundRect(240 * s - bw / 2, by - bh / 2, bw, bh, 8 * s); ctx.strokeStyle = fx.c; ctx.globalAlpha = a * (.6 + Math.sin(Date.now() / 120) * .4); ctx.lineWidth = 1.6 * s; ctx.stroke(); ctx.globalAlpha = a;
+        ctx.font = `${11 * s}px "Do Hyeon", sans-serif`; ctx.fillStyle = fx.c; ctx.fillText(fx.t, 240 * s, by - 4 * s);
         ctx.font = `${7 * s}px "Do Hyeon", sans-serif`; ctx.fillStyle = '#fff2d0'; ctx.fillText(`${secretAnn.nick}님이 '${secretAnn.name}' 뽑음!`, 240 * s, by + 10 * s); ctx.restore(); }
       const cp = cheerPair(placed, t);
       if (cp) { const mx = (cp[0].x + cp[1].x) / 2 * s, my = (Math.min(cp[0].foot, cp[1].foot) - (cp[0].sit ? 46 : 50)) * s;
@@ -1142,9 +1259,9 @@
       ctx.fillStyle = '#ffb27a'; ctx.font = `${30 * s}px "DotGothic16", monospace`; ctx.fillText(String(opts.count).padStart(2, '0'), lx * s, 96 * s);
       ctx.fillStyle = '#b9a59c'; ctx.font = `${5.6 * s}px "DotGothic16", monospace`; ctx.fillText(`${opts.day.replaceAll('-', '.')}  notsun`, lx * s, 114 * s);
       // 대화 아이콘 설명 (스크린 아래쪽)
-      { const ly = 124, lc = 376; ctx.save(); ctx.font = `${4.3 * s}px "Do Hyeon", sans-serif`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-        const parts = [['말 걸어도 돼요', 1], ['오늘은 조용히', 2], ['표시 없음 = 상관없어요', 0]], gap = 7 * s, iw = 9 * s;
-        const widths = parts.map(([tx, k]) => ctx.measureText(tx).width + (k ? iw : 0)), total = widths.reduce((a, b2) => a + b2, 0) + gap * 2;
+      { const ly = 124, lc = 376; ctx.save(); ctx.font = `${5.4 * s}px "Do Hyeon", sans-serif`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+        const parts = [['말 걸어도 돼요', 1], ['오늘은 조용히', 2]], gap = 9 * s, iw = 10 * s;
+        const widths = parts.map(([tx, k]) => ctx.measureText(tx).width + (k ? iw : 0)), total = widths.reduce((a, b2) => a + b2, 0) + gap * (parts.length - 1);
         let x = lc * s - total / 2;
         parts.forEach(([tx, k], i) => { if (k) { ctx.save(); ctx.translate(x + 4 * s, ly * s + 2.6 * s); ctx.scale(.7, .7); talkIcon(ctx, s, 0, 0, k, 0); ctx.restore(); x += iw; }
           ctx.fillStyle = k ? '#d9c8bd' : '#9a857c'; ctx.fillText(tx, x, ly * s); x += ctx.measureText(tx).width + gap; });
@@ -1171,10 +1288,10 @@
           ctx.fillRect(tx0 - 1 * s, ty0 + .5 * s, 1 * s, 1.5 * s); ctx.fillRect(tx0 + 5 * s, ty0 + .5 * s, 1 * s, 1.5 * s); }
         if (o.hearts > 0) { const hs = 1.05 * s, hx = lx0 + w0 - 5 * hs, hy = y0 - 4.6 * hs; ctx.fillStyle = '#ff6fa0';
           [[1,0],[2,0],[4,0],[5,0],[0,1],[1,1],[2,1],[3,1],[4,1],[5,1],[6,1],[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[6,2],[1,3],[2,3],[3,3],[4,3],[5,3],[2,4],[3,4],[4,4],[3,5]].forEach(([a, b2]) => ctx.fillRect(hx + a * hs, hy + b2 * hs, hs, hs));
-          if (o.hearts > 1) { ctx.font = `${4.4 * s}px "Do Hyeon", sans-serif`; ctx.textAlign = 'left'; ctx.fillStyle = '#ffb3cc'; ctx.fillText(String(o.hearts), hx + 7.6 * hs, hy + 5 * hs); ctx.textAlign = 'center'; } }
+          if (o.hearts > 1) { ctx.font = `${5.4 * s}px "Do Hyeon", sans-serif`; ctx.textAlign = 'left'; ctx.fillStyle = '#ffb3cc'; ctx.fillText(String(o.hearts), hx + 7.6 * hs, hy + 5 * hs); ctx.textAlign = 'center'; } }
         const sub = badge || [o.vip ? 'VIP' : '', o.last && !many ? o.last : ''].filter(Boolean).join(' · ');
         if (o.tier && o.tier.k === 'regular') { const tw2 = Math.sin(performance.now() / 300) > 0.3; if (tw2) { ctx.fillStyle = '#fff6c0'; const sx3 = lx0 + w0 - 2 * s, sy3 = y0 - .5 * s; ctx.fillRect(sx3, sy3 - 1.5 * s, .8 * s, 3.8 * s); ctx.fillRect(sx3 - 1.5 * s, sy3, 3.8 * s, .8 * s); } }
-        if (sub) { ctx.font = `${4.4 * s}px "Do Hyeon", sans-serif`; ctx.fillStyle = o.vip ? '#ffd36a' : '#ffc9a0'; ctx.fillText(sub, x * s, (y + 6.5) * s); }
+        if (sub) { ctx.font = `${5.2 * s}px "Do Hyeon", sans-serif`; ctx.fillStyle = o.vip ? '#ffd36a' : '#ffc9a0'; ctx.fillText(sub, x * s, (y + 6.5) * s); }
       };
       owners.forEach((o, i) => tag(o.nick, o._x ?? OWNER_X[i], 111, '#ffe2c8'));
       // 이름표: 캐릭터 가슴 높이 (40명이 앉아도 덜 겹치게, 줄마다 살짝 엇갈림)
@@ -1183,7 +1300,7 @@
         const tr = null, vip = !!(p.g.id && vipSet.has(p.g.id));   // 단골 표시는 남에게 보이지 않게 뺌
         const stag = p.layer === 'stool' ? ((+String(p.code).slice(1) || 0) % 2 === 0 ? 10 : 0) : (many ? (k % 2) * 4 : 0);
         tag(p.g.nick, p.x, top + (p.sit ? 30 : 31) + stag, '#f6eee6', !many && p.g.demo ? '예시' : '',
-          { tier: tr, ring: vip ? '#ffd36a' : tr && tr.ring, tcolor: vip ? '#ffe9a8' : tr && tr.color, crown: tr && tr.k !== 'silver', vip, trophy: !!(bestId && p.g.id === bestId), talk: p.g.talk, hearts: p.g.noheart ? 0 : (p.g.hearts | 0), last: typeof p.g.last === 'string' && !p.g.nolast ? p.g.last : '' }); });
+          { tier: tr, ring: vip ? '#ffd36a' : tr && tr.ring, tcolor: vip ? '#ffe9a8' : tr && tr.color, crown: tr && tr.k !== 'silver', vip, trophy: !!(bestId && p.g.id === bestId), talk: p.g.talk, hearts: p.g.noheart ? 0 : Math.min(p.g.hearts | 0, heartShown.has(p.g.id) ? heartShown.get(p.g.id) : (p.g.hearts | 0)), last: typeof p.g.last === 'string' && !p.g.nolast ? p.g.last : '' }); });
       if (opts.footer) { ctx.fillStyle = 'rgba(185,165,156,.75)'; ctx.font = `${5 * s}px "Do Hyeon", sans-serif`; ctx.fillText(opts.footer, 100 * s, 262 * s); }
       // 말풍선 우선순위: 사장 실시간 메시지 > 방금 온 손님 > 돌아가며
       const headY = p => p.foot - (p.sit ? 41 : 45) + bob(p.i) - (p._cs ? 4 : 0);
@@ -1198,6 +1315,8 @@
       const bye = leaving.filter(lv => Date.now() - lv.ms < 4000).pop();
       if (live && live.msg && Date.now() - live.ms < 15000) { const oi = live.who === 1 ? 1 : 0; pick = { key: 'live' + live.ms, x: owners[oi]._x ?? OWNER_X[oi], y: 103, text: live.msg, kind: 'live' }; }
       else if (bye) pick = { key: 'bye' + bye.id + bye.ms, x: owners[0]._x ?? OWNER_X[0], y: 103, text: `${bye.nick}님, 안녕히 가세요!`, kind: 'live' };
+      else if (opts.served && Date.now() - opts.served.ms > 1900 && Date.now() - opts.served.ms < 5500 && opts.served.gid && placed.find(p => p.g.id === opts.served.gid)) { const sp = placed.find(p => p.g.id === opts.served.gid); pick = { key: 'sv' + opts.served.ms, x: sp.x, y: headY(sp), text: '한 잔 나왔어요! 🍸', kind: 'order' }; }
+      else if (opts.served && Date.now() - opts.served.ms < 3000) pick = { key: 'sv' + opts.served.ms, x: owners[0]._x ?? OWNER_X[0], y: 103, text: '한 잔 완성! 🍸', kind: 'live' };
       else if (odOn) { const op = od.gid && placed.find(p => p.g.id === od.gid);
         pick = op ? { key: 'od' + od.ms, x: op.x, y: headY(op), text: '주문 들어갔어요!', kind: 'order' }
                   : { key: 'od' + od.ms, x: owners[0]._x ?? OWNER_X[0], y: 103, text: `${od.nick || '손님'}님 주문 들어갔어요!`, kind: 'order' }; }
@@ -1232,18 +1351,18 @@
       cheerFx(ctx, s, t, placed, opts.cheers, headY);
       heartFx(ctx, s, t, placed, headY);
       const bdOn = opts.bday && Date.now() - opts.bday.ms < BD_END;
-      if (opts.q && !bdOn && !opts.game) qBanner(ctx, s, t, opts.q);
+      if (opts.q && !bdOn && !opts.game && !(opts.lucky && opts.lucky.ms && Date.now() - opts.lucky.ms < 16000)) qBanner(ctx, s, t, opts.q);
     }
     // ---------- 게임 화면 ----------
     const GS = { holder: null, from: null, at: 0, tick: 0, boomKey: '', clinkSfx: new Set() };
     function banner(ctx, s, t, title, sub, col) {
       ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.font = `${9 * s}px "Do Hyeon", sans-serif`; const tw = ctx.measureText(title).width; ctx.font = `${5 * s}px "Do Hyeon", sans-serif`; const sw = sub ? ctx.measureText(sub).width : 0;
-      const w = Math.max(tw, sw) + 22 * s, h = (sub ? 26 : 17) * s, x = 240 * s - w / 2, y = 5 * s;
+      ctx.font = `${9 * s}px "Do Hyeon", sans-serif`; const tw = ctx.measureText(title).width; ctx.font = `${6 * s}px "Do Hyeon", sans-serif`; const sw = sub ? ctx.measureText(sub).width : 0;
+      const w = Math.max(tw, sw) + 22 * s, h = (sub ? 28 : 17) * s, x = 240 * s - w / 2, y = 5 * s;
       ctx.fillStyle = 'rgba(14,9,10,.92)'; ctx.beginPath(); ctx.roundRect(x, y, w, h, 7 * s); ctx.fill();
       ctx.strokeStyle = col || '#ffb27a'; ctx.lineWidth = 1.2 * s; ctx.stroke();
       ctx.fillStyle = col || '#ffd9b8'; ctx.font = `${9 * s}px "Do Hyeon", sans-serif`; ctx.fillText(title, 240 * s, y + 9.5 * s);
-      if (sub) { ctx.fillStyle = '#d9c8bd'; ctx.font = `${5 * s}px "Do Hyeon", sans-serif`; ctx.fillText(sub, 240 * s, y + 20 * s); }
+      if (sub) { ctx.fillStyle = '#ece0d6'; ctx.font = `${6 * s}px "Do Hyeon", sans-serif`; ctx.fillText(sub, 240 * s, y + 21 * s); }
       ctx.restore();
     }
     function bombIcon(ctx, s, x, y, t, hot) {
@@ -1369,28 +1488,47 @@
             const p = find(g.winner); if (p) { const j = Math.abs(Math.sin(t / 200)) * 2; T('🎉', p.x, headY(p) - 12 - j, 9, '#ffd36a', 'center', false); } } }
       }
       if (g.type === 'race') {
-        const H5 = RACE_HORSES, picks = {}; acts.filter(a => a.kind === 'horse' && a.gid).forEach(a => { if (!(a.gid in picks)) picks[a.gid] = a.v; });
+        const H5 = RACE_HORSES, picks = {}; if (g.phase !== 'pick' && g.pk && typeof g.pk === 'object') Object.entries(g.pk).forEach(([gid, v]) => { picks[gid] = v | 0; }); else acts.filter(a => a.kind === 'horse' && a.gid && (g.phase === 'pick' || (a.ms || 0) <= g.ms)).forEach(a => { if (!(a.gid in picks)) picks[a.gid] = a.v; });
         const cnt = H5.map((_, i) => Object.values(picks).filter(v => v === i).length);
-        const X0 = 52, X1 = 424, Y0 = 136, LH = 17;
-        box(30, Y0 - 12, 420, LH * 5 + 18, '#ffb27a', 'rgba(20,40,24,.92)');
+        const X0 = 96, X1 = 414, Y0 = 128, LH = 21, RI = raceInfo(g), order = RI.order, tt = g.phase === 'run' ? e / 1000 - RACE_T0 : g.phase === 'result' ? 99 : -1;
+        const wk = g.n + '|' + g.phase; if (GS.winK !== wk) { GS.winK = wk; const day = bizDate(); GS.wins = g.phase === 'result' && g.n ? raceWinAdd(day, g.n, order[0]) : raceWins(day); } const wins = GS.wins;
+        box(30, Y0 - 12, 420, LH * 5 + 18, '#ffb27a', 'rgba(20,40,24,.88)');
         ctx.save(); for (let i = 0; i <= 5; i++) { ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(34 * s, (Y0 - 4 + i * LH) * s, 412 * s, .6 * s); }
         for (let y = 0; y < LH * 5; y += 3) { ctx.fillStyle = (y / 3) % 2 ? '#fff' : '#111'; ctx.fillRect((X1 + 8) * s, (Y0 - 4 + y) * s, 3 * s, 3 * s); ctx.fillStyle = (y / 3) % 2 ? '#111' : '#fff'; ctx.fillRect((X1 + 11) * s, (Y0 - 4 + y) * s, 3 * s, 3 * s); }
         ctx.restore();
-        const order = g.order || [0, 1, 2, 3, 4], rankOf = i => order.indexOf(i), tt = g.phase === 'run' ? e / 1000 - 2.2 : g.phase === 'result' ? 99 : -1;
-        const prog = i => { if (tt <= 0) return 0; const f = 8.2 + rankOf(i) * .45, u = Math.min(1, tt / f), sd = (g.seed || 7) * (i + 3);
-          return Math.min(1, Math.max(0, u + .13 * Math.sin(tt * (1.1 + (sd % 5) * .17) + sd) * u * (1 - u) * 4 * (u < 1 ? 1 : 0))); };
-        H5.forEach((h, i) => { const y = Y0 + i * LH + 5, x = X0 + (X1 - X0) * prog(i), run = tt > 0 && prog(i) < 1, lg = run ? Math.floor(t / 90) % 2 : 0; ctx.save();
-          ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect((x - 9) * s, (y + 5) * s, 18 * s, 2 * s);
-          ctx.fillStyle = h.c; ctx.fillRect((x - 8) * s, (y - 4) * s, 13 * s, 6 * s); ctx.fillRect((x + 3) * s, (y - 8) * s, 4 * s, 6 * s); ctx.fillRect((x + 5) * s, (y - 9) * s, 5 * s, 3.5 * s);
-          ctx.fillStyle = '#1a0f10'; ctx.fillRect((x + 8) * s, (y - 8.4) * s, 1 * s, 1 * s); ctx.fillRect((x - 9) * s, (y - 4) * s, 2 * s, 4 * s);
-          ctx.fillStyle = h.c; [[-7, lg], [-4, 1 - lg], [1, lg], [3.5, 1 - lg]].forEach(([dx, o]) => ctx.fillRect((x + dx + o) * s, (y + 2) * s, 1.4 * s, 4 * s));
-          ctx.fillStyle = '#fff4ea'; ctx.fillRect((x - 5) * s, (y - 3) * s, 6 * s, 4 * s); ctx.restore();
-          T(String(i + 1), x - 2, y - 1, 4.4, '#1a0f10', 'center', false);
-          T(`${i + 1}. ${h.n}`, 36, y - 1, 5, '#fff4ea', 'left');
-          if (g.phase === 'pick') T(`${cnt[i]}명`, X1 - 4, y - 1, 5, '#ffd36a', 'right'); });
+        const prog = i => raceProg(g, i, tt, RI), P = H5.map((_, i) => prog(i));
+        const say = (x, y, txt, col) => { ctx.save(); ctx.font = `${5.4 * s}px "Do Hyeon", sans-serif`; const w = ctx.measureText(txt).width + 5 * s; ctx.fillStyle = col || 'rgba(255,248,238,.95)'; ctx.beginPath(); ctx.roundRect(x * s, (y - 4.6) * s, w, 8.4 * s, 3 * s); ctx.fill();
+          ctx.beginPath(); ctx.moveTo((x - 2) * s, (y - .5) * s); ctx.lineTo(x * s, (y - 2) * s); ctx.lineTo(x * s, (y + 1) * s); ctx.fill(); ctx.fillStyle = '#2a1a14'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(txt, (x + 2.5) * s, (y - .4) * s); ctx.restore(); };
+        H5.forEach((h, i) => { const y = Y0 + i * LH + 5, pr = P[i], x = X0 + (X1 - X0) * pr, run = tt > 0 && pr < 1, win = g.phase === 'result' && order[0] === i, f = run ? Math.floor(t / 85 + i) % 4 : win ? (Math.floor(t / 300) % 2 ? 0 : 2) : 2, bobY = run && (f === 1 || f === 3) ? -1 : win ? -Math.round(Math.abs(Math.sin(t / 260)) * 3) : 0;
+          if (win) { ctx.fillStyle = `rgba(255,211,106,${.16 + Math.sin(t / 250) * .07})`; ctx.fillRect(34 * s, (Y0 - 4 + i * LH) * s, 412 * s, LH * s); }
+          ctx.save(); ctx.imageSmoothingEnabled = false;
+          ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect((x - 11) * s, (y + 9) * s, 22 * s, 2 * s);
+          if (run) { ctx.fillStyle = 'rgba(230,210,170,.45)'; for (let k = 0; k < 3; k++) { const dx = ((t / 40 + k * 5 + i * 3) % 14); ctx.fillRect((x - 14 - dx) * s, (y + 8 - (k % 2)) * s, 2 * s, 1 * s); } }
+          ctx.drawImage(horseSprite(i, f), Math.round((x - 14) * s), Math.round((y - 10 + bobY) * s), 26 * s, 20 * s);
+          ctx.restore();
+          T(String(i + 1), x - 5, y + 1.8 + bobY, 2.8, '#1a0f10', 'center', false);
+          T(`${win ? '🏆 ' : ''}${i + 1}. ${h.n}`, 36, y - 1, 5, win ? '#ffd36a' : h.c, 'left');
+          if (wins.w[i]) T(`오늘 ${wins.w[i]}승`, 36, y + 5.4, 3.6, '#ffd36a', 'left');
+          const fans = g.phase === 'pick' ? Object.entries(picks).filter(([, v]) => v === i).map(([gid]) => (placed.find(p => p.g.id === gid) || { g: {} }).g.nick).filter(Boolean) : []; if (fans.length) T(fans.slice(0, 3).join(' · ') + (fans.length > 3 ? ` +${fans.length - 3}` : ''), X1 - 4, y + 5.6, 4.2, 'rgba(255,226,196,.85)', 'right');
+          if (g.phase === 'pick') { T(`${cnt[i]}명`, X1 - 4, y - 1, 5, '#ffd36a', 'right'); const ph = (t / 2600 + i * .37) % 1; if (ph < .78) say(x + 13, y - 4, h.ln[Math.floor(t / 2600 + i * .37) % h.ln.length]); }
+          if (win) say(150, y - 1, h.win, 'rgba(255,230,150,.97)'); });
         if (g.phase === 'pick') banner(ctx, s, t, '🏇 픽셀 경마', `휴대폰에서 우승마를 골라주세요 · ${left()}초`, '#7ee08a');
         if (g.phase === 'run') { if (tt < 0) { const c = Math.ceil(-tt); T(tt > -0.6 ? '출발!' : String(Math.min(3, c)), 240, 80, 22, '#ffd36a'); if (GS.tick !== c) { GS.tick = c; tone(tt > -0.6 ? 1320 : 880, .15, .06, 'square'); } }
-          const lead = H5.map((_, i) => i).sort((a, b) => prog(b) - prog(a))[0]; banner(ctx, s, t, '🏇 달려라!', tt > 0 ? `선두: ${lead + 1}번 ${H5[lead].n}` : '곧 출발해요', '#7ee08a'); }
+          const lead = H5.map((_, i) => i).sort((a, b) => P[b] - P[a])[0], F0 = RI.F[0];
+          // 말발굽 소리 · 역전 · 결승
+          if (tt > 0 && tt < RI.end && t - (GS.hoofT || 0) > 110) { GS.hoofT = t; GS.hoofK = (GS.hoofK || 0) + 1; noiseHit(.025, GS.hoofK % 2 ? .05 : .035, 260); tone(GS.hoofK % 2 ? 95 : 120, .05, .03, 'triangle'); }
+          if (GS.raceN !== g.n) { GS.raceN = g.n; GS.lead = -1; GS.flipT = 0; GS.finK = 0; }
+          if (tt > 3 && tt < F0 && lead !== GS.lead) { if (GS.lead >= 0) { GS.flipT = t; GS.flipH = lead; tone(660, .08, .05, 'square'); tone(990, .12, .05, 'square', .08); } GS.lead = lead; }
+          if (tt <= 3) GS.lead = lead;
+          if (GS.flipT && t - GS.flipT < 1000) { const k = (t - GS.flipT) / 1000, ly = Y0 + GS.flipH * LH + 5; T('역전!', X0 + (X1 - X0) * P[GS.flipH] + 4, ly - 12 - k * 6, 8 - k * 2, `rgba(255,90,90,${1 - k})`); }
+          if (tt >= F0 && !GS.finK) { GS.finK = 1; noiseHit(1.4, .1, 900); if (RI.photo) noiseHit(.08, .14, 5000); else sfxFanfare(); }
+          let sub = tt > 0 ? `선두: ${lead + 1}번 ${H5[lead].n}` : '곧 출발해요';
+          if (tt >= F0) { const w = order[0];
+            if (RI.photo) { if (tt < F0 + .18) { ctx.fillStyle = `rgba(255,255,255,${.85 * (1 - (tt - F0) / .18)})`; ctx.fillRect(0, 0, W * s, H * s); }
+              if (tt < F0 + 1.5) { sub = '거의 동시에 들어왔어요!'; box(160, 87, 160, 18, '#ffffff', 'rgba(20,14,16,.88)'); T(Math.floor(t / 250) % 2 ? '📸 사진판정 중…' : '📸 사진판정 중', 240, 96, 13, '#ffffff'); }
+              else { sub = `코 차이로 ${w + 1}번 ${H5[w].n}!`; box(150, 87, 180, 18, '#ffd36a', 'rgba(20,14,16,.88)'); T(`${w + 1}번 ${H5[w].n} 코 차이 1착!`, 240, 96, 12, '#ffd36a'); if (GS.finK === 1) { GS.finK = 2; sfxFanfare(); } } }
+            else { sub = `${w + 1}번 ${H5[w].n} 1착!`; box(160, 87, 160, 18, '#ffd36a', 'rgba(20,14,16,.88)'); T(`🏁 ${w + 1}번 ${H5[w].n} 1착!`, 240, 96, 12, '#ffd36a'); } }
+          banner(ctx, s, t, '🏇 달려라!', sub, '#7ee08a'); }
         if (g.phase === 'result') { const w = order[0], hit = Object.entries(picks).filter(([, v]) => v === w).length;
           banner(ctx, s, t, `🏆 ${w + 1}번 ${H5[w].n} 우승!`, `맞힌 손님 ${hit}명` + (g.luckyNick ? ` · 추첨 당첨 ${g.luckyNick}님${g.reward ? ' (' + g.reward + ')' : ''}` : ''), '#ffd36a');
           Object.entries(picks).forEach(([gid, v]) => { if (v === w) overHead(gid, '적중!', '#ffd36a', 6); }); }
@@ -1443,13 +1581,14 @@
     // 익명 건배: 받은 손님 머리 위로 잔 두 개가 '짠' (5초)
     const cheerSfx = new Set();
     // 하트를 받으면 머리 위로 하트가 떠오름 (개수가 늘어난 순간만, 보낸 사람은 표시 안 함)
-    const heartSeen = new Map(), heartFloats = [];
+    const heartSeen = new Map(), heartFloats = [], heartShown = new Map();
     function heartFx(ctx, s, t, placed, headY) {
       const now = Date.now();
       placed.forEach(p => { const id = p.g.id; if (!id) return; const n = p.g.noheart ? 0 : (p.g.hearts | 0);
-        if (heartSeen.has(id) && n > heartSeen.get(id)) { heartFloats.push({ to: id, ms: now }); setTimeout(sfxHeart, 200); }
+        if (heartSeen.has(id) && n > heartSeen.get(id)) for (let k = heartSeen.get(id); k < n; k++) heartFloats.push({ to: id, ms: now + 40000 + Math.random() * 80000 });
+        else if (!heartSeen.has(id) || n < heartSeen.get(id)) heartShown.set(id, n);
         heartSeen.set(id, n); });
-      for (let i = heartFloats.length - 1; i >= 0; i--) { const h = heartFloats[i], e = now - h.ms; if (e > 3600) { heartFloats.splice(i, 1); continue; }
+      for (let i = heartFloats.length - 1; i >= 0; i--) { const h = heartFloats[i], e = now - h.ms; if (e < 0) continue; if (!h.on) { h.on = 1; heartShown.set(h.to, (heartShown.get(h.to) || 0) + 1); setTimeout(sfxHeart, 200); } if (e > 3600) { heartFloats.splice(i, 1); continue; }
         const p = placed.find(q => q.g.id === h.to); if (!p) continue;
         const k = e / 3600, fade = e > 2800 ? (3600 - e) / 800 : 1, pop = Math.min(1, e / 260), sz = (1.6 + pop * .9) * s;
         const cx = p.x * s, cy = (headY(p) - 12 - k * 22) * s;
@@ -1610,7 +1749,9 @@
   const LIVE = !!(cfg && cfg.apiKey && !/^여기에/.test(cfg.apiKey) && global.firebase);
   let fs = null;
   let auth = null;
-  if (LIVE) { if (!firebase.apps.length) firebase.initializeApp(cfg); fs = firebase.firestore(); auth = firebase.auth ? firebase.auth() : null; }
+  // App Check: 우리 사이트에서 온 요청만 받도록 (Fraud Defense = reCAPTCHA Enterprise 사이트 키 · 공개용 값)
+  const APPCHECK_SITE_KEY = '6LdEMf4tAAAAAJ5Lnj8ZboMJtRatnzw51W_-CRkc';
+  if (LIVE) { if (!firebase.apps.length) firebase.initializeApp(cfg); try { if (APPCHECK_SITE_KEY && firebase.appCheck && location.protocol === 'https:' && !/^(localhost|127\.|192\.168\.|10\.)/.test(location.hostname)) firebase.appCheck().activate(new firebase.appCheck.ReCaptchaEnterpriseProvider(APPCHECK_SITE_KEY), true); } catch (e) {} fs = firebase.firestore(); auth = firebase.auth ? firebase.auth() : null; }
   // 손님 휴대폰 익명 로그인: 내 캐릭터의 메시지만 고칠 수 있게 하는 열쇠 (실패해도 등록은 됨)
   let authReady = null;
   function guestUid() {
@@ -1644,7 +1785,7 @@
       const ref = await fs.collection('days').doc(day).collection('guests').add({ ...doc, ...(uid ? { uid } : {}), ts: firebase.firestore.FieldValue.serverTimestamp() });
       return { day, id: ref.id, editable: !!uid };
     }
-    const id = 'd' + Date.now(), list = lsGet(DEMO_KEY(day), []); list.push({ ...doc, uid: demoUid(), ms: Date.now(), id }); lsSet(DEMO_KEY(day), list); ping();
+    const id = 'd' + Date.now(), list = lsGet(DEMO_KEY(day), []); list.push({ ...doc, uid: demoUid(), ms: Date.now(), ms0: Date.now(), id }); lsSet(DEMO_KEY(day), list); ping();
     return { day, id, editable: true };
   }
   // 손님 간단 설정 (대화 아이콘, 술 이름 표시)
@@ -1673,12 +1814,17 @@
     if (LIVE) { await fs.collection('days').doc(day).collection('guests').doc(id).delete(); return; }
     lsSet(DEMO_KEY(day), lsGet(DEMO_KEY(day), []).filter(g => g.id !== id)); ping();
   }
+  function relisten(start) { let off = () => {}, dead = false, tries = 0;
+    const go = () => { if (dead) return; try { off = start(() => { try { off(); } catch (e) {} if (!dead) setTimeout(go, [5000, 30000, 120000][Math.min(tries++, 2)]); }, () => { tries = 0; }); } catch (e) { setTimeout(go, 30000); } };
+    go(); return () => { dead = true; try { off(); } catch (e) {} }; }
+  // 안전한 새로고침: 사이트가 정상으로 열릴 때만 (인터넷이 불안할 때 브라우저 오류 화면에 멈추지 않게)
+  async function safeReload(page) { try { const r = await fetch((page || location.pathname.split('/').pop() || 'index.html') + '?ping=' + Date.now(), { cache: 'no-store' }); const t = r.ok ? await r.text() : ''; if (r.ok && /common\.js/.test(t)) { location.reload(); return true; } } catch (e) {} return false; }
   function watchGuests(day, cb, all) {
     const keep = l => all ? l : l.filter(g => valid(g) && clean(g.nick) && clean(g.msg));
     if (LIVE) {
-      return fs.collection('days').doc(day).collection('guests').orderBy('ts').limit(300).onSnapshot(snap => {
+      return relisten((err, ok) => fs.collection('days').doc(day).collection('guests').orderBy('ts').limit(300).onSnapshot(snap => { ok();
         cb(keep(snap.docs.map(d => { const g = d.data(); return { ...g, id: d.id, ms: g.mts ? g.mts.toMillis() : g.ts ? g.ts.toMillis() : Date.now() }; })));
-      }, () => cb(null));
+      }, () => { cb(null); err(); }));
     }
     const read = () => cb(keep(lsGet(DEMO_KEY(day), []))); read(); listeners.push(read);
     return () => { const i = listeners.indexOf(read); if (i >= 0) listeners.splice(i, 1); };
@@ -1691,11 +1837,14 @@
         style: STYLE_RE.test(o.style) ? o.style : d.style, cos: o.cos === 'none' || OWNER_COS_SET.has(o.cos) ? o.cos : '', lines: Array.isArray(o.lines) ? o.lines.filter(l => typeof l === 'string').map(l => l.slice(0, 24)).slice(0, 5) : d.lines }; });
   }
   // 고양이 방문 · 쓰다듬기: 스크린(사장 로그인)이 방문을 정하고, 그 손님 폰에 쓰다듬기 버튼이 떠요
-  async function setCatVisit(v) { const d = v && v.gid ? { gid: String(v.gid), cat: v.cat ? 1 : 0, name: String(v.name || '').slice(0, 8), until: Math.floor(+v.until || 0), ms: Date.now() } : { gid: '', cat: 0, name: '', until: 0, ms: Date.now() };
-    if (LIVE) { await fs.collection('owner').doc('catvisit').set(d); return; } lsSet('notsun-catvisit', d); ping(); }
-  function watchCatVisit(cb) {
-    if (LIVE) return fs.collection('owner').doc('catvisit').onSnapshot(d => cb(d.exists ? d.data() : null), () => cb(null));
-    const read = () => cb(lsGet('notsun-catvisit', null)); read(); listeners.push(read); return () => {}; }
+  let catLastGid = '';
+  async function setCatVisit(v) { const gid = v && v.gid ? String(v.gid).slice(0, 40) : catLastGid; if (!gid) return; catLastGid = v && v.gid ? gid : '';
+    const d = v && v.gid ? { gid, cat: v.cat ? 1 : 0, name: String(v.name || '').slice(0, 8), until: Math.floor(+v.until || 0), ms: Date.now() } : { gid, cat: 0, name: '', until: 0, ms: Date.now() };
+    if (LIVE) { await fs.collection('catvisits').doc(gid).set({ ...d, ts: firebase.firestore.FieldValue.serverTimestamp() }); return; } lsSet('notsun-catvisit', d); ping(); }
+  function watchCatVisit(gid, cb) {   // 내 자리(gid)에 온 고양이만 · lu = 이 기기 시계 기준 끝나는 시각
+    const loc = v => { if (!(v && v.gid === gid && v.until)) return null; const dur = Math.max(0, Math.min(60000, (v.until - v.ms) || 0)), age = v.ts && v.ts.toMillis ? Math.max(0, Date.now() - v.ts.toMillis()) : 0; return age > dur + 15000 ? null : { ...v, lu: Date.now() + Math.max(0, dur - age) }; };
+    if (LIVE) return relisten((err, ok) => fs.collection('catvisits').doc(String(gid)).onSnapshot(d => { ok(); cb(loc(d.exists ? d.data() : null)); }, err));
+    let key = ''; const read = () => { const v = lsGet('notsun-catvisit', null), k = v ? v.gid + '|' + v.ms : ''; if (k === key) return; key = k; cb(loc(v)); }; read(); listeners.push(read); return () => { const i = listeners.indexOf(read); if (i >= 0) listeners.splice(i, 1); }; }
   async function petCat(gid, cat) {
     const day = bizDate();
     if (LIVE) { const uid = await guestUid(); if (!uid) return; const ref = fs.collection('catpets').doc(uid); const cur = await ref.get().catch(() => null);
@@ -1703,13 +1852,13 @@
       await ref.set({ gid: String(gid), cat: cat ? 1 : 0, day, n, ts: firebase.firestore.FieldValue.serverTimestamp() }); return n; }
     const l = lsGet('notsun-catpets', []); l.push({ gid, cat: cat ? 1 : 0, day, ms: Date.now() }); lsSet('notsun-catpets', l.slice(-30)); ping(); setTimeout(() => listeners.forEach(f => f()), 0); return l.length; }
   function watchCatPets(day, cb) {   // 새 쓰다듬기만 알려줌
-    if (LIVE) { let first = true; return fs.collection('catpets').where('day', '==', day).onSnapshot(sn => { if (first) { first = false; return; } sn.docChanges().forEach(ch => { if (ch.type !== 'removed') { const v = ch.doc.data(); cb({ gid: v.gid, cat: v.cat | 0, ms: Date.now() }); } }); }, () => {}); }
+    if (LIVE) return relisten((err, ok) => { let first = true; return fs.collection('catpets').where('day', '==', day).onSnapshot(sn => { ok(); if (first) { first = false; return; } sn.docChanges().forEach(ch => { if (ch.type !== 'removed') { const v = ch.doc.data(); cb({ gid: v.gid, cat: v.cat | 0, ms: Date.now() }); } }); }, err); });
     let seenN = lsGet('notsun-catpets', []).length; const read = () => { const l = lsGet('notsun-catpets', []); if (l.length > seenN) l.slice(seenN - l.length).forEach(v => cb({ gid: v.gid, cat: v.cat | 0, ms: Date.now() })); seenN = l.length; }; listeners.push(read); return () => {}; }
   function watchOwner(cb) {
     let state = { owners: normOwners(null), live: null, theme: 'auto', seats: {}, lucky: null, best: null, vip: [] };
     if (LIVE) {
-      const u1 = fs.collection('owner').doc('settings').onSnapshot(d => { const v = d.exists ? d.data() : {}; state = { ...state, owners: normOwners(v.owners || null), theme: v.theme || 'auto', seats: cleanSeats(v.seats), ...cleanEvents(v) }; cb(state); }, () => {});
-      const u2 = fs.collection('owner').doc('live').onSnapshot(d => { const v = d.exists ? d.data() : null; state = { ...state, live: v && v.ts ? { msg: String(v.msg || '').slice(0, 30), who: v.who, ms: v.ts.toMillis() } : null }; cb(state); }, () => {});
+      const u1 = relisten((err, ok) => fs.collection('owner').doc('settings').onSnapshot(d => { ok(); const v = d.exists ? d.data() : {}; state = { ...state, owners: normOwners(v.owners || null), theme: v.theme || 'auto', seats: cleanSeats(v.seats), ...cleanEvents(v) }; cb(state); }, err));
+      const u2 = relisten((err, ok) => fs.collection('owner').doc('live').onSnapshot(d => { ok(); const v = d.exists ? d.data() : null; state = { ...state, live: v && v.ts ? { msg: String(v.msg || '').slice(0, 30), who: v.who, ms: v.ts.toMillis() } : null }; cb(state); }, err));
       cb(state); return () => { u1(); u2(); };
     }
     const read = () => { state = { owners: normOwners(lsGet('notsun-owner-settings', null)), live: lsGet('notsun-owner-live', null), theme: lsGet('notsun-owner-theme', 'auto'), seats: cleanSeats(lsGet('notsun-owner-seats', null)), ...cleanEvents(lsGet('notsun-owner-events', {})) }; cb(state); };
@@ -1735,7 +1884,7 @@
   const SHOP_WIFI = { s: 'KT_GiGA_B945', p: '3bbbaxe067' };  // 손님용 와이파이 기본값 (사장 리모컨에서 바꿀 수 있음 · 이름은 대소문자 구분)
   const wifiQrText = w => `WIFI:T:WPA;S:${String(w.s).replace(/([\\;,:"])/g, '\\$1')};P:${String(w.p).replace(/([\\;,:"])/g, '\\$1')};;`;
   function cleanEvents(v) {
-    const today = bizDate(), out = { lucky: null, best: null, vip: [], order: null, ntfy: '', bday: null, bdays: [], q: '', game: null, npcs: [], wifi: { ...SHOP_WIFI } };
+    const today = bizDate(), out = { lucky: null, best: null, vip: [], order: null, served: null, gend: null, ntfy: '', bday: null, bdays: [], q: '', game: null, npcs: [], wifi: { ...SHOP_WIFI } };
     const wf = v && v.wifi; if (wf && typeof wf.s === 'string') out.wifi = { s: wf.s.slice(0, 32), p: typeof wf.p === 'string' ? wf.p.slice(0, 63) : '' };
     const lk = v && v.lucky;
     if (lk && lk.day === today && typeof lk.id === 'string') {
@@ -1752,7 +1901,10 @@
     if (bdv && bdv.day === today && bdv.n && typeof bdv.id === 'string') { const key = 'b|' + bdv.n; if (!(key in luckySeen)) luckySeen[key] = performance.now() < 5000 ? 0 : Date.now(); out.bday = { id: bdv.id, nick: String(bdv.nick || '').slice(0, 8), ms: luckySeen[key] }; }
     const bdl = v && v.bdays; if (bdl && bdl.day === today && Array.isArray(bdl.ids)) out.bdays = bdl.ids.filter(x => typeof x === 'string').slice(0, 40);
     const od = v && v.order;
-    if (od && od.day === today && od.n) { const key = 'o|' + od.n; if (!(key in luckySeen)) luckySeen[key] = performance.now() < 5000 ? 0 : Date.now(); out.order = { gid: od.gid || '', nick: String(od.nick || '').slice(0, 8), icon: od.icon || 'cocktail', ms: luckySeen[key] }; }
+    if (od && od.day === today && od.n) { const key = 'o|' + od.n; if (!(key in luckySeen)) luckySeen[key] = performance.now() < 5000 ? 0 : Date.now(); out.order = { gid: od.gid || '', nick: String(od.nick || '').slice(0, 8), icon: od.icon || 'cocktail', dr: typeof od.dr === 'string' ? od.dr.slice(0, 30) : '', ms: luckySeen[key] }; }
+    const ge = v && v.gend; if (ge && ge.day === today && ge.k && typeof ge.msg === 'string') { const key = 'e|' + ge.k; if (!(key in luckySeen)) luckySeen[key] = performance.now() < 5000 ? 0 : Date.now(); out.gend = { n: +ge.n || 0, msg: ge.msg.slice(0, 80), ms: luckySeen[key] }; }
+    const sv = v && v.served;
+    if (sv && sv.day === today && sv.n) { const key = 's|' + sv.n; if (!(key in luckySeen)) luckySeen[key] = performance.now() < 5000 ? 0 : Date.now(); out.served = { gid: typeof sv.gid === 'string' ? sv.gid : '', dr: typeof sv.dr === 'string' ? sv.dr.slice(0, 30) : '', ms: luckySeen[key] }; }
     const vp = v && v.vip; if (vp && vp.day === today && Array.isArray(vp.ids)) out.vip = vp.ids.filter(x => typeof x === 'string').slice(0, 40);
     const gm = v && v.game; if (gm && gm.day === today && gm.n && GAME_TYPES.includes(gm.type)) { const key = 'g|' + gm.n + '|' + gm.phase + '|' + (gm.k || 0); if (!(key in luckySeen)) luckySeen[key] = Date.now(); out.game = { ...gm, ms: luckySeen[key] }; }
     const np = v && v.npcs; if (np && np.day === today && Array.isArray(np.list)) out.npcs = np.list.filter(g => g && typeof g.id === 'string' && /^npc/.test(g.id) && valid({ ...g, id: undefined, ms: undefined })).slice(0, NPC_MAX).map(g => ({ ...g, npc: true, noheart: true }));
@@ -1789,13 +1941,13 @@
       await del(await fs.collection('days').doc(day).collection('guests').get(), 'guests');
       await del(await fs.collection('orders').where('day', '==', day).get(), 'orders');
       await del(await fs.collection('games').where('day', '==', day).get(), 'games');
-      await fs.collection('owner').doc('settings').set({ npcs: null, lucky: null, best: null, vip: null, bday: null, bdays: null, order: null, game: null, seats: {} }, { mergeFields: ['npcs', 'lucky', 'best', 'vip', 'bday', 'bdays', 'order', 'game', 'seats'] });
+      await fs.collection('owner').doc('settings').set({ npcs: null, lucky: null, best: null, vip: null, bday: null, bdays: null, order: null, served: null, gend: null, q: null, game: null, seats: {} }, { mergeFields: ['npcs', 'lucky', 'best', 'vip', 'bday', 'bdays', 'order', 'served', 'gend', 'q', 'game', 'seats'] });
       return n;
     }
     n.guests = lsGet(DEMO_KEY(day), []).length; lsSet(DEMO_KEY(day), []);
     const od = lsGet('notsun-orders', {}); Object.keys(od).forEach(k => { if (od[k].day === day) { delete od[k]; n.orders++; } }); lsSet('notsun-orders', od);
     const ga = lsGet('notsun-gameacts', []); n.games = ga.filter(a => a.day === day).length; lsSet('notsun-gameacts', ga.filter(a => a.day !== day));
-    const ev = lsGet('notsun-owner-events', {}); ['npcs', 'lucky', 'best', 'vip', 'bday', 'bdays', 'order', 'game'].forEach(k => delete ev[k]); lsSet('notsun-owner-events', ev); lsSet('notsun-owner-seats', {});
+    const ev = lsGet('notsun-owner-events', {}); ['npcs', 'lucky', 'best', 'vip', 'bday', 'bdays', 'order', 'served', 'gend', 'q', 'game'].forEach(k => delete ev[k]); lsSet('notsun-owner-live', null); lsSet('notsun-catvisit', null); lsSet('notsun-owner-events', ev); lsSet('notsun-owner-seats', {});
     ping(); setTimeout(() => listeners.forEach(f => f()), 0); return n;
   }
   const setNpcs = list => saveEvent('npcs', { day: bizDate(), list: (list || []).slice(0, NPC_MAX).map(g => ({ id: g.id, nick: g.nick, msg: g.msg, drink: g.drink, hair: g.hair, skin: g.skin, shirt: g.shirt, pants: g.pants, style: g.style, talk: g.talk, ms: g.ms })) });
@@ -1841,7 +1993,57 @@
   const setVip = ids => saveEvent('vip', { day: bizDate(), ids: (ids || []).slice(0, 40) });
   // ---------- 게임 데이터 ----------
   const GAME_TYPES = ['bomb', 'ten', 'toast', 'bal', 'nun', 'rou', 'race', 'rps', 'ox'];
-  const RACE_HORSES = [{ n: '하이볼', c: '#e8c070' }, { n: '소맥', c: '#d9d2c0' }, { n: '막걸리', c: '#f2efe6' }, { n: '위스키', c: '#b06a2c' }, { n: '샴페인', c: '#f0d870' }];
+  // c = 기수 옷 색(휴대폰 버튼 색), coat/sh/mane = 말 털색, sock = 흰 양말
+  const RACE_HORSES = [
+    { n: '당근이', c: '#ff8a2a', coat: '#c8743a', sh: '#94501f', mane: '#6a2e12', sock: 0, ln: ['당근 주면 뛴다 🥕', '오늘 컨디션 최상!', '1등 하면 당근 두 개'], win: '당근 파티다 🥕' },
+    { n: '말랑이', c: '#ff7ab0', coat: '#f0cf8a', sh: '#c8a05a', mane: '#fff6e0', sock: 0, ln: ['말랑말랑 달려볼게', '응원하면 힘나요 💗', '살살 뛰어도 1등?'], win: '말랑하게 이겼지롱' },
+    { n: '구름이', c: '#4ab0ff', coat: '#f2f4f8', sh: '#b8c2d0', mane: '#c6cfdc', sock: 0, ln: ['구름처럼 날아갈게 ☁️', '바람이 좋다~', '하얀 번개 간다'], win: '구름 위를 달렸어 ☁️' },
+    { n: '초코볼', c: '#b07aff', coat: '#6e4228', sh: '#48281a', mane: '#24140c', sock: 1, ln: ['달달하게 이겨줄게 🍫', '막판에 강해요', '초코는 진리'], win: '달콤한 승리 🍫' },
+    { n: '히힝이', c: '#5ad87a', coat: '#3a343c', sh: '#221e26', mane: '#121014', sock: 1, ln: ['히히힝~!', '나 진짜 빨라', '어제 푹 잤음 😎'], win: '히히히힝! 내가 1등!' }];
+  // 픽셀 말 (26x20, 오른쪽을 봄) · 4프레임 갤럽 · 기수 포함
+  const HORSE_TOP = [
+    '...................oo.oo..',
+    '...................ocmco..',
+    '.........kkk.....mcccccco.',
+    '........kkkkK...mmcWccccco',
+    '........kGff...mmccEEcccco',
+    '.......SSSf...mmcccEecccco',
+    '......SSSSSsf.mmccccrcccNo',
+    '.....SSSSSs..mmcccccooooo.',
+    '......sPPP..mmcccccco.....',
+    '..ttt.ooPbbmmccccccco.....',
+    '.ttttttnnnnbcccccccco.....',
+    'tttt..onnnnccccccccco.....',
+    'ttt...oBBBBccccccccco.....',
+    'tt...odccccccccccccdo.....',
+    't....oddcccccccccddo......',
+    '......oddddddddddddo......'];
+  const HORSE_LEGS = [
+    ['......dd..........cc......', '.....dd............cc.....', '....ww..............ww....', '...hh................hh...'],
+    ['......dd...dd...cc..cc....', '......dd....dd..cc...cc...', '.......ww...ww...ww..ww...', '.......hh...hh...hh..hh...'],
+    ['.......dd.dd.....cc.cc....', '........dddd......cccc....', '.........ww.......ww.ww...', '.........hh.......hh.hh...'],
+    ['.......dd.dd....cc.cc.....', '......dd...dd..cc...cc....', '.....ww.....ww.ww...ww....', '.....hh.....hhhh....hh....']];
+  // 경마 진행도: 1착은 중반에 뒤처졌다가 막판 역전, 하위권 한 마리는 초반 선두 후 지침, 절반은 1·2착이 코 차이(사진판정)
+  const RACE_T0 = 2.2;
+  function raceInfo(g) { const order = g.order || [0, 1, 2, 3, 4], sd = g.seed || 7, photo = sd % 2 === 0;
+    const F = order.map((_, r) => 8 + (r === 1 && photo ? .07 : r * .38 + (r > 1 && photo ? .1 : 0)));
+    return { order, sd, photo, F, fake: order[3 + (sd % 2)], end: F[4] }; }
+  function raceProg(g, i, tt, info) {
+    if (tt <= 0) return 0; const I = info || raceInfo(g), r = I.order.indexOf(i), u = Math.min(1, tt / I.F[r]); if (u >= 1) return 1;
+    const bump = Math.sin(Math.PI * u), A = r === 0 ? -.11 : i === I.fake ? .15 : ((I.sd * (i + 3)) % 7 - 3) * .015, wob = .018 * Math.sin(tt * (2.2 + ((I.sd + i) % 4) * .4) + i * 1.7) * bump;
+    return Math.max(0, Math.min(.999, u + A * bump + wob)); }
+  // 오늘 우승 기록 (스크린 기기에 저장)
+  function raceWins(day) { try { const v = JSON.parse(localStorage.getItem('notsun-racewins') || 'null'); return v && v.day === day ? v : { day, w: [0, 0, 0, 0, 0], seen: {} }; } catch (e) { return { day, w: [0, 0, 0, 0, 0], seen: {} }; } }
+  function raceWinAdd(day, n, w) { const v = raceWins(day); if (v.seen[n]) return v; v.seen[n] = 1; v.w[w] = (v.w[w] || 0) + 1; try { localStorage.setItem('notsun-racewins', JSON.stringify(v)); } catch (e) {} return v; }
+  const horseCache = {};
+  function horseSprite(i, f) {
+    const key = i + '|' + f; if (horseCache[key]) return horseCache[key];
+    const h = RACE_HORSES[i], c = document.createElement('canvas'); c.width = 26; c.height = 20; const x = c.getContext('2d');
+    const pal = { o: '#1a0f10', c: h.coat, d: h.sh, m: h.mane, t: h.mane, E: '#140c0c', e: '#ffffff', W: shade(h.coat, 1.15), r: '#ff9aa8', N: '#3a2020', n: '#fff6ec', B: shade(h.c, .8),
+      h: '#2a2024', w: h.sock ? '#ffffff' : h.coat, k: h.c, K: shade(h.c, .6), G: '#2a2030', f: '#ffd2b0', S: h.c, s: shade(h.c, .72), P: '#f4f0e8', b: '#1a1214' };
+    HORSE_TOP.concat(HORSE_LEGS[f]).forEach((r, j) => [...r].forEach((ch, k) => { if (pal[ch]) { x.fillStyle = pal[ch]; x.fillRect(k, j, 1, 1); } }));
+    return (horseCache[key] = c);
+  }
   const BAL_QS = [['평생 소주만', '평생 맥주만'], ['짜장면', '짬뽕'], ['부먹', '찍먹'], ['혼술', '떼술'], ['해장은 국밥', '해장은 라면'], ['여행은 계획파', '여행은 즉흥파'],
     ['10년 전으로 가기', '10년 후로 가기'], ['월급 2배 주6일', '지금 월급 주4일'], ['여름 바다', '겨울 산'], ['민트초코 호', '민트초코 불호'], ['고백은 직접 만나서', '고백은 메시지로'],
     ['첫 잔은 맥주', '첫 잔은 칵테일'], ['아침형 인간', '저녁형 인간'], ['연락 자주 하는 친구', '가끔 만나도 편한 친구'], ['평생 치킨 금지', '평생 라면 금지']];
@@ -1934,7 +2136,7 @@
     if (kind === 'call') { doc.kind = 'call'; doc.show = false; }
     let id;
     if (LIVE) { const ref = await fs.collection('orders').add({ ...doc, ts: firebase.firestore.FieldValue.serverTimestamp() }); id = ref.id; }
-    else { id = 'o' + Date.now(); const all = lsGet('notsun-orders', {}); all[id] = { ...doc, ms: Date.now() }; lsSet('notsun-orders', all); ping(); }
+    else { id = 'o' + Date.now(); const all = lsGet('notsun-orders', {}); all[id] = { ...doc, ms: Date.now() }; lsSet('notsun-orders', all); ping(); setTimeout(() => listeners.forEach(f => f()), 0); }
     notifyPhones(doc).catch(() => {});
     return id;
   }
@@ -1947,10 +2149,11 @@
       : { topic: tp, title: `🍸 새 주문 · ${o.nick || '손님'}`, message: lines + (o.note ? `\n요청: ${o.note}` : '') + `\n${(o.total || 0).toLocaleString()}원`, priority: 5, tags: ['bell'] };
     await fetch('https://ntfy.sh/', { method: 'POST', body: JSON.stringify(body) });
   }
-  const normOrder = (id, v) => ({ id, day: v.day, uid: v.uid, gid: v.gid || '', nick: v.nick || '', items: Array.isArray(v.items) ? v.items : [], note: v.note || '', total: v.total | 0, status: v.status || 'new', show: v.show !== false, kind: v.kind === 'call' ? 'call' : '', re: !!v.re, ms: v.ts && v.ts.toMillis ? v.ts.toMillis() : (v.ms || Date.now()) });
+  const normItems = l => (Array.isArray(l) ? l : []).slice(0, 20).map(it => ({ name: String((it && it.name) || '').slice(0, 30), qty: Math.max(1, Math.min(20, (it && it.qty) | 0)), price: Math.max(0, (it && it.price) | 0), icon: typeof (it && it.icon) === 'string' ? it.icon.slice(0, 12) : 'cocktail' }));
+  const normOrder = (id, v) => ({ id, day: v.day, uid: v.uid, gid: String(v.gid || '').slice(0, 40), nick: String(v.nick || '').slice(0, 8), items: normItems(v.items), note: v.note || '', total: v.total | 0, status: v.status || 'new', show: v.show !== false, kind: v.kind === 'call' ? 'call' : '', re: !!v.re, ms: v.ts && v.ts.toMillis ? v.ts.toMillis() : (v.ms || Date.now()) });
   function watchOrders(cb) { // 사장: 오늘 주문
     const day = bizDate();
-    if (LIVE) return fs.collection('orders').where('day', '==', day).onSnapshot(sn => cb(sn.docs.map(d => normOrder(d.id, d.data())).sort((a, b) => b.ms - a.ms)), () => cb([]));
+    if (LIVE) return relisten((err, ok) => fs.collection('orders').where('day', '==', day).onSnapshot(sn => { ok(); cb(sn.docs.map(d => normOrder(d.id, d.data())).sort((a, b) => b.ms - a.ms)); }, err));
     const read = () => cb(Object.entries(lsGet('notsun-orders', {})).filter(([, v]) => v.day === day).map(([k, v]) => normOrder(k, v)).sort((a, b) => b.ms - a.ms)); read(); listeners.push(read); return () => {};
   }
   function watchMyOrders(cb) { // 손님: 내 오늘 주문
@@ -2048,6 +2251,7 @@
   // ---------- 게임 (사장 리모컨이 진행, 스크린이 보여주고, 손님 휴대폰으로 참여) ----------
   // owner/settings.game = { day, n, type: 'bomb'|'ten'|'toast', phase, ... }  /  games 컬렉션 = 손님 행동(참여·넘기기·기록·짠)
   const startGame = g => saveEvent('game', g ? { ...g, day: bizDate() } : null);
+  const saveGameEnd = (n, msg) => saveEvent('gend', { day: bizDate(), n: +n || 0, msg: String(msg || '').replace(/\s*·?\s*쿠폰\s+[A-Z0-9-]+(\s*,\s*[A-Z0-9-]+)*/g, '').replace(/\b[A-Z0-9]{6,}\b/g, '').slice(0, 80), k: Math.random().toString(36).slice(2, 8) });
   // 게임 진행 정보 (사장님만 읽기/쓰기 · OX 정답 등 손님에게 안 보이게) — 진행 기기가 바뀌어도 이어받기
   async function saveGameHost(v) {
     const doc = { n: v.n, h: JSON.stringify(v.h || {}), by: String(v.by || ''), at: Date.now() };
@@ -2174,7 +2378,8 @@
     if (LIVE) { await fs.collection('days').doc(day).collection('guests').doc(gid).update({ last }); return; }
     const list = lsGet(DEMO_KEY(day), []), g = list.find(x => x.id === gid); if (g) { g.last = last; lsSet(DEMO_KEY(day), list); ping(); }
   }
-  const announceOrder = (gid, nick, icon) => saveEvent('order', { day: bizDate(), gid: gid || '', nick: String(nick || '').slice(0, 8), icon: icon || 'cocktail', n: Math.random().toString(36).slice(2, 8) });
+  const announceOrder = (gid, nick, icon, dr) => saveEvent('order', { day: bizDate(), gid: gid || '', nick: String(nick || '').slice(0, 8), icon: icon || 'cocktail', dr: String(dr || '').slice(0, 30), n: Math.random().toString(36).slice(2, 8) });
+  const announceServed = (gid, dr) => saveEvent('served', { day: bizDate(), gid: gid || '', dr: String(dr || '').slice(0, 30), n: Math.random().toString(36).slice(2, 8) });
   async function celebrateBirthday(id, nick, current) {
     const ids = [...new Set([...(current || []), id])].slice(0, 40);
     await saveEvent('bdays', { day: bizDate(), ids });
@@ -2183,7 +2388,7 @@
   const setNtfy = topic => saveEvent('ntfy', String(topic || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64));
   const renotify = o => notifyPhones({ ...o, nick: `⏰ 아직 접수 전 · ${o.nick || '손님'}` });
   const testNtfy = topic => notifyPhones({ nick: '테스트', items: [{ name: '알림 테스트', qty: 1 }], note: '', total: 0 }, topic);
-  const onScreen = l => l.filter(g => valid(g) && clean(g.nick) && clean(g.msg) && !g.left);   // 계산 완료(퇴장)한 손님은 자리에서 뺌
+  const onScreen = (l, keepLeft) => l.filter(g => valid(g) && clean(g.nick) && clean(g.msg) && (keepLeft || !g.left));   // 계산 완료(퇴장)한 손님은 자리에서 뺌
   async function saveTheme(theme) {
     if (!THEMES.some(t => t.k === theme)) return;
     if (LIVE) { await fs.collection('owner').doc('settings').set({ theme }, { merge: true }); return; }
@@ -2195,6 +2400,6 @@
     lsSet('notsun-owner-live', { who, msg, ms: Date.now() }); ping();
   }
 
-  global.Notsun = { setGuestLeft, resetDay, watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, BAL_QS, OX_QS, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, BOTTOMS, ACCS, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
-    setCatVisit, watchCatVisit, petCat, watchCatPets, THEMES, resolveTheme, costumeFor, drawCostume, cosSeed, OWNER_COS, ownerCostume, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
+  global.Notsun = { setGuestLeft, resetDay, watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, horseSprite, raceProg, raceInfo, RACE_T0, BAL_QS, OX_QS, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, BOTTOMS, ACCS, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
+    setCatVisit, watchCatVisit, petCat, safeReload, watchCatPets, THEMES, resolveTheme, costumeFor, drawCostume, cosSeed, OWNER_COS, ownerCostume, cardAura, AURA_FX, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, announceServed, drinkColor, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, saveGameEnd, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
 })(window);

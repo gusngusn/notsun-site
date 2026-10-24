@@ -91,7 +91,7 @@ details.fold{border:1.5px solid var(--glow);background:linear-gradient(180deg,#2
 .tog{display:flex;gap:10px;align-items:center;font-size:15px}.tog input{width:20px;height:20px;flex:none}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .total{margin:0;text-align:right;color:var(--glow);font-size:15px}
-.calls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}.calls .btn{padding:12px 4px;font-size:15px}
+.calls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}.calls .btn{padding:12px 4px;font-size:16px;white-space:nowrap}
 .qtext{margin:0;font-size:20px;color:#ffe2c4}
 .gpanel{position:fixed;left:0;right:0;bottom:0;z-index:15;background:#1a1112;border-top:2px solid #ffb27a;border-radius:20px 20px 0 0;padding:20px 18px max(22px,env(safe-area-inset-bottom));box-shadow:0 -10px 40px #000a;text-align:center;display:grid;gap:12px}
 .gpanel h3{margin:0;font-weight:400;font-size:24px;color:#ffd9b8}.gpanel p{margin:0;color:var(--muted);font-size:15px}
@@ -103,7 +103,7 @@ details.fold{border:1.5px solid var(--glow);background:linear-gradient(180deg,#2
 .gtime{font:52px ui-monospace,monospace;color:#7ee0c8}
 .grow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .gchip{position:fixed;right:14px;bottom:86px;z-index:14;border:1px solid #ffb27a;background:#2a1d1f;color:#ffd9b8;border-radius:999px;padding:10px 14px;font:15px "Do Hyeon",sans-serif}
-#heartList .chip.on{border-color:#ff6fa0;color:#ffb3cc;background:#2a1520}
+#heartList .chip.on{border-color:#ff6fa0;color:#ffb3cc;background:#2a1520}#heartList .hchip{display:inline-flex;align-items:center;gap:5px;padding-left:6px}#heartList .hchip canvas{width:17px;height:27px;image-rendering:pixelated}#heartList .chip.arm{border-color:#ff6fa0;background:#4a1a2e;color:#fff}
 .hrow{display:flex;justify-content:space-between;gap:8px;font-size:15px;color:#ffb3cc;margin:6px 0 2px}
 #mutualBox .mrow3{background:#3a1724;border:1px solid #ff6fa0;border-radius:10px;padding:8px 12px;color:#ffd0e0;font-size:15px;margin:4px 0}
 .mrow3 .cbtn{float:right;margin:-3px -4px 0 8px;background:#ff6fa0;color:#2a0f18;border:0;border-radius:999px;padding:4px 12px;font-weight:700;font-size:14px}.mrow3 .cdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#ffd84d;margin-left:6px;vertical-align:middle}
@@ -121,11 +121,13 @@ details.fold{border:1.5px solid var(--glow);background:linear-gradient(180deg,#2
 .mpop .mh{font-size:56px;animation:hb 1s ease-in-out infinite}.mpop b{display:block;font:30px "Do Hyeon",sans-serif;color:#ff8fb5;margin:6px 0}
 .mpop p{font-size:18px;color:#ffe2ec;margin:6px 0 10px}.mpop small{display:block;color:var(--muted);font-size:13px;margin-bottom:14px}
 @keyframes hb{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+.rbars{display:grid;gap:7px;margin:8px 0 2px}.rb{display:grid;grid-template-columns:84px 1fr;align-items:center;gap:8px}.rb .rn{font:15px "Do Hyeon",sans-serif;white-space:nowrap;overflow:hidden}.rb .rt{position:relative;height:18px;border-radius:9px;background:#2a2224;overflow:visible}.rb .rt i{position:absolute;left:0;top:0;bottom:0;border-radius:9px;opacity:.55;width:0}.rb .rt em{position:absolute;top:-6px;left:-14px;font-size:22px;font-style:normal;transform:scaleX(-1);line-height:1}.rb.me .rt{outline:2px solid #ffd36a}.rb.me .rn::after{content:' ★';color:#ffd36a}
 .wifi{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1.5px solid #7ab8ff;background:#121a24;border-radius:14px;padding:10px 12px;margin:8px 0}.wifi:empty{display:none}.wifi .wi{font-size:22px}.wifi .wt{flex:1;min-width:150px;line-height:1.35}.wifi .wt b{display:block;font:16px "Do Hyeon",sans-serif;color:#a9d2ff;white-space:nowrap}.wifi .wt span{display:block;font:16px ui-monospace,Menlo,monospace;color:#f6eee6;white-space:nowrap}.wifi button{padding:9px 14px;border-radius:10px;border:0;background:#7ab8ff;color:#0d1520;font:16px "Do Hyeon",sans-serif;cursor:pointer}.wifi small{flex-basis:100%;color:#b9c8da;font-size:12.5px}
 .gflash{position:fixed;inset:0;pointer-events:none;z-index:40;opacity:0}.gflash.red{background:radial-gradient(circle,#ff3b2f55,#ff3b2fcc)}.gflash.soft{background:#ffd36a33}.gflash.go{animation:gfl .9s ease-out}
 .gflash.red.go{animation:gfl .45s ease-out 3}@keyframes gfl{0%{opacity:1}100%{opacity:0}}
 .lastbox{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1.5px solid #b8f08a;background:#16200f;border-radius:14px;padding:10px 12px;margin-bottom:10px}.lastbox canvas{width:56px;height:88px;image-rendering:pixelated;background:#2a1416;border-radius:8px}.lastbox .lt{flex:1;min-width:150px;line-height:1.4}.lastbox .lt b{display:block;font:18px "Do Hyeon",sans-serif;color:#d4f7b0}.lastbox .lt span{font-size:15px;color:#e8f0dc}.lastbox em{font-style:normal;color:#fff}.lastbox .lb{display:flex;gap:6px;flex-basis:100%}.lastbox .lb .btn{flex:1}
-.toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:20;background:#2a1d1f;border:1px solid var(--glow);color:#ffe2c4;border-radius:999px;padding:12px 18px;font-size:16px;box-shadow:0 8px 30px #0008;max-width:92vw;text-align:center}
+.grecaptcha-badge{visibility:hidden}.rcnote{text-align:center;font-size:11px;color:#7a6a64;margin:18px 16px 90px}.rcnote a{color:#9a8a84}
+.toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);width:max-content;max-width:92vw;z-index:20;background:#2a1d1f;border:1px solid var(--glow);color:#ffe2c4;border-radius:999px;padding:12px 18px;font-size:16px;box-shadow:0 8px 30px #0008;max-width:92vw;text-align:center}
 .mrow .rec{color:#ffd36a;font-size:13px;margin-left:6px}
 .recbox{border:1px solid #ffd36a66;border-radius:12px;padding:10px 14px;background:#1f1710;margin:6px 0}.recbox b{font-weight:400;color:#ffd36a}
 .ostat{border-radius:10px;padding:12px 14px;display:grid;gap:4px;border:1px solid var(--line);background:#1a1214}
@@ -151,13 +153,21 @@ details.fold{border:1.5px solid var(--glow);background:linear-gradient(180deg,#2
 .gfront.L::before{content:'';position:absolute;left:50%;top:38%;width:320px;height:320px;margin:-160px 0 0 -160px;background:repeating-conic-gradient(rgba(255,110,200,.4) 0 9deg,transparent 9deg 20deg,rgba(110,220,255,.4) 20deg 29deg,transparent 29deg 40deg);border-radius:50%;-webkit-mask:radial-gradient(circle,#000 30%,transparent 70%);mask:radial-gradient(circle,#000 30%,transparent 70%);animation:grays 4s linear infinite;pointer-events:none}.gfront.L>*{position:relative}
 .gfront.s::before{content:'';position:absolute;left:50%;top:38%;width:300px;height:300px;margin:-150px 0 0 -150px;background:repeating-conic-gradient(rgba(255,226,120,.38) 0 10deg,transparent 10deg 26deg);border-radius:50%;-webkit-mask:radial-gradient(circle,#000 30%,transparent 70%);mask:radial-gradient(circle,#000 30%,transparent 70%);animation:grays 6s linear infinite;pointer-events:none}
 .gfront.s>*{position:relative}
+.gfront.fx::before{display:none}.gfront .gfx{position:absolute;inset:0;width:100%;height:100%;border-radius:16px;pointer-events:none;image-rendering:pixelated}
+.gfront.fx[data-k=goldqueen]{border-color:#ff9ac8;box-shadow:0 0 50px #ff8ac0cc;background:radial-gradient(circle at 50% 35%,#5a2040,#2a1d1f 70%)}.gfront.fx[data-k=goldqueen] small,.gfront.fx[data-k=goldqueen] b{color:#ffb0d8}
+.gfront.fx[data-k=unicorn]{border-color:#c8b0ff;box-shadow:-14px 0 40px #ff7aa888,14px 0 40px #6ab8ff88,0 0 60px #c8b0ffaa;background:radial-gradient(circle at 50% 35%,#3a2a5a,#2a1d1f 70%)}.gfront.fx[data-k=unicorn] small,.gfront.fx[data-k=unicorn] b{color:#d8c4ff}
+.gfront.fx[data-k=idolm]{border-color:#b8d0ff;box-shadow:0 0 50px #8ab0ffcc;background:radial-gradient(circle at 50% 35%,#1a2440,#141018 75%)}.gfront.fx[data-k=idolm] small,.gfront.fx[data-k=idolm] b{color:#cfe0ff}
+.gfront.fx[data-k=idolm2],.gfront.fx[data-k=idolf2]{border-color:#ffc860;box-shadow:0 0 50px #ffb040cc;background:radial-gradient(circle at 50% 35%,#4a3a14,#2a1d1f 70%)}.gfront.fx[data-k=idolm2] small,.gfront.fx[data-k=idolm2] b,.gfront.fx[data-k=idolf2] small,.gfront.fx[data-k=idolf2] b{color:#ffd890}
 @keyframes grays{to{transform:rotate(360deg)}}
 .gfront.s{overflow:hidden;border-color:#ffd23a;box-shadow:0 0 50px #ffd23acc;background:radial-gradient(circle at 50% 35%,#5a4210,#2a1d1f 70%)}.gfront.s small,.gfront.s b{color:#ffd23a}
 @keyframes gshake{0%,100%{transform:rotate(0)}20%{transform:rotate(-6deg)}40%{transform:rotate(6deg)}60%{transform:rotate(-4deg)}80%{transform:rotate(4deg)}}
-.catcard{position:fixed;left:12px;right:12px;bottom:14px;z-index:55;background:#2a1d1f;border:2px solid #ffb0cc;border-radius:18px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 10px 30px #000a;animation:catin .4s ease-out}
-.catcard .ct{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.catcard .ct small{color:#b9a59c}.catcard .btn{white-space:nowrap;width:auto;flex:0 0 auto;margin:0}.catcard .pn{position:absolute;right:16px;top:-12px;font-size:14px}
+body:has(#gPanel:not([hidden])) .catcard{display:none}
+body:has(.catcard) .toast{top:104px}
+.catcard.mad{border-color:#ff5a5a;animation:catmad .35s ease-in-out infinite alternate}.catcard.mad b{color:#ff8a8a}@keyframes catmad{from{transform:translateX(-2px)}to{transform:translateX(2px)}}
+.catcard{position:fixed;left:12px;right:12px;top:12px;z-index:55;background:#2a1d1f;border:2px solid #ffb0cc;border-radius:18px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 10px 30px #000a;animation:catin .4s ease-out}
+.catcard .ct{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.catcard .ct small{color:#b9a59c}.catcard .btn{white-space:nowrap;width:auto;flex:0 0 auto;margin:0}.catcard .pn{position:absolute;right:16px;bottom:-12px;font-size:14px}
 .phrt{position:absolute;right:40px;bottom:40px;font-style:normal;font-size:26px;animation:phup 1.2s ease-out forwards;pointer-events:none}
-@keyframes phup{to{transform:translateY(-70px) scale(1.4);opacity:0}}@keyframes catin{from{transform:translateY(40px);opacity:0}}
+@keyframes phup{to{transform:translateY(-70px) scale(1.4);opacity:0}}@keyframes catin{from{transform:translateY(-40px);opacity:0}}
 </style>
 </head>
 <body>
@@ -230,7 +240,7 @@ details.fold{border:1.5px solid var(--glow);background:linear-gradient(180deg,#2
     <div class="wifi" data-wifi></div>
     <section class="card">
       <h2>🙋 사장님 호출</h2>
-      <div class="calls"><button class="btn" data-call="물 주세요">💧 물 주세요</button><button class="btn" data-call="계산할게요">🧾 계산할게요</button><button class="btn" data-call="잠깐 와주세요">🙋 잠깐 와주세요</button></div>
+      <div class="calls"><button class="btn" data-call="물 주세요">💧 물</button><button class="btn" data-call="계산할게요">🧾 계산</button><button class="btn" data-call="잠깐 와주세요">🙋 불러요</button></div>
       <p class="note" id="callNote" style="margin:0">누르면 사장님 휴대폰으로 조용히 알려드려요. 스크린에는 안 떠요.</p>
     </section>
     <section class="card" id="qCard" hidden>
@@ -247,7 +257,7 @@ details.fold{border:1.5px solid var(--glow);background:linear-gradient(180deg,#2
     </section>
     <section class="card" id="heartCard">
       <h2>💗 익명 하트</h2>
-      <p class="note" style="margin:0">마음에 드는 손님에게 하트를 보내요. 받는 사람은 누가 보냈는지 끝까지 몰라요. 서로 하트를 보냈을 때만 두 사람 휴대폰에 살짝 알려드려요 (스크린에는 안 나와요).</p>
+      <p class="note" style="margin:0">보낸 사람은 끝까지 비밀이에요. 서로 하트일 때만 두 사람 폰에 살짝 알려드려요.</p>
       <div class="hrow"><span id="heartGot">받은 하트 💗 0</span><span id="heartLeft">오늘 남은 하트 3개</span></div>
       <div id="mutualBox"></div>
       <div class="chips" id="heartList"></div>
@@ -262,7 +272,7 @@ details.fold{border:1.5px solid var(--glow);background:linear-gradient(180deg,#2
       <p class="note" id="prefNote" style="margin:0">바꾸면 스크린에 바로 반영돼요.</p>
     </details>
     <div class="row2">
-      <button class="btn" id="cardBtn2">📸 내 캐릭터 카드</button>
+      <button class="btn" id="cardBtn2" style="white-space:nowrap">📸 카드</button>
       <button class="btn" id="again2">새 캐릭터로</button>
     </div>
   </div>
@@ -273,11 +283,12 @@ details.fold{border:1.5px solid var(--glow);background:linear-gradient(180deg,#2
   <div id="orderStatus" style="display:grid;gap:8px"></div>
   <p class="total" id="menuTotal" hidden></p>
   <div id="recBox"></div>
-  <div><h1 style="margin:4px 0">메뉴판</h1><p class="sub">고르고 주문하면 사장님께 바로 전달돼요. 결제는 계산할 때 해주세요.</p></div>
+  <div><h1 style="margin:4px 0">메뉴판</h1><p class="sub">고르고 주문하면 사장님께 바로 전달돼요.</p></div>
   <div class="mnav"><nav class="tabs" id="mtabs" aria-label="메뉴 종류"></nav><div class="taste" id="mtaste" aria-label="맛으로 고르기"></div></div>
   <div id="mlist"></div>
   <div id="mnotes" style="display:grid;gap:4px;margin-top:10px"></div>
 </main>
+<p class="rcnote">이 사이트는 reCAPTCHA로 보호되며 Google <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">개인정보처리방침</a>과 <a href="https://policies.google.com/terms" target="_blank" rel="noopener">서비스 약관</a>이 적용됩니다.</p>
 <div class="toast" id="toast" hidden role="status"></div>
 <div class="gflash" id="gFlash" aria-hidden="true"></div>
 <div class="mpop" id="mutualPop" hidden role="dialog" aria-label="서로 하트"><div class="mbox"><div class="mh">💞</div><b>서로 하트!</b><p id="mutualTxt"></p><small>이 알림은 두 분 휴대폰에만 떠요. 스크린과 사장님 화면에는 나오지 않아요.</small><button class="btn primary" id="mutualChat" type="button">💬 짧게 대화하기</button><button class="btn ghost" id="mutualOk" type="button" style="margin-top:8px">나중에</button></div></div>
@@ -308,7 +319,7 @@ details.fold{border:1.5px solid var(--glow);background:linear-gradient(180deg,#2
 </div>
 <div class="sheet" id="winPop" hidden role="dialog" aria-label="럭키 손님 당첨">
   <div class="in">
-    <div class="coupon" style="width:100%"><div class="big">🎉 럭키 손님 당첨!</div><div id="winText" class="small"></div><div class="code" id="winCode"></div>
+    <div class="coupon" style="width:100%"><div class="big">🎉 쿠폰 당첨!</div><div id="winText" class="small"></div><div class="code" id="winCode"></div>
     <div class="small">다음에 와서 QR을 찍으면 쿠폰이 떠요. 혹시 모르니 이 화면을 캡처해 두세요.</div></div>
     <button class="btn primary" id="winOk">확인</button>
   </div>
@@ -325,6 +336,7 @@ details.fold{border:1.5px solid var(--glow);background:linear-gradient(180deg,#2
 </div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="config.js"></script>
 <script src="common.js"></script>
@@ -337,18 +349,22 @@ const styleOf = () => `${look.sex}${look.hs}${look.bt}${look.ac}`;
 const cur = () => ({ hair: look.hair, skin: look.skin, shirt: look.shirt, pants: look.pants, style: styleOf() });
 let theme = 'default';
 // 코스튬 뽑기: 기기 uid + 영업일로 하루 한 번 (앉기 전엔 비밀, 앉으면 공개)
-let myUidV = ''; N.myUid().then(u => { myUidV = u || ''; }).catch(() => {});
+let myUidV = ''; const uidReady = N.myUid().then(u => { myUidV = u || ''; const me = loadMe(); if (me) { if (!$('edit').hidden) N.drawPreview($('meEdit'), me.look, me.drink, myCos(me.look.style).k); if ($('me')) N.drawPreview($('me'), me.look, me.drink, myCos(me.look.style).k); } }).catch(() => {});
 const myCos = style => N.drawCostume(theme, myUidV ? myUidV + '|' + N.bizDate() : 'x', style || cur().style);
 function redraw(){ N.drawPreview($('preview'), cur(), drink, ''); N.drawPreview($('qpreview'), cur(), drink, ''); check(); }
-function showGacha(){
+async function showGacha(){
+  try { await uidReady; } catch (e) {}
   const c = myCos(), box = document.createElement('div'); box.className = 'gacha'; box.setAttribute('role', 'dialog');
   const lab = { L: ['LEGEND', '레전드 아이돌!'], s: ['SECRET', '시크릿 코스튬!'], r: ['RARE', '레어 코스튬!'], n: ['NORMAL', c.k ? '오늘의 코스튬' : '오늘은 기본 복장'] }[c.rar];
-  box.innerHTML = `<div class="gcard"><div class="gback">?</div><div class="gfront ${c.rar}"><small>${lab[0]}</small><canvas width="112" height="176"></canvas><b>${lab[1]}</b><span>${c.name ? escH(c.name) : '다음 방문 때 다시 뽑아요'}</span><em>${c.rar === 'L' ? '확률 1%! 무대 조명 받으며 등장해요' : c.rar === 's' ? '확률 3%! 황금빛으로 등장해요' : c.rar === 'r' ? '확률 16%! 스크린에서 반짝여요' : '레어 16% · 시크릿 3% · 레전드 1%'}</em><button type="button" class="btn">스크린 보러 가기</button></div></div>`;
-  document.body.appendChild(box); N.drawPreview(box.querySelector('canvas'), cur(), drink, c.k);
-  box.querySelector('.btn').onclick = () => box.remove();
+  const fx = N.AURA_FX[c.k], big = c.rar === 's' || c.rar === 'L';
+  box.innerHTML = `<div class="gcard"><div class="gback">?</div><div class="gfront ${c.rar}${fx ? ' fx' : ''}"${fx ? ` data-k="${c.k}"` : ''}>${fx ? '<canvas class="gfx" width="125" height="190"></canvas>' : ''}<small>${lab[0]}</small><canvas width="112" height="176"></canvas><b>${lab[1]}</b><span>${c.name ? escH(c.name) : '다음 방문 때 다시 뽑아요'}</span><em>${fx ? `확률 ${c.rar === 'L' ? 1 : 3}%! ${fx.d}` : c.rar === 'L' ? '확률 1%! 무대 조명 받으며 등장해요' : c.rar === 's' ? '확률 3%! 황금빛으로 등장해요' : c.rar === 'r' ? '확률 16%! 스크린에서 반짝여요' : '레어 16% · 시크릿 3% · 레전드 1%'}</em>${c.rar !== 'n' ? '<button type="button" class="btn primary" data-gshare>📸 카드 저장·자랑하기</button>' : ''}<button type="button" class="btn" data-gclose>스크린 보러 가기</button></div></div>`;
+  document.body.appendChild(box); const pv = box.querySelector('.gfront canvas:not(.gfx)'), gfx = box.querySelector('.gfx'); N.drawPreview(pv, cur(), drink, c.k, null, !!fx);
+  if (gfx) { const loop = () => { if (!box.isConnected) return; N.cardAura(gfx, c.k, performance.now()); requestAnimationFrame(loop); }; loop(); }
+  box.querySelector('[data-gclose]').onclick = () => box.remove(); const sh = box.querySelector('[data-gshare]'); if (sh) sh.onclick = () => { box.remove(); openCard(); };
+  box.addEventListener('click', e => { if (e.target === box && box.classList.contains('open')) box.remove(); });
   setTimeout(() => { box.classList.add('open'); try { gAlert(c.rar === 's' || c.rar === 'L' ? 'boom' : 'soft'); } catch (e) {} }, 1300);
 }
-N.watchOwner(st => { renderWifi(st.wifi); checkBday(st.bday); if (typeof renderGameFeed === 'function') renderGameFeed(st.game); todayQ = st.q || ''; if (typeof renderQ === 'function') renderQ(); theme = N.resolveTheme(st.theme); const nm = { halloween: '할로윈', christmas: '크리스마스', summer: '여름 바캉스', spring: '봄', valentine: '발렌타인데이', white: '화이트데이', rose: '로즈데이', pepero: '빼빼로데이', seollal: '설날', chuseok: '추석' }[theme]; $('season').textContent = (nm ? `지금은 ${nm} 시즌! ` : '') + '앉으면 오늘의 코스튬 뽑기 🎁 (레어 16% · 시크릿 3% · 레전드 1%)'; redraw(); const me = loadMe(); if (me && !$('edit').hidden) N.drawPreview($('meEdit'), me.look, me.drink, myCos(me.look.style).k); });
+N.watchOwner(st => { const ge = st.gend; if (ge && ge.ms && Date.now() - ge.ms < 20000 && ge.n === lastGameN && /^참여자가/.test(ge.msg) && gendSeen !== ge.ms) { gendSeen = ge.ms; toast('🎮 ' + ge.msg); } renderWifi(st.wifi); checkBday(st.bday); if (typeof renderGameFeed === 'function') renderGameFeed(st.game); todayQ = st.q || ''; if (typeof renderQ === 'function') renderQ(); theme = N.resolveTheme(st.theme); const nm = { halloween: '할로윈', christmas: '크리스마스', summer: '여름 바캉스', spring: '봄', valentine: '발렌타인데이', white: '화이트데이', rose: '로즈데이', pepero: '빼빼로데이', seollal: '설날', chuseok: '추석' }[theme]; $('season').textContent = (nm ? `지금은 ${nm} 시즌! ` : '') + '앉으면 오늘의 코스튬 뽑기 🎁 (레어 16% · 시크릿 3% · 레전드 1%)'; redraw(); const me = loadMe(); if (me && !$('edit').hidden) N.drawPreview($('meEdit'), me.look, me.drink, myCos(me.look.style).k); });
 function chips(id, items, isOn, onPick){
   const el = $(id); el.innerHTML = '';
   items.forEach((it, i) => { const b = document.createElement('button'); b.type = 'button';
@@ -415,13 +431,13 @@ async function submit(){
     if (GM) { renderGame(GM); gWakeSync(GM); }   // 게임 도중에 앉은 손님도 바로 참여 화면이 보이게
     N.drawPreview($('me'), cur(), drink, myCos().k); setTimeout(showGacha, 400);
     $('doneTitle').textContent = `${$('nick').value.trim()}님, 바에 앉았어요`;
-    showMenu('done', `${$('nick').value.trim()}님, 바에 앉았어요! 스크린을 확인하고 한 잔 골라보세요.`);
+    showMenu('done', `${$('nick').value.trim()}님, 바에 앉았어요! ${v === 1 ? '첫 방문 환영해요 🎉' : `오늘이 ${v}번째 방문이에요 🙌`} 스크린을 확인하고 한 잔 골라보세요.`);
   } catch (e) { showErr('등록하지 못했어요. 인터넷 연결을 확인하고 다시 눌러주세요.'); }
   busy = false; $('go').textContent = '이 모습으로 바에 앉기'; $('quickGo').textContent = '빠르게 앉기'; check();
 }
 $('go').onclick = submit; $('quickGo').onclick = submit;
 $('nick').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); $('msg').focus(); } });
-function restart(){ saveMe(null); randomize(); $('nick').value = ''; $('msg').value = ''; $('done').hidden = true; $('edit').hidden = true; $('menu').hidden = true; $('cartbar').hidden = true; $('form').hidden = false; scrollTo(0, 0); check(); }
+function restart(){ const old = loadMe(); if (old && old.id) N.setGuestLeft(old.id, true).catch(() => {}); saveMe(null); randomize(); $('nick').value = ''; $('msg').value = ''; $('done').hidden = true; $('edit').hidden = true; $('menu').hidden = true; $('cartbar').hidden = true; $('form').hidden = false; scrollTo(0, 0); check(); }
 $('again').onclick = restart; $('again2').onclick = restart;
 // 내 캐릭터 기억하기 (이 휴대폰 안에만 저장, 같은 영업일 동안)
 const ME_KEY = 'notsun-me' + (new URLSearchParams(location.search).get('duid') || '').slice(0, 12);  // duid: 데모 시뮬레이션용
@@ -443,7 +459,7 @@ function loadMe(){ try { const v = JSON.parse(localStorage.getItem(ME_KEY)); ret
 function showEdit(){
   const me = loadMe(); if (!me) { restart(); return; }
   N.drawPreview($('meEdit'), me.look, me.drink, myCos(me.look.style).k);
-  $('editTitle').textContent = `${me.nick}님, 다시 오셨네요`; $('hubMsg').textContent = me.msg ? `지금 한 줄: "${me.msg}"` : '스크린 속 바에 앉아 있어요.'; $('newMsg').value = ''; renderPrefs(); renderOrders(); renderHearts(); renderQ();
+  $('editTitle').textContent = (me.v | 0) > 1 ? `${me.nick}님, 다시 오셨네요` : `${me.nick}님 자리`; $('hubMsg').textContent = me.msg ? `지금 한 줄: "${me.msg}"` : '스크린 속 바에 앉아 있어요.'; $('newMsg').value = ''; renderPrefs(); renderOrders(); renderHearts(); renderQ();
   $('editErr').hidden = true; $('form').hidden = true; $('done').hidden = true; $('edit').hidden = false; scrollTo(0, 0);
 }
 $('toEdit').onclick = () => loadMe() ? showEdit() : ($('toEdit').hidden = true);
@@ -458,12 +474,12 @@ async function savePref(pr){ const me = loadMe(); if (!me) return; const prev = 
 $('showLast').onchange = () => savePref({ nolast: !$('showLast').checked });
 $('getHeart').onchange = () => savePref({ noheart: !$('getHeart').checked });
 // 사장님 호출 (주문처럼 사장님께만 전달 · 30초에 한 번)
-let lastCall = 0;
+let lastCall = {};
 document.querySelectorAll('[data-call]').forEach(b => b.onclick = async () => {
   const me = loadMe(); if (!me) { restart(); return; }
-  const wait = Math.ceil((lastCall + 30000 - Date.now()) / 1000); if (wait > 0) { $('callNote').textContent = `방금 알렸어요. ${wait}초 뒤에 다시 누를 수 있어요.`; return; }
+  const wait = Math.ceil(((lastCall[b.dataset.call] || 0) + 30000 - Date.now()) / 1000); if (wait > 0) { $('callNote').textContent = `방금 알렸어요. ${wait}초 뒤에 다시 누를 수 있어요.`; return; }
   b.disabled = true;
-  try { await N.placeOrder({ gid: me.id, nick: me.nick, items: [{ name: b.dataset.call, qty: 1, price: 0, icon: 'call' }], note: b.dataset.call === '계산할게요' ? billNote() : '', kind: 'call' }); lastCall = Date.now();
+  try { await N.placeOrder({ gid: me.id, nick: me.nick, items: [{ name: b.dataset.call, qty: 1, price: 0, icon: 'call' }], note: b.dataset.call === '계산할게요' ? billNote() : '', kind: 'call' }); lastCall[b.dataset.call] = Date.now();
     $('callNote').textContent = `✅ "${b.dataset.call}" 사장님께 알렸어요. 잠시만 기다려 주세요.`; }
   catch (e) { $('callNote').textContent = '알리지 못했어요. 바에 직접 말씀해 주세요.'; }
   b.disabled = false; });
@@ -478,7 +494,7 @@ $('msg').dataset.ph = $('msg').placeholder;
 $('qAnswer').onclick = () => { $('newMsg').focus(); $('newMsg').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
 var allGuests = [];
 // 익명 하트
-var heartTo = null, heartGotN = null, heartBusy = false;
+var heartTo = null, heartGotN = null, heartShownN = null, heartBusy = false;
 const mutualKey = () => 'notsun-mutual-' + N.bizDate() + ME_KEY.slice(9);
 function chEsc(t){ return String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 var mutualLast = null, chatWith = null, chatState = {}, chatSubs = {}, chatUnread = {}, chatSeenN = {}, chatStopArm = 0;
@@ -486,14 +502,23 @@ function chatSeenKey(){ const me = loadMe(); return 'notsun-chatseen-' + (me ? m
 try { chatSeenN = JSON.parse(localStorage.getItem(chatSeenKey())) || {}; } catch (e) { chatSeenN = {}; }
 // 🐈 고양이가 내 자리에 오면 쓰다듬기
 let catVisit = null, petLast = 0, petN = 0;
-function renderCatVisit(){ const me = loadMe(), v = catVisit, on = !!(me && v && v.gid && v.gid === me.id && Date.now() < v.until);
+const catJ = n => { const c = String(n || '고양이').slice(-1).charCodeAt(0) - 0xAC00; return c >= 0 && c < 11172 && c % 28 !== 0 ? '이가' : '가'; };
+let catOff = null, catSubId = '', petSaved = 0;
+function catSub(){ const me = loadMe(), id = me ? me.id : ''; if (id === catSubId) return; catSubId = id; if (catOff) { catOff(); catOff = null; } catVisit = null; if (id) catOff = N.watchCatVisit(id, onCatVisit); }
+function renderCatVisit(){ catSub(); const me = loadMe(), v = catVisit, on = !!(me && v && v.gid && v.gid === me.id && Date.now() < v.lu);
   let card = document.getElementById('catCard');
   if (!on) { if (card) card.remove(); return; }
-  if (!card) { card = document.createElement('div'); card.id = 'catCard'; card.className = 'catcard'; card.innerHTML = `<div class="ct"><b>🐈 ${chEsc(v.name || '고양이')}이가 옆에 왔어요!</b><small>스크린을 보면서 쓰다듬어 주세요</small></div><button type="button" class="btn">🖐 쓰다듬기</button><span class="pn"></span>`; document.body.appendChild(card);
-    card.querySelector('.btn').onclick = async () => { const n2 = Date.now(); if (n2 - petLast < 600) return; petLast = n2; petN++; card.querySelector('.pn').textContent = '💗'.repeat(Math.min(5, petN)) + (petN > 5 ? ' +' + (petN - 5) : '');
-      try { navigator.vibrate && navigator.vibrate([20, 30, 20]); } catch (e) {} const h = document.createElement('i'); h.className = 'phrt'; h.textContent = '💗'; card.appendChild(h); setTimeout(() => h.remove(), 1200); try { await N.petCat(me.id, v.cat); } catch (e) {} }; }
+  if (!card) { card = document.createElement('div'); card.id = 'catCard'; card.className = 'catcard'; card.innerHTML = `<div class="ct"><b>🐈 ${chEsc(v.name || '고양이')}${catJ(v.name)} 옆에 왔어요!</b><small>스크린을 보면서 쓰다듬어 주세요</small></div><button type="button" class="btn">🖐 쓰다듬기</button><span class="pn"></span>`; document.body.appendChild(card);
+    card.querySelector('.btn').onclick = async () => { const n2 = Date.now(); if (n2 - petLast < 300) return; petLast = n2; petN++; card.querySelector('.pn').textContent = '💗'.repeat(Math.min(5, petN)) + (petN > 5 ? ' +' + (petN - 5) : '');
+      try { navigator.vibrate && navigator.vibrate([20, 30, 20]); } catch (e) {} const h = document.createElement('i'); h.className = 'phrt'; h.textContent = '💗'; card.appendChild(h); setTimeout(() => h.remove(), 1200); if (n2 - petSaved >= 1500) { petSaved = n2; try { await N.petCat(me.id, v.cat); } catch (e) {} } renderCatVisit(); }; }
+  const mad = Date.now() - Math.max(v.lu - 45000 + 900, petLast) > 18000; card.classList.toggle('mad', mad);
+  card.querySelector('b').textContent = mad ? `😾 ${v.name || '고양이'}${catJ(v.name)} 삐졌어요!` : `🐈 ${v.name || '고양이'}${catJ(v.name)} 옆에 왔어요!`;
+  card.querySelector('small').textContent = mad ? '얼른 쓰다듬어 주세요! 안 그러면 가버려요' : '스크린을 보면서 쓰다듬어 주세요';
 }
-N.watchCatVisit(v => { catVisit = v; petN = 0; renderCatVisit(); }); setInterval(renderCatVisit, 3000);
+function onCatVisit(v){ const me = loadMe(), was = catVisit, mine = was && me && was.gid === me.id;
+  if (mine && !v && !GM && Date.now() < was.lu - 1500 && Date.now() - Math.max(was.lu - 45000, petLast) > 30000) toast(`😾 ${was.name || '고양이'}${catJ(was.name)} 삐져서 가버렸어요… 다음엔 꼭 쓰다듬어 주세요`);
+  catVisit = v; petN = 0; renderCatVisit(); }
+setInterval(renderCatVisit, 1000);
 N.watchGuests(N.bizDate(), list => { allGuests = list || []; renderHearts(); heartWatch(); });
 function mutualSeen(){ try { return JSON.parse(localStorage.getItem(mutualKey())) || []; } catch (e) { return []; } }
 function mutualAdd(id){ const m = mutualSeen(); if (!m.includes(id)) { m.push(id); try { localStorage.setItem(mutualKey(), JSON.stringify(m)); } catch (e) {} } }
@@ -501,18 +526,21 @@ async function loadSent(){ if (heartTo) return heartTo; const me = loadMe(); try
 function renderHearts(){
   const me = loadMe(), el = $('heartList'); if (!el || !me) return; el.innerHTML = '';
   const mine = allGuests.find(g => g.id === me.id), got = mine && !mine.noheart ? (mine.hearts | 0) : 0;
-  $('heartGot').textContent = me.noheart ? '하트 받기 꺼짐' : `받은 하트 💗 ${got}`;
+  $('heartGot').textContent = me.noheart ? '하트 받기 꺼짐' : `받은 하트 💗 ${heartShownN == null ? got : Math.min(got, heartShownN)}`;
   const sent = heartTo || [], left = Math.max(0, N.HEART_MAX - sent.length);
   $('heartLeft').textContent = `오늘 남은 하트 ${left}개`;
   const mm = mutualSeen(); $('mutualBox').innerHTML = mm.map(id => { const g = allGuests.find(x => x.id === id); return g ? `<div class="mrow3">💞 <b>${chEsc(g.nick)}</b>님과 서로 하트${chatUnread[id] ? '<span class="cdot" title="새 메시지"></span>' : ''}<button type="button" class="cbtn" data-chat="${chEsc(id)}">💬 대화</button></div>` : ''; }).join(''); $('mutualBox').querySelectorAll('[data-chat]').forEach(b => b.onclick = () => openChat(b.dataset.chat)); chatWatchAll(mm);
   const open = allGuests.filter(g => !g.npc && !g.left && g.id !== me.id && g.uid && g.uid !== (mine && mine.uid) && !g.noheart && g.talk !== 2);
   if (!open.length) { $('heartNote').textContent = '지금은 하트를 받을 수 있는 손님이 없어요.'; return; }
   if ($('heartNote').textContent.startsWith('지금은')) $('heartNote').textContent = '';
-  open.slice(0, 30).forEach(g => { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; const done = sent.includes(g.id);
-    b.textContent = done ? `💗 ${g.nick} ✓` : `🤍 ${g.nick}`; if (done) b.classList.add('on');
+  open.slice(0, 30).forEach(g => { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip hchip'; const done = sent.includes(g.id), armed = heartArm === g.id;
+    b.innerHTML = `<canvas width="34" height="54"></canvas><span>${done ? `💗 ${chEsc(g.nick)} ✓` : armed ? `💗 ${chEsc(g.nick)}님께 보낼까요? 한 번 더 ✓` : `🤍 ${chEsc(g.nick)}`}</span>`; if (done) b.classList.add('on'); if (armed) b.classList.add('arm');
+    try { N.drawPreview(b.querySelector('canvas'), g, g.drink, N.drawCostume(theme, N.cosSeed(g, N.bizDate()), g.style).k, null, true); } catch (e) {}
     b.onclick = async () => {
       if (done) { $('heartNote').textContent = `${g.nick}님께는 이미 하트를 보냈어요.`; return; }
       if (left <= 0) { $('heartNote').textContent = '오늘 하트를 다 보냈어요. 내일 다시 보낼 수 있어요.'; return; }
+      if (heartArm !== g.id) { heartArm = g.id; clearTimeout(renderHearts.armT); renderHearts.armT = setTimeout(() => { heartArm = null; renderHearts(); }, 3500); renderHearts(); return; }
+      heartArm = null;
       if (heartBusy) return; heartBusy = true; b.disabled = true;
       try { await N.sendHeart(me.id, { id: g.id, uid: g.uid }, me.day); heartTo = [...sent, g.id];
         $('heartNote').textContent = `💗 ${g.nick}님께 익명 하트를 보냈어요. 누가 보냈는지는 비밀이에요.`;
@@ -522,6 +550,7 @@ function renderHearts(){
       heartBusy = false; renderHearts(); };
     el.appendChild(b); });
 }
+var heartArm = null;
 function showMutual(g){ if (mutualSeen().includes(g.id)) return; mutualAdd(g.id); mutualLast = g.id; $('mutualTxt').textContent = `${g.nick}님도 당신에게 하트를 보냈어요`; $('mutualPop').hidden = false; try { navigator.vibrate && navigator.vibrate([60, 80, 60]); } catch (e) {} renderHearts(); }
 $('mutualOk').onclick = () => { $('mutualPop').hidden = true; };
 $('mutualChat').onclick = () => { $('mutualPop').hidden = true; if (mutualLast) openChat(mutualLast); };
@@ -560,14 +589,15 @@ $('chatStop').onclick = async () => { const me = loadMe(), id = chatWith; if (!m
 async function heartWatch(){ // 내 하트 개수가 늘면: 알림 + 내가 보낸 사람 중 서로 하트가 됐는지 확인
   const me = loadMe(); if (!me) return; const mine = allGuests.find(g => g.id === me.id); if (!mine) return;
   const n = mine.hearts | 0;  // 하트 받기를 껐다 켜도 가짜 알림이 안 뜨게 실제 개수로 비교
-  if (heartGotN == null) { heartGotN = n; await loadSent(); renderHearts(); }
-  else if (n > heartGotN) { heartGotN = n; if (!mine.noheart) toast('💗 누군가 당신에게 하트를 보냈어요'); }
+  if (heartGotN == null) { heartGotN = n; heartShownN = n; await loadSent(); renderHearts(); }
+  else if (n < heartGotN) { heartGotN = n; heartShownN = n; renderHearts(); return; }
+  else if (n > heartGotN) { heartGotN = n; const tg = n; setTimeout(() => { heartShownN = Math.max(heartShownN || 0, tg); if (!mine.noheart) toast('💗 누군가 당신에게 하트를 보냈어요'); renderHearts(); }, 40000 + Math.random() * 80000); }
   else return;
   const sent = await loadSent(), seen = mutualSeen();
   for (const id of sent) { if (seen.includes(id)) continue; const g = allGuests.find(x => x.id === id); if (g && await N.isMutual(me.id, { id: g.id, uid: g.uid }, me.day)) { showMutual(g); break; } }
 }
 // ---------- 게임 참여 ----------
-var GM = null, gHide = false, gLocal = {}, tenT0 = 0, tenRaf = 0, gSig = '';
+var lastGameN = 0, gendSeen = 0, GM = null, gHide = false, gLocal = {}, tenT0 = 0, tenRaf = 0, gSig = '';
 // 진행 기기의 '살아있음' 신호(hb)만 바뀐 경우는 다시 그리지 않음 (10초 맞추기 화면 등이 깜빡이지 않게)
 function renderGameFeed(g){ const sig = g ? JSON.stringify({ ...g, hb: 0 }) : ''; if (sig === gSig && GM) return; gSig = sig; renderGame(g); gWakeSync(g); }
 // 게임 중에는 휴대폰 화면이 꺼지지 않게 (꺼지면 진동·알림이 멈춤)
@@ -584,7 +614,14 @@ function gAlert(kind){ const strong = kind === 'bomb' || kind === 'boom';
   try { navigator.vibrate && navigator.vibrate(strong ? [180, 80, 180, 80, 180] : [60]); } catch (e) {}
   gBeep(strong ? [880, 660, 880, 660] : [740, 990], strong ? .12 : .09);
   const f = $('gFlash'); if (f) { f.className = 'gflash ' + (strong ? 'red' : 'soft'); void f.offsetWidth; f.classList.add('go'); } }
-function gOpen(html){ $('gBody').innerHTML = html; if (!gHide) { $('gPanel').hidden = false; $('gChip').hidden = true; } else $('gChip').hidden = false; }
+let raceRaf = 0;   // 경마: 휴대폰에서도 실시간 진행 막대 (스크린과 같은 계산)
+function raceLoop(g, mine){ cancelAnimationFrame(raceRaf); const info = N.raceInfo(g), H5 = N.RACE_HORSES;
+  const step = () => { const bars = document.querySelectorAll('[data-rb]'); if (!bars.length || !GM || GM.n !== g.n || GM.phase !== 'run') return;
+    const tt = (Date.now() - g.ms) / 1000 - N.RACE_T0, P = H5.map((_, i) => N.raceProg(g, i, tt, info));
+    bars.forEach(el => { const i = +el.dataset.rb; el.style.width = (P[i] * 100).toFixed(1) + '%'; const hm = document.querySelector(`[data-rh="${i}"]`); if (hm) hm.style.left = `calc(${(P[i] * 100).toFixed(1)}% - ${(14 + P[i] * 10).toFixed(1)}px)`; });
+    const me = document.querySelector('[data-rme]'); if (me && mine != null) { const rk = P.filter(v => v > P[mine]).length + 1; me.textContent = tt <= 0 ? `${Math.max(1, Math.ceil(-tt))}초 뒤 출발` : P[mine] >= 1 ? (info.photo && info.order.indexOf(mine) < 2 && tt < info.F[0] + 1.5 ? '📸 사진판정 중…' : `${info.order.indexOf(mine) + 1}등으로 골인!`) : `지금 ${rk}등 ${rk === 1 ? '🔥' : rk <= 2 ? '💨' : '💪'}`; }
+    raceRaf = requestAnimationFrame(step); }; step(); }
+function gOpen(html){ $('gBody').innerHTML = html; if (!gHide) { $('gPanel').hidden = false; $('gChip').hidden = true; } else { $('gPanel').hidden = true; $('gChip').hidden = false; } }
 function gShut(){ $('gPanel').hidden = true; $('gChip').hidden = true; }
 $('gClose').onclick = () => { gHide = true; $('gPanel').hidden = true; $('gChip').hidden = false; };
 $('gChip').onclick = () => { gHide = false; $('gPanel').hidden = false; $('gChip').hidden = true; };
@@ -592,7 +629,7 @@ const gq = id => document.getElementById(id);
 async function gDo(kind, extra){ const me = loadMe(); if (!me || !GM) return; await N.gameAct(GM.n, kind, { gid: me.id, nick: me.nick, ...(extra || {}) }); }
 function renderGame(g){
   if (tenRaf) { cancelAnimationFrame(tenRaf); tenRaf = 0; }
-  const prev = GM; GM = g || null; const me = loadMe();
+  const prev = GM; GM = g || null; if (g && g.n) lastGameN = g.n; const me = loadMe();
   if (!g) { if (tenRaf) cancelAnimationFrame(tenRaf); gShut(); return; }
   if (!prev || prev.n !== g.n) { gHide = false; gLocal = { n: g.n }; if (me) gAlert('soft'); }
   else if (me && (g.round || 0) !== (prev.round || 0) && (g.alive || []).includes(me.id)) gAlert('soft');
@@ -628,7 +665,8 @@ function renderGame(g){
       gq('gTenStop').onclick = async () => { const v = Math.round(performance.now() - tenT0); cancelAnimationFrame(tenRaf); L.done = v; renderGame(GM); try { await gDo('ten', { v }); } catch (e) { toast('기록을 보내지 못했어요.'); } };
       return; }
     if (g.phase === 'result') { const w = (g.ranks || [])[0]; const mine = w && w.gid === me.id;
-      gOpen(mine ? `<h3>🏆 우승!</h3><div class="gtime">${(w.v / 1000).toFixed(2)}초</div><p>${g.reward ? '쿠폰이 발급됐어요. 내 자리 화면에서 확인하세요.' : '스크린을 봐주세요!'}</p>` : `<h3>🏆 ${escH(w ? w.nick : '')}님 우승</h3><p>${w ? (w.v / 1000).toFixed(2) + '초' : ''}${L.done != null ? ' · 내 기록 ' + (L.done / 1000).toFixed(2) + '초' : ''}</p>`); return; }
+      if (!w) { gOpen('<h3>⏱ 10초 맞추기 끝</h3><p>이번엔 도전한 사람이 없어요.</p>'); return; }
+      gOpen(mine ? `<h3>🏆 우승!</h3><div class="gtime">${(w.v / 1000).toFixed(2)}초</div><p>${g.reward ? '🎁 상품 쿠폰이 나오면 바로 화면에 떠요!' : '스크린을 봐주세요!'}</p>` : `<h3>🏆 ${escH(w ? w.nick : '')}님 우승</h3><p>${w ? (w.v / 1000).toFixed(2) + '초' : ''}${L.done != null ? ' · 내 기록 ' + (L.done / 1000).toFixed(2) + '초' : ''}</p>`); return; }
   }
   // ----- 새 게임 6종 -----
   const joinUI = (title, desc) => { if (L.joined) { gOpen(`<h3>${title} 참여 완료!</h3><p>곧 시작해요. 스크린을 봐주세요.</p>`); return; }
@@ -656,20 +694,20 @@ function renderGame(g){
   if (g.type === 'rou') {
     if (g.phase === 'join') { joinUI('🎡 행운의 룰렛', '참여한 손님 중 한 명을 룰렛으로 뽑아요.' + (g.reward ? ` 상품: ${escH(g.reward)}` : '')); return; }
     if (g.phase === 'spin') { gOpen(`<h3>🎡 두구두구…</h3><p>${inP ? '내 이름도 룰렛 위에! 스크린을 봐주세요.' : '스크린을 봐주세요.'}</p>`); return; }
-    gOpen(g.winner === me.id ? `<h3>🎉 내가 당첨!</h3><p>${g.reward ? '쿠폰이 발급됐어요. 내 자리 화면에서 확인하세요.' : '축하해요!'}</p>` : `<h3>🎉 ${escH(g.winnerNick || '')}님 당첨!</h3><p>다음 기회에!</p>`); return; }
+    gOpen(g.winner === me.id ? `<h3>🎉 내가 당첨!</h3><p>${g.reward ? '🎁 상품 쿠폰이 나오면 바로 화면에 떠요!' : '축하해요!'}</p>` : `<h3>🎉 ${escH(g.winnerNick || '')}님 당첨!</h3><p>다음 기회에!</p>`); return; }
   if (g.type === 'race') {
     const H5 = N.RACE_HORSES;
     if (g.phase === 'pick') { if (pickUI('horse', 'horse', 0, '🏇 우승할 말을 골라요', H5.map((h, i) => ({ t: `${i + 1}번 ${h.n}`, c: h.c })), 'gopts')) return;
       gOpen(`<h3>🏇 ${L.horse + 1}번 ${H5[L.horse].n} 응원 중!</h3><p>곧 출발해요. 스크린을 봐주세요.</p>`); return; }
-    if (g.phase === 'run') { gOpen(`<h3>🏇 달려라!</h3>${L.horse != null ? `<p>내 말: ${L.horse + 1}번 ${H5[L.horse].n}</p>` : '<p>스크린을 봐주세요.</p>'}`); return; }
-    const w = (g.order || [])[0], hit = L.horse === w;
-    gOpen(`<h3>${hit ? '🎯 적중!' : '🏁 결승!'}</h3><p>${w + 1}번 ${H5[w].n} 우승${L.horse != null && !hit ? ` · 내 말은 ${L.horse + 1}번` : ''}</p>${g.lucky === me.id ? `<p><b>🎉 추첨 당첨! ${g.reward ? '쿠폰이 발급됐어요.' : ''}</b></p>` : ''}`); return; }
+    if (g.phase === 'run') { gOpen(`<h3>🏇 달려라!</h3>${L.horse != null ? `<p>내 말: <b style="color:${H5[L.horse].c}">${L.horse + 1}번 ${H5[L.horse].n}</b> · <span data-rme>곧 출발</span></p>` : '<p>어느 말이 이길까요?</p>'}<div class="rbars">${H5.map((h, i) => `<div class="rb${i === L.horse ? ' me' : ''}"><span class="rn" style="color:${h.c}">${i + 1}. ${escH(h.n)}</span><div class="rt"><i data-rb="${i}" style="background:${h.c}"></i><em data-rh="${i}">🏇</em></div></div>`).join('')}</div>`); raceLoop(g, L.horse); return; }
+    const w = (g.order || [])[0], hit = g.pk ? g.pk[me.id] === w && me.id in g.pk : L.horse === w;
+    gOpen(`<h3>${hit ? '🎯 적중!' : '🏁 결승!'}</h3><p>${w + 1}번 ${H5[w].n} 우승${L.horse != null && !hit ? ` · 내 말은 ${L.horse + 1}번` : ''}</p>${g.lucky === me.id ? `<p><b>🎉 추첨 당첨!${g.reward ? ' 쿠폰이 곧 화면에 떠요.' : ''}</b></p>` : ''}`); return; }
   if (g.type === 'rps' || g.type === 'ox') {
     const isR = g.type === 'rps', nm = isR ? '✊ 사장님과 가위바위보' : '⭕ OX 서바이벌';
     if (g.phase === 'join') { joinUI(nm, isR ? '스크린 속 사장님과 다 같이 가위바위보! 지면 탈락, 이기거나 비기면 다음 판. 끝까지 살아남으면 우승!' : '술 상식 OX 문제! 틀리면 탈락, 끝까지 살아남으면 우승!'); return; }
     if (!inP) { gOpen(`<h3>${nm} 중</h3><p>스크린을 봐주세요.</p>`); return; }
     const alive = (g.alive || []).includes(me.id);
-    if (g.phase === 'result') { const win = (g.winners || []).some(w => w.gid === me.id); gOpen(win ? `<h3>🏆 우승!</h3><p>${g.reward ? '쿠폰이 발급됐어요. 내 자리 화면에서 확인하세요.' : '끝까지 살아남았어요!'}</p>` : `<h3>${nm} 끝</h3><p>${(g.winners || []).length ? (g.winners || []).map(w => escH(w.nick)).join(', ') + '님 우승' : '우승자 없음'}</p>`); return; }
+    if (g.phase === 'result') { const win = (g.winners || []).some(w => w.gid === me.id); gOpen(win ? `<h3>🏆 우승!</h3><p>${g.reward ? '끝까지 살아남았어요! 🎁 상품 쿠폰이 나오면 바로 화면에 떠요.' : '끝까지 살아남았어요!'}</p>` : `<h3>${nm} 끝</h3><p>${(g.winners || []).length ? (g.winners || []).map(w => escH(w.nick)).join(', ') + '님 우승' : '우승자 없음'}</p>`); return; }
     if (g.phase === 'pick' || g.phase === 'q') {
       if (!alive) { gOpen('<h3>😵 탈락</h3><p>남은 사람들을 응원해 주세요!</p>'); return; }
       const key = 'r' + g.round;
@@ -835,7 +873,7 @@ $('sendOrder').onclick = async () => {
   let recent = []; try { recent = (JSON.parse(localStorage.getItem('notsun-order-times')) || []).filter(x => Date.now() - x < 60000); } catch (e) {}
   if (recent.length >= 2) { $('cartErr').textContent = `방금 주문하셨어요. ${Math.ceil((recent[0] + 60000 - Date.now()) / 1000)}초 뒤에 다시 보내주세요.`; $('cartErr').hidden = false; return; }
   sending = true; $('sendOrder').disabled = true; $('sendOrder').textContent = '보내는 중…';
-  try { await N.placeOrder({ gid: me ? me.id : '', nick, items: cart, note: $('cartNote').value.trim(), show: $('cartShow').checked }); try { localStorage.setItem('notsun-order-times', JSON.stringify([...recent, Date.now()])); } catch (e) {} cart = []; $('cartNote').value = ''; $('cartSheet').hidden = true; renderCart(); renderMenu(); scrollTo({ top: 0, behavior: 'smooth' }); }
+  try { await N.placeOrder({ gid: me ? me.id : '', nick, items: cart, note: $('cartNote').value.trim(), show: $('cartShow').checked }); try { localStorage.setItem('notsun-order-times', JSON.stringify([...recent, Date.now()])); } catch (e) {} cart = []; $('cartNote').value = ''; $('cartSheet').hidden = true; renderCart(); renderMenu(); scrollTo({ top: 0, behavior: 'smooth' }); toast('✅ 주문 보냈어요! 사장님이 확인하면 알려드릴게요'); }
   catch (e) { $('cartErr').textContent = '주문을 보내지 못했어요. 인터넷을 확인하고 다시 눌러주세요. 계속 안 되면 바에 말씀해 주세요.'; $('cartErr').hidden = false; }
   sending = false; $('sendOrder').disabled = false; $('sendOrder').textContent = '주문 보내기';
 };

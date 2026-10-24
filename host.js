@@ -28,7 +28,7 @@
     function gWatch(n){ gOff && gOff(); gActs = []; gOff = N.watchGameActs(n, l => { gActs = l; stepSafe(); }); }
     function gPlayers(){ const m = new Map(); gActs.filter(a => a.kind === 'join' && a.gid).forEach(a => m.set(a.gid, a.nick)); return [...m].map(([gid, nick]) => ({ gid, nick })); }
     function release(){ gOff && gOff(); gOff = null; H = null; confirmed = false; lastHs = ''; }
-    async function gEnd(msg){ const n = G && G.n; try { await queued(() => N.gameTx(cur => !!cur && cur.n === n && cur.host === ID, null)); } catch (e) { if (!/lost/.test(String(e && e.message))) throw e; } release(); G = null; gState(msg || '진행 중인 게임이 없어요.'); }
+    async function gEnd(msg){ const n = G && G.n; if (msg && n && N.saveGameEnd) N.saveGameEnd(n, msg).catch(() => {}); try { await queued(() => N.gameTx(cur => !!cur && cur.n === n && cur.host === ID, null)); } catch (e) { if (!/lost/.test(String(e && e.message))) throw e; } release(); G = null; gState(msg || '진행 중인 게임이 없어요.'); }
     const paid = new Set();   // 같은 게임·같은 손님에게 쿠폰이 두 번 나가지 않게 (실패 후 재시도 포함)
     async function gPrizeTo(gid, nick){ if (!G.reward || paid.has(G.n + '|' + gid)) return ''; paid.add(G.n + '|' + gid); const a = gActs.find(x => x.gid === gid && x.uid); if (!a) return ''; try { return await N.issueCoupon({ uid: a.uid, nick, reward: G.reward }); } catch (e) { return ''; } }
     const isHost = () => !!(G && confirmed && G.host === ID && H);
@@ -53,7 +53,7 @@
   async function gNewStep(now){
     const T2 = G.type, ps = gPlayers();
     if (G.phase === 'join' && ['nun', 'rou', 'rps', 'ox'].includes(T2)) {
-      gState(`${lastText.split('…')[0]}… ${ps.length}명 (${Math.max(0, Math.ceil((H.joinUntil - now) / 1000))}초)`);
+      gState(`${({ nun: '🙊 눈치게임', rou: '🎡 행운의 룰렛', rps: '✊ 가위바위보', ox: '⭕ OX 서바이벌' })[T2]} 참여 모집 중… ${ps.length}명 (${Math.max(0, Math.ceil((H.joinUntil - now) / 1000))}초)`);
       if (now < H.joinUntil) return;
       const min = T2 === 'nun' ? 3 : T2 === 'rou' ? 2 : 1;
       if (ps.length < min) { await gEnd(`참여자가 ${min}명보다 적어서 게임을 취소했어요.`); return; }
@@ -87,9 +87,9 @@
       else if (G.phase === 'result' && now >= H.doneAt) await gEnd(lastText);
     }
     if (T2 === 'race') {
-      const picks = {}; gActs.filter(a => a.kind === 'horse').forEach(a => { if (!(a.gid in picks)) picks[a.gid] = { v: a.v, nick: a.nick }; });
+      let picks = {}; if (G.phase === 'pick') gActs.filter(a => a.kind === 'horse').forEach(a => { if (!(a.gid in picks)) picks[a.gid] = { v: a.v, nick: a.nick }; }); else picks = H.picks || {};   // 출발 뒤에 고른 건 무효
       if (G.phase === 'pick') { gState(`🏇 ${Object.keys(picks).length}명이 골랐어요 · ${Math.max(0, Math.ceil((H.pickUntil - now) / 1000))}초`);
-        if (now >= H.pickUntil) { const order = shuffle([0, 1, 2, 3, 4]); H.doneAt = now + 13500; H.order = order; await gSet({ ...G, phase: 'run', order, seed: 1 + Math.floor(Math.random() * 97) }); gState(`🏇 달리는 중… (우승: ${order[0] + 1}번)`); } }
+        if (now >= H.pickUntil) { const order = shuffle([0, 1, 2, 3, 4]); H.doneAt = now + 13500; H.order = order; H.picks = picks; const pk = {}; Object.entries(picks).slice(0, 60).forEach(([gid, p]) => { pk[gid] = p.v | 0; }); await gSet({ ...G, phase: 'run', order, pk, seed: 1 + Math.floor(Math.random() * 97) }); gState(`🏇 달리는 중… (우승: ${order[0] + 1}번)`); } }
       else if (G.phase === 'run' && now >= H.doneAt) { const hit = Object.entries(picks).filter(([, p]) => p.v === G.order[0]); let lucky = null, code = '';
         if (hit.length && G.reward) { const [gid, p] = hit[Math.floor(Math.random() * hit.length)]; lucky = { gid, nick: p.nick }; code = await gPrizeTo(gid, p.nick); }
         H.doneAt = now + 12000; await gSet({ ...G, phase: 'result', ...(lucky ? { lucky: lucky.gid, luckyNick: lucky.nick } : {}) }); gState(`🏆 ${G.order[0] + 1}번 ${N.RACE_HORSES[G.order[0]].n} 우승 · 맞힌 손님 ${hit.length}명${lucky ? ' · 추첨 ' + lucky.nick + '님' + (code ? ' 쿠폰 ' + code : '') : ''}`); }
