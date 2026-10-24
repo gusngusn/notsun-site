@@ -782,7 +782,9 @@
       for (let x = 73; x < 137;) { const w = 4 + Math.floor(r() * 6), h = 6 + Math.floor(r() * 12); bld.push([x, w, h]); for (let yy = 56 - h + 2; yy < 55; yy += 2) for (let xx = x + 1; xx < x + w - 1; xx += 2) if (r() < .32) lit.push([xx, yy, r() < .7 ? '#ffd27a' : '#ffefb8', r()]); x += w + (r() < .3 ? 1 : 0); }
       for (let i = 0; i < 14; i++) { const sx = 73 + Math.floor(r() * 64), sy = 33 + Math.floor(r() * 12), sp = r(); if (!(sx > 121 && sx < 134 && sy < 42)) stars.push([sx, sy, sp]); }
       return { bld, lit, stars }; })();
+    const hiFx = [];
     function nightWindow() {
+      hiFx.length = 0;
       const X = 68, Y = 27, Wd = 74, Hd = 32, t2 = typeof tNow === 'number' ? tNow : 0, wk = WX.kind, wa = WX.amt, wet = wk === 'rain' || wk === 'storm', gx0 = X + 3, gx1 = X + Wd - 3, gy0 = Y + 3, gy1 = Y + Hd - 3;
       px(X - 1, Y - 1, Wd + 2, Hd + 2, '#140d0a');                                          // 벽 그림자
       for (let y = Y + 3; y < Y + Hd - 3; y++) { const k = (y - Y) / Hd; px(X + 3, y, Wd - 6, 1, WX.day ? `rgb(${Math.round(70 + k * 120)},${Math.round(96 + k * 60)},${Math.round(150 + k * 10)})` : wk === 'clear' ? `rgb(${Math.round(16 + k * 26)},${Math.round(22 + k * 22)},${Math.round(48 + k * 30)})` : `rgb(${Math.round(26 + k * 22)},${Math.round(30 + k * 20)},${Math.round(44 + k * 22)})`); }   // 하늘 (낮·맑은 밤·흐린 밤)
@@ -794,11 +796,13 @@
       if (wk === 'cloud' || wet || wk === 'snow') for (let i = 0; i < 4; i++) { const cx = gx0 + ((i * 23 + t2 / 400) % (Wd + 20)) - 10, cy = gy0 + 2 + (i % 2) * 4;   // 구름
         for (let d = 0; d < 12; d++) { const xx = Math.round(cx + d); if (xx >= gx0 && xx < gx1) px(xx, cy + (d > 2 && d < 9 ? -1 : 0), 1, d > 1 && d < 10 ? 3 : 2, wet ? 'rgba(70,76,92,.85)' : 'rgba(96,104,124,.7)'); } }
       if (wk === 'fog') for (let y = gy0 + 4; y < gy1; y += 3) px(gx0, y, gx1 - gx0, 2, 'rgba(190,196,210,.18)');
-      if (wet) { const n = [0, 16, 28, 44][wa] || 20;   // 빗줄기 (사선으로 떨어짐)
-        for (let i = 0; i < n; i++) { const sp = 1 + (i % 3) * .35, x0 = gx0 + ((i * 37) % (gx1 - gx0)), y0 = gy0 + ((t2 / (14 / sp) + i * 53) % (gy1 - gy0 + 6)) - 3;
-          for (let d = 0; d < 5; d++) { const xx = Math.round(x0 - (y0 + d - gy0) * .3), yy = Math.round(y0 + d); if (xx >= gx0 && xx < gx1 && yy >= gy0 && yy < gy1) px(xx, yy, 1, 1, `rgba(185,210,240,${.75 - d * .13})`); } }
-        for (let i = 0; i < 9; i++) { const x = gx0 + 2 + ((i * 29) % (gx1 - gx0 - 4)), y = gy0 + ((t2 / (900 + i * 130) * 6 + i * 11) % (gy1 - gy0));   // 유리에 맺혀 흘러내리는 물방울
-          px(x, Math.round(y), 1, 2, 'rgba(200,225,255,.45)'); px(x, Math.round(y) - 2, 1, 2, 'rgba(200,225,255,.15)'); }
+      if (wet) { const n = [0, 14, 24, 36][wa] || 18, panes = [[gx0, gy0, X + 25 - gx0, Y + 16 - gy0], [X + 27, gy0, 20, Y + 16 - gy0], [X + 49, gy0, gx1 - X - 49, Y + 16 - gy0], [gx0, Y + 18, X + 25 - gx0, gy1 - Y - 18], [X + 27, Y + 18, 20, gy1 - Y - 18], [X + 49, Y + 18, gx1 - X - 49, gy1 - Y - 18]];
+        hiFx.push((c, s) => { c.save(); c.beginPath(); panes.forEach(([x, y, w, h]) => c.rect(x * s, y * s, w * s, h * s)); c.clip(); c.lineCap = 'round';   // 가는 빗줄기 (고운 해상도 · 천천히)
+          for (let i = 0; i < n; i++) { const hr = k => { const v = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return v - Math.floor(v); }, sp = .8 + hr(1) * .4, x0 = gx0 + hr(2) * (gx1 - gx0 + 6), y0 = gy0 - 4 + ((t2 * .028 * sp + hr(3) * 400) % (gy1 - gy0 + 8)), xx = x0 - (y0 - gy0) * .22;
+            c.strokeStyle = `rgba(190,212,240,${.28 + (i % 3) * .08})`; c.lineWidth = Math.max(1, s * .22); c.beginPath(); c.moveTo(xx * s, y0 * s); c.lineTo((xx - .7) * s, (y0 + 3.2) * s); c.stroke(); }
+          for (let i = 0; i < 9; i++) { const x = gx0 + 2 + ((i * 29) % (gx1 - gx0 - 4)), y = gy0 + ((t2 / (1400 + i * 160) * 6 + i * 11) % (gy1 - gy0));   // 유리 물방울이 천천히 흘러내림
+            c.fillStyle = 'rgba(205,228,255,.45)'; c.beginPath(); c.arc((x + .5) * s, y * s, s * .32, 0, Math.PI * 2); c.fill(); c.fillStyle = 'rgba(205,228,255,.14)'; c.fillRect((x + .4) * s, (y - 2.2) * s, s * .2, s * 2); }
+          c.restore(); });
         if (wk === 'storm') { const ph = (t2 % 11000) / 11000; if (ph < .03 || (ph > .05 && ph < .065)) px(gx0, gy0, gx1 - gx0, gy1 - gy0, 'rgba(235,240,255,.55)'); } }   // 번개
       if (wk === 'snow') { const n = [0, 18, 30, 46][wa] || 24;   // 눈송이 (살랑살랑)
         for (let i = 0; i < n; i++) { const sp = .6 + (i % 4) * .18, x = gx0 + ((i * 41) % (gx1 - gx0)) + Math.sin(t2 / 700 + i) * 2, y = gy0 + ((t2 / (60 / sp) + i * 47) % (gy1 - gy0));
@@ -1259,6 +1263,7 @@
       const sg = ctx.createRadialGradient(98 * s, 104 * s, 0, 98 * s, 104 * s, 120 * s); sg.addColorStop(0, 'rgba(255,140,90,.18)'); sg.addColorStop(1, 'rgba(255,140,90,0)'); ctx.fillStyle = sg; ctx.fillRect(0, 0, 240 * s, 220 * s);
       ctx.restore();
       drawCats(ctx, s);   // 고양이는 고해상도로 화면에 직접 (조명 효과 뒤에)
+      if (hiFx.length) { hiFx.forEach(fn => fn(ctx, s)); hiFx.length = 0; }
       if (frontFx.length) { ctx.save(); const P2 = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x * s, y * s, w * s, h * s); }; frontFx.forEach(fn => fn(P2)); ctx.restore(); }   // 잔·반짝임은 고양이보다 앞에
       wallSign(ctx, s, t);
       cats.forEach((c, ci) => { if (c.st === 'jump' || c.lx === undefined) return; ctx.save(); ctx.font = `${6.4 * s}px "Do Hyeon", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';   // 고양이 이름표 (머리 바로 위, 목걸이 색 테두리)
