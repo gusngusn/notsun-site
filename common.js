@@ -746,7 +746,19 @@
       occ.set(slot.code, g); at.set(g, slot); });
     return present.filter(g => fixed.has(g) || at.has(g)).map(g => ({ g, slot: fixed.get(g) || at.get(g) }));
   }
+  // 창밖 날씨: 대구 실제 날씨(Open-Meteo, 무료·키 없음)를 10분마다 · ?wx=rain|snow|storm|cloud|fog|clear 로 시험 가능
+  const WX = { kind: 'clear', amt: 0, day: 0, at: 0 };
+  function wxFromCode(c) { c = c | 0; if (c >= 95) return ['storm', 3]; if ((c >= 71 && c <= 77) || c === 85 || c === 86) return ['snow', c === 75 || c === 86 ? 3 : c === 73 ? 2 : 1];
+    if ((c >= 51 && c <= 67) || (c >= 80 && c <= 82)) return ['rain', [65, 67, 82].includes(c) ? 3 : [53, 63, 81].includes(c) ? 2 : 1]; if (c === 45 || c === 48) return ['fog', 1]; if (c === 2 || c === 3) return ['cloud', c === 3 ? 2 : 1]; return ['clear', 0]; }
+  function startWeather() {
+    try { const q = (location.search.match(/[?&]wx=(\w+)/) || [])[1]; if (q) { WX.kind = q; WX.amt = q === 'clear' ? 0 : 2; WX.at = Date.now(); return; } } catch (e) {}
+    if (WX.started) return; WX.started = true;
+    const go = () => fetch('https://api.open-meteo.com/v1/forecast?latitude=35.8714&longitude=128.6014&current=weather_code,is_day&timezone=Asia%2FSeoul', { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null).then(j => { if (!j || !j.current) return; const [k, a] = wxFromCode(j.current.weather_code); WX.kind = k; WX.amt = a; WX.day = j.current.is_day | 0; WX.at = Date.now(); }).catch(() => {});
+    go(); setInterval(go, 10 * 60 * 1000); }
+  try { window.__notsunWx = (k, a) => { WX.kind = k; WX.amt = a == null ? 2 : a; }; } catch (e) {}
   function createScene() {
+    startWeather();
     // 고해상도 모드(시험용): ?hires=1 이면 버퍼를 2배로 → 캐릭터를 Scale2x로 다듬어 고양이와 같은 잔 픽셀로
     const HIRES = (() => { try { return /[?&]hires=1/.test(location.search) || localStorage.getItem('notsun-hires') === '1'; } catch (e) { return false; } })(), HK = HIRES ? 2 : 1;
     const buf = document.createElement('canvas'); buf.width = W * HK; buf.height = H * HK;
@@ -765,15 +777,50 @@
     const bottles = Array.from({ length: 12 }, () => Array.from({ length: 4 }, () => ({ h: 7 + Math.floor(rnd() * 5), c: ['#7a3a12', '#c98a2a', '#3a5a2a', '#e8d8b0', '#5a1f1a', '#2a2a40'][Math.floor(rnd() * 6)] })));
     const px = (x, y, w, h, c) => { b.fillStyle = c; b.fillRect(x, y, w, h); }, pxB = px;
     const OWNER_X = [62, 128];
+    // 백바 위 유리창: 나무 창틀 + 6칸 유리 + 밤하늘·별·멀리 보이는 동네 불빛 + 유리 반사 + 실내 조명 비침
+    const WIN = (() => { let sd = 77; const r = () => (sd = (sd * 16807) % 2147483647) / 2147483647, bld = [], lit = [], stars = [];
+      for (let x = 73; x < 137;) { const w = 4 + Math.floor(r() * 6), h = 6 + Math.floor(r() * 12); bld.push([x, w, h]); for (let yy = 56 - h + 2; yy < 55; yy += 2) for (let xx = x + 1; xx < x + w - 1; xx += 2) if (r() < .32) lit.push([xx, yy, r() < .7 ? '#ffd27a' : '#ffefb8', r()]); x += w + (r() < .3 ? 1 : 0); }
+      for (let i = 0; i < 14; i++) { const sx = 73 + Math.floor(r() * 64), sy = 33 + Math.floor(r() * 12), sp = r(); if (!(sx > 121 && sx < 134 && sy < 42)) stars.push([sx, sy, sp]); }
+      return { bld, lit, stars }; })();
+    function nightWindow() {
+      const X = 68, Y = 27, Wd = 74, Hd = 32, t2 = typeof tNow === 'number' ? tNow : 0, wk = WX.kind, wa = WX.amt, wet = wk === 'rain' || wk === 'storm', gx0 = X + 3, gx1 = X + Wd - 3, gy0 = Y + 3, gy1 = Y + Hd - 3;
+      px(X - 1, Y - 1, Wd + 2, Hd + 2, '#140d0a');                                          // 벽 그림자
+      for (let y = Y + 3; y < Y + Hd - 3; y++) { const k = (y - Y) / Hd; px(X + 3, y, Wd - 6, 1, WX.day ? `rgb(${Math.round(70 + k * 120)},${Math.round(96 + k * 60)},${Math.round(150 + k * 10)})` : wk === 'clear' ? `rgb(${Math.round(16 + k * 26)},${Math.round(22 + k * 22)},${Math.round(48 + k * 30)})` : `rgb(${Math.round(26 + k * 22)},${Math.round(30 + k * 20)},${Math.round(44 + k * 22)})`); }   // 하늘 (낮·맑은 밤·흐린 밤)
+      if (wk === 'clear' && !WX.day) WIN.stars.forEach(([x, y, p]) => { const tw = (Math.sin(t2 / 900 + p * 40) + 1) / 2; if (tw > .25) px(x, y, 1, 1, `rgba(220,230,255,${.35 + tw * .6})`); });
+      if (wk === 'clear' || (wk === 'cloud' && wa < 2)) px(124, 32, 8, 8, 'rgba(240,230,190,.05)'); if (wk === 'clear' || (wk === 'cloud' && wa < 2)) { px(123, 34, 10, 4, 'rgba(240,230,190,.05)'); px(126, 31, 4, 10, 'rgba(240,230,190,.05)'); } if (wk === 'clear' || (wk === 'cloud' && wa < 2)) ['..MMM.', '.MMm..', 'MMm...', 'MMm...', '.MMm..', '..MMM.'].forEach((r, j) => [...r].forEach((ch, i) => { if (ch !== '.') px(125 + i, 33 + j, 1, 1, ch === 'M' ? '#f6eecb' : '#d8cc9c'); }));   // 초승달 + 달무리
+      WIN.bld.forEach(([x, w, h]) => { px(x, Y + Hd - 3 - h, w, h, '#121726'); px(x, Y + Hd - 3 - h, w, 1, '#1d2438'); });   // 멀리 건물
+      WIN.lit.forEach(([x, y, c, p]) => { if (Math.sin(t2 / 2600 + p * 60) > -.85) px(x, y, 1, 1, c); });
+      px(X + 3, Y + Hd - 7, Wd - 6, 4, 'rgba(255,150,90,.10)');                              // 실내 조명이 유리에 비침
+      if (wk === 'cloud' || wet || wk === 'snow') for (let i = 0; i < 4; i++) { const cx = gx0 + ((i * 23 + t2 / 400) % (Wd + 20)) - 10, cy = gy0 + 2 + (i % 2) * 4;   // 구름
+        for (let d = 0; d < 12; d++) { const xx = Math.round(cx + d); if (xx >= gx0 && xx < gx1) px(xx, cy + (d > 2 && d < 9 ? -1 : 0), 1, d > 1 && d < 10 ? 3 : 2, wet ? 'rgba(70,76,92,.85)' : 'rgba(96,104,124,.7)'); } }
+      if (wk === 'fog') for (let y = gy0 + 4; y < gy1; y += 3) px(gx0, y, gx1 - gx0, 2, 'rgba(190,196,210,.18)');
+      if (wet) { const n = [0, 16, 28, 44][wa] || 20;   // 빗줄기 (사선으로 떨어짐)
+        for (let i = 0; i < n; i++) { const sp = 1 + (i % 3) * .35, x0 = gx0 + ((i * 37) % (gx1 - gx0)), y0 = gy0 + ((t2 / (14 / sp) + i * 53) % (gy1 - gy0 + 6)) - 3;
+          for (let d = 0; d < 5; d++) { const xx = Math.round(x0 - (y0 + d - gy0) * .3), yy = Math.round(y0 + d); if (xx >= gx0 && xx < gx1 && yy >= gy0 && yy < gy1) px(xx, yy, 1, 1, `rgba(185,210,240,${.75 - d * .13})`); } }
+        for (let i = 0; i < 9; i++) { const x = gx0 + 2 + ((i * 29) % (gx1 - gx0 - 4)), y = gy0 + ((t2 / (900 + i * 130) * 6 + i * 11) % (gy1 - gy0));   // 유리에 맺혀 흘러내리는 물방울
+          px(x, Math.round(y), 1, 2, 'rgba(200,225,255,.45)'); px(x, Math.round(y) - 2, 1, 2, 'rgba(200,225,255,.15)'); }
+        if (wk === 'storm') { const ph = (t2 % 11000) / 11000; if (ph < .03 || (ph > .05 && ph < .065)) px(gx0, gy0, gx1 - gx0, gy1 - gy0, 'rgba(235,240,255,.55)'); } }   // 번개
+      if (wk === 'snow') { const n = [0, 18, 30, 46][wa] || 24;   // 눈송이 (살랑살랑)
+        for (let i = 0; i < n; i++) { const sp = .6 + (i % 4) * .18, x = gx0 + ((i * 41) % (gx1 - gx0)) + Math.sin(t2 / 700 + i) * 2, y = gy0 + ((t2 / (60 / sp) + i * 47) % (gy1 - gy0));
+          const xx = Math.round(x); if (xx >= gx0 && xx < gx1) px(xx, Math.round(y), i % 5 === 0 ? 2 : 1, i % 5 === 0 ? 2 : 1, 'rgba(250,252,255,.9)'); } }
+      for (let k = 0; k < 3; k++) { const sx = X + 6 + k * 22; for (let d = 0; d < 6; d++) { px(sx + d, Y + 5 + d, 1, 1, 'rgba(255,255,255,.12)'); if (d < 4) px(sx + d + 3, Y + 5 + d, 1, 1, 'rgba(255,255,255,.07)'); } }   // 유리 반사 (짧은 사선)
+      // 창틀 (어두운 나무 · 위쪽 하이라이트 · 안쪽 그림자)
+      px(X, Y, Wd, 3, '#4a3020'); px(X, Y, Wd, 1, '#6a4a32'); px(X, Y + Hd - 3, Wd, 3, '#4a3020'); px(X, Y, 3, Hd, '#4a3020'); px(X + Wd - 3, Y, 3, Hd, '#3a2418'); px(X, Y, 1, Hd, '#6a4a32');
+      px(X + 3, Y + 3, Wd - 6, 1, 'rgba(0,0,0,.35)'); px(X + 3, Y + 3, 1, Hd - 6, 'rgba(0,0,0,.25)');
+      [X + 26, X + 48].forEach(mx => { px(mx - 1, Y + 3, 2, Hd - 6, '#4a3020'); px(mx - 1, Y + 3, 1, Hd - 6, '#5e4030'); });   // 세로 살
+      px(X + 3, Y + 16, Wd - 6, 2, '#4a3020'); px(X + 3, Y + 16, Wd - 6, 1, '#5e4030');       // 가로 살
+      px(X - 3, Y + Hd, Wd + 6, 2, '#5a3a26'); px(X - 3, Y + Hd, Wd + 6, 1, '#7a5638'); px(X - 2, Y + Hd + 2, Wd + 4, 1, 'rgba(0,0,0,.35)');   // 창턱
+      if (wk === 'snow') { for (let x = gx0; x < gx1; x++) { const bump = Math.sin(x * .45) + Math.sin(x * .17) > .9 ? 1 : 0; px(x, gy1 - 1 - bump, 1, 1 + bump, 'rgba(245,248,255,.95)'); px(x, Y + 15 - (Math.sin(x * .6 + 1) > .7 ? 1 : 0), 1, 1 + (Math.sin(x * .6 + 1) > .7 ? 1 : 0), 'rgba(245,248,255,.92)'); } }   // 유리 아래·가로살 위 눈
+      px(X + 10, Y + Hd - 4, 3, 2, '#2a5a2a'); px(X + 11, Y + Hd - 6, 1, 2, '#3a7a3a'); px(X + 9, Y + Hd - 5, 1, 1, '#3a7a3a'); px(X + 13, Y + Hd - 5, 1, 1, '#3a7a3a');   // 창가 작은 화분
+      px(X + 58, Y + Hd - 5, 2, 3, '#cfe4f0'); px(X + 58, Y + Hd - 6, 2, 1, '#e8f4fa'); px(X + 61, Y + Hd - 4, 2, 2, '#d9902a');   // 빈 병 · 잔
+    }
     function room() {
       px(0, 0, W, H, '#0e0a0b');
       for (let x = 0; x < W; x += 2) { const v = noise[x / 2]; px(x, 26, 2, 128, `rgb(${108 + v},${26 + v / 2},${28 + v / 2})`); }
       px(0, 0, W, 26, '#120c0d'); px(0, 18, 210, 8, '#5a1416'); px(0, 25, 210, 1, '#ff6a5a'); px(0, 26, 210, 2, 'rgba(255,90,80,.35)');
       px(180, 26, 18, 9, '#1a1a1e'); px(186, 22, 2, 4, '#2a2a2e'); px(181, 33, 2, 1, '#3a7aff');
       px(232, 22, 2, 6, '#2a2a2e'); px(220, 28, 26, 2, '#d9dde3'); px(230, 27, 6, 3, '#eef0f2');
-      px(70, 30, 70, 30, '#cfd6dc');
-      for (let y = 32; y < 58; y += 4) for (let x = 72; x < 138; x += 4) px(x + ((y / 4) % 2) * 2, y, 2, 2, '#4a5560');
-      px(84, 36, 10, 8, '#2a3038'); px(116, 36, 10, 8, '#2a3038'); px(84, 48, 10, 8, '#2a3038'); px(116, 48, 10, 8, '#2a3038');
+      nightWindow();
       px(10, 62, 176, 82, '#2a1d16');
       for (let k = 0; k < 4; k++) {
         const x0 = 13 + k * 43;
