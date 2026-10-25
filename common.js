@@ -2051,10 +2051,12 @@
     lsSet('notsun-owner-seats', v); ping();
   }
   // 이벤트: 럭키 손님 / 오늘의 한 줄 / VIP (그날 영업일에만 유효)
-  const luckySeen = {};
+  const luckySeen = {}; let evBooted = false;
   const SHOP_WIFI = { s: 'KT_GiGA_B945', p: '3bbbaxe067' };  // 손님용 와이파이 기본값 (사장 리모컨에서 바꿀 수 있음 · 이름은 대소문자 구분)
   const wifiQrText = w => `WIFI:T:WPA;S:${String(w.s).replace(/([\\;,:"])/g, '\\$1')};P:${String(w.p).replace(/([\\;,:"])/g, '\\$1')};;`;
   function cleanEvents(v) {
+    // 페이지를 연 뒤 '처음 받은' 데이터에 이미 있던 이벤트는 지난 것: 다시 틀지 않음 (네트워크가 느려 5초 넘게 걸려도)
+    const boot = !evBooted; if (v) evBooted = true;
     const today = bizDate(), out = { lucky: null, best: null, vip: [], order: null, served: null, gend: null, rqdone: {}, auto: { on: true, req: true, next: '', slot: 0 }, ntfy: '', bday: null, bdays: [], q: '', game: null, npcs: [], wifi: { ...SHOP_WIFI } };
     const wf = v && v.wifi; if (wf && typeof wf.s === 'string') out.wifi = { s: wf.s.slice(0, 32), p: typeof wf.p === 'string' ? wf.p.slice(0, 63) : '' };
     const lk = v && v.lucky;
@@ -2062,22 +2064,22 @@
       // 기기마다 시계가 달라도 애니메이션이 처음부터 보이도록: 이 화면이 '처음 받은 순간'을 시작 시간으로 씀
       const server = lk.at && lk.at.toMillis ? lk.at.toMillis() : (lk.ms || 0), key = lk.id + '|' + (server || 'pending');
       // 페이지를 막 연 순간 이미 있던 지난 뽑기는 다시 틀지 않음. 그 뒤로 새로 들어온 뽑기는 기기 시계와 상관없이 항상 처음부터 재생
-      if (!(key in luckySeen)) luckySeen[key] = (performance.now() < 5000 && server && Math.abs(Date.now() - server) > 20000) ? 0 : Date.now();
+      if (!(key in luckySeen)) luckySeen[key] = ((boot && server && Math.abs(Date.now() - server) > 20000) || (server && Math.abs(Date.now() - server) > 600000)) ? 0 : Date.now();
       if (!server) luckySeen[key] = luckySeen[key] || Date.now();
       out.lucky = { id: lk.id, nick: String(lk.nick || '').slice(0, 8), ms: luckySeen[key], serverMs: server, reward: typeof lk.reward === 'string' ? lk.reward.slice(0, 20) : '' };
     }
     const bs = v && v.best; if (bs && bs.day === today && typeof bs.id === 'string') out.best = bs.id;
     if (v && typeof v.ntfy === 'string') { ntfyTopic = v.ntfy; out.ntfy = v.ntfy; }
     const bdv = v && v.bday;
-    if (bdv && bdv.day === today && bdv.n && typeof bdv.id === 'string') { const key = 'b|' + bdv.n; if (!(key in luckySeen)) luckySeen[key] = performance.now() < 5000 ? 0 : Date.now(); out.bday = { id: bdv.id, nick: String(bdv.nick || '').slice(0, 8), ms: luckySeen[key] }; }
+    if (bdv && bdv.day === today && bdv.n && typeof bdv.id === 'string') { const key = 'b|' + bdv.n; if (!(key in luckySeen)) luckySeen[key] = boot ? 0 : Date.now(); out.bday = { id: bdv.id, nick: String(bdv.nick || '').slice(0, 8), ms: luckySeen[key] }; }
     const bdl = v && v.bdays; if (bdl && bdl.day === today && Array.isArray(bdl.ids)) out.bdays = bdl.ids.filter(x => typeof x === 'string').slice(0, 40);
     const od = v && v.order;
-    if (od && od.day === today && od.n) { const key = 'o|' + od.n; if (!(key in luckySeen)) luckySeen[key] = performance.now() < 5000 ? 0 : Date.now(); out.order = { gid: od.gid || '', nick: String(od.nick || '').slice(0, 8), icon: od.icon || 'cocktail', dr: typeof od.dr === 'string' ? od.dr.slice(0, 30) : '', ms: luckySeen[key] }; }
+    if (od && od.day === today && od.n) { const key = 'o|' + od.n; if (!(key in luckySeen)) luckySeen[key] = boot ? 0 : Date.now(); out.order = { gid: od.gid || '', nick: String(od.nick || '').slice(0, 8), icon: od.icon || 'cocktail', dr: typeof od.dr === 'string' ? od.dr.slice(0, 30) : '', ms: luckySeen[key] }; }
     const au = v && v.auto; if (au && typeof au === 'object') out.auto = { on: au.on !== false, req: au.req !== false, next: AUTO_ORDER.includes(au.next) ? au.next : '', slot: +au.slot || 0 };
     const rd = v && v.rqdone; if (rd && rd.day === today && rd.m && typeof rd.m === 'object') AUTO_ORDER.forEach(k => { if (+rd.m[k]) out.rqdone[k] = +rd.m[k]; });
-    const ge = v && v.gend; if (ge && ge.day === today && ge.k && typeof ge.msg === 'string') { const key = 'e|' + ge.k; if (!(key in luckySeen)) luckySeen[key] = performance.now() < 5000 ? 0 : Date.now(); out.gend = { n: +ge.n || 0, msg: ge.msg.slice(0, 80), ms: luckySeen[key] }; }
+    const ge = v && v.gend; if (ge && ge.day === today && ge.k && typeof ge.msg === 'string') { const key = 'e|' + ge.k; if (!(key in luckySeen)) luckySeen[key] = boot ? 0 : Date.now(); out.gend = { n: +ge.n || 0, msg: ge.msg.slice(0, 80), ms: luckySeen[key] }; }
     const sv = v && v.served;
-    if (sv && sv.day === today && sv.n) { const key = 's|' + sv.n; if (!(key in luckySeen)) luckySeen[key] = performance.now() < 5000 ? 0 : Date.now(); out.served = { gid: typeof sv.gid === 'string' ? sv.gid : '', dr: typeof sv.dr === 'string' ? sv.dr.slice(0, 30) : '', ms: luckySeen[key] }; }
+    if (sv && sv.day === today && sv.n) { const key = 's|' + sv.n; if (!(key in luckySeen)) luckySeen[key] = boot ? 0 : Date.now(); out.served = { gid: typeof sv.gid === 'string' ? sv.gid : '', dr: typeof sv.dr === 'string' ? sv.dr.slice(0, 30) : '', ms: luckySeen[key] }; }
     const vp = v && v.vip; if (vp && vp.day === today && Array.isArray(vp.ids)) out.vip = vp.ids.filter(x => typeof x === 'string').slice(0, 40);
     const gm = v && v.game; if (gm && gm.day === today && gm.n && GAME_TYPES.includes(gm.type)) { const key = 'g|' + gm.n + '|' + gm.phase + '|' + (gm.k || 0); if (!(key in luckySeen)) luckySeen[key] = Date.now(); out.game = { ...gm, ms: luckySeen[key] }; }
     const np = v && v.npcs; if (np && np.day === today && Array.isArray(np.list)) out.npcs = np.list.filter(g => g && typeof g.id === 'string' && /^npc/.test(g.id) && valid({ ...g, id: undefined, ms: undefined })).slice(0, NPC_MAX).map(g => ({ ...g, npc: true, noheart: true }));
@@ -2272,7 +2274,7 @@
     { k: 'high', name: '칵테일 · 높은 도수', en: 'HIGH PROOF', icon: 'cocktail', items: [M('몽상', 13000), M('마티니', 15000), M('갓파더', 14000), M('파우스트', 13000), M('카타르시스', 13000), M('블랙러시안', 12000), M('잭로즈', 13000)] },
     { k: 'hb', name: '하이볼', en: 'HIGHBALL', icon: 'whisky', items: [M('산토리 하이볼', 12000), M('애플 하이볼', 12000), M('피치 하이볼', 12000), M('생제르맹 하이볼', 13000)] },
     { k: 'whisky', name: '위스키', en: 'WHISKY', icon: 'whisky', note: '잔은 30ml · 하이볼로 변경 +2,000 · 바틀 킵 기간 2달', items: [
-      W_('몽키숄더', '40%', 10000, 170000, 'BLENDED & CASUAL'), W_('조니워커 블랙', '40%', 10000, 170000, 'BLENDED & CASUAL'), W_('제임슨', '40%', 9000, 150000, 'BLENDED & CASUAL'),
+      W_('몽키숄더', '40%', 10000, 170000, 'BLENDED & CASUAL'), W_('조니워커 블랙', '40%', 10000, 130000, 'BLENDED & CASUAL'), W_('제임슨', '40%', 9000, 120000, 'BLENDED & CASUAL'),
       W_('잭다니엘 올드 No.7', '40%', 9000, 150000, 'BOURBON'), W_('메이커스 마크', '45%', 10000, 170000, 'BOURBON'), W_('버팔로 트레이스', '45%', 11000, 190000, 'BOURBON'), W_('와일드터키 101 8년', '50.5%', 10000, 170000, 'BOURBON'), W_('러셀 리저브 싱글배럴', '55%', 13000, 250000, 'BOURBON'),
       W_('글렌모렌지 12년 오리지널', '40%', 11000, 210000, 'SINGLE MALT'), W_('글렌피딕 12년', '40%', 12000, 230000, 'SINGLE MALT'), W_('발베니 12년 더블우드', '40%', 14000, 270000, 'SINGLE MALT'),
       W_('글렌드로낙 12년', '43%', 14000, 270000, 'SHERRY CASK'), W_('맥캘란 12년 쉐리오크', '40%', 15000, 280000, 'SHERRY CASK'), W_('글렌알라키 12년', '46%', 15000, 300000, 'SHERRY CASK'),
@@ -2608,6 +2610,10 @@
   const setNtfy = topic => saveEvent('ntfy', String(topic || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64));
   const renotify = o => notifyPhones({ ...o, nick: `⏰ 아직 접수 전 · ${o.nick || '손님'}` });
   const testNtfy = topic => notifyPhones({ nick: '테스트', items: [{ name: '알림 테스트', qty: 1 }], note: '', total: 0 }, topic);
+  // 영업시간 (한국 시간): 금·토 19:00~03:00, 그 외 19:00~01:00 · 앞뒤 30분 여유 (새벽 6시 전은 전날 영업으로 봄)
+  const SHOP_HOURS_TEXT = '오후 7시 ~ 새벽 1시 (금·토는 새벽 3시까지)';
+  function shopOpen(now){ const k = new Date((now || Date.now()) + 9 * 3600e3), h = k.getUTCHours() + k.getUTCMinutes() / 60; let dow = k.getUTCDay(); if (h < 6) dow = (dow + 6) % 7;
+    const close = dow === 5 || dow === 6 ? 3 : 1; return { open: h >= 18.5 || (h < 6 && h < close + 0.5), text: SHOP_HOURS_TEXT }; }
   const onScreen = (l, keepLeft) => l.filter(g => valid(g) && clean(g.nick) && clean(g.msg) && (keepLeft || !g.left));   // 계산 완료(퇴장)한 손님은 자리에서 뺌
   async function saveTheme(theme) {
     if (!THEMES.some(t => t.k === theme)) return;
@@ -2621,5 +2627,5 @@
   }
 
   global.Notsun = { setGuestLeft, resetDay, watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, horseSprite, raceProg, raceInfo, RACE_T0, BAL_QS, OX_QS, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, BOTTOMS, ACCS, HAIR_X, TOPS, EYES, ACC_X, SHOES, PANTS_COLORS, EX_RE, setGuestCos, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
-    setCatVisit, watchCatVisit, petCat, safeReload, netErr, newOrderId: () => LIVE ? fs.collection('orders').doc().id : 'o' + Date.now(), watchCatPets, THEMES, resolveTheme, costumeFor, drawCostume, cosSeed, OWNER_COS, ownerCostume, cardAura, AURA_FX, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, announceServed, drinkColor, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, saveGameEnd, REQ_NEED, reqTally, requestGame, markReqDone, AUTO_ORDER, AUTO_LABEL, autoInfo, autoSpec, saveAuto, notifyOwner, updateLook, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
+    shopOpen, setCatVisit, watchCatVisit, petCat, safeReload, netErr, newOrderId: () => LIVE ? fs.collection('orders').doc().id : 'o' + Date.now(), watchCatPets, THEMES, resolveTheme, costumeFor, drawCostume, cosSeed, OWNER_COS, ownerCostume, cardAura, AURA_FX, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, announceServed, drinkColor, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, saveGameEnd, REQ_NEED, reqTally, requestGame, markReqDone, AUTO_ORDER, AUTO_LABEL, autoInfo, autoSpec, saveAuto, notifyOwner, updateLook, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
 })(window);

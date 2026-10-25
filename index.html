@@ -133,6 +133,17 @@ details.fold{border:1.5px solid var(--glow);background:linear-gradient(180deg,#2
 .ostat{border-radius:10px;padding:12px 14px;display:grid;gap:4px;border:1px solid var(--line);background:#1a1214}
 .ostat b{font-weight:400;font-size:18px}.ostat small{color:var(--muted);font-size:13px}
 .ostat.new{border-color:#c9a25a}.ostat.accepted{border-color:#7ee08a}.ostat.done{border-color:#6ab0ff}.ostat.rejected{border-color:#ff8f8f}
+.wcnudge{display:flex;align-items:center;gap:10px;border:1.5px solid #7ee08a;background:#132a1c;border-radius:14px;padding:12px;margin:0 0 10px;animation:wcPulse 1.8s ease-in-out infinite}.wcnudge[hidden]{display:none}.wcnudge .wi{font-size:26px}.wcnudge .wt{flex:1;line-height:1.4}.wcnudge .wt b{display:block;font:17px "Do Hyeon",sans-serif;color:#e8ffe8}.wcnudge .wt small{color:#b9d8bf;font-size:13px}.wcnudge .btn{white-space:nowrap}.wcnudge .x{background:none;border:0;color:#b9d8bf;font-size:20px;padding:6px;min-width:36px;min-height:36px}
+@keyframes wcPulse{0%,100%{box-shadow:0 0 0 0 #7ee08a55}50%{box-shadow:0 0 0 6px #7ee08a00}}
+.wcbtn.new{animation:wcPulse 1.8s ease-in-out infinite;border-color:#7ee08a}
+.closedbox{border:1.5px solid #c9a2ff;background:#1a1424;border-radius:14px;padding:14px;margin:8px 0;display:grid;gap:4px;text-align:center}.closedbox[hidden]{display:none}.closedbox b{font:19px "Do Hyeon",sans-serif;color:#e6d4ff}.closedbox small{color:#c8bcd6;font-size:14px;line-height:1.5}
+.wcbtn{width:100%;margin:0 0 8px;border-color:#7ab8ff;color:#cfe4ff;background:#121a24}
+#wcSheet .in{background:#16100f;border:1px solid var(--line);border-radius:16px;padding:16px;justify-items:stretch;width:min(420px,100%)}
+#wcSheet h3{margin:0;font:22px "Do Hyeon",sans-serif;color:#ffe2c4;text-align:center}
+#wcMap{width:100%;height:auto;display:block;border-radius:12px;background:#0f0b0c}
+.wcpick{display:grid;grid-template-columns:1fr 1fr;gap:8px}.wcpick .btn.on{border-color:#7ab8ff;background:#1a2636;color:#fff}
+.wcpw{text-align:center;border:1.5px dashed #ffd36a;border-radius:12px;padding:10px;color:#ffd36a;font-size:15px}.wcpw b{font:28px "Do Hyeon",sans-serif;letter-spacing:4px;display:block;color:#fff4d8}
+.wcstep{margin:0;padding-left:20px;color:#e6d9cf;font-size:15px;line-height:1.7}
 .sheet{position:fixed;inset:0;background:rgba(8,5,6,.92);display:grid;place-items:center;padding:16px;z-index:9;overflow:auto}
 .sheet .in{width:min(380px,100%);display:grid;gap:12px;justify-items:center}
 #cartSheet{background:#0d090a}
@@ -182,8 +193,9 @@ body:has(.catcard) .toast{top:104px}
     <h1>낯선 바에 내 캐릭터 앉히기</h1>
     <p class="sub">닉네임만 쓰면 매장 스크린 속 바에 앉아요. 꾸미기는 앉은 뒤에 해도 돼요.</p>
     <p class="sub" id="season" style="color:var(--glow);margin-top:6px"></p>
-    <div class="wifi" data-wifi></div>
+    <div class="wifi" data-wifi></div><button class="btn wcbtn" type="button" data-wc>🚻 화장실 위치 보기</button>
   </header>
+  <div class="closedbox" id="closedBox" hidden><b>🌙 지금은 영업시간이 아니에요</b><small id="closedTxt"></small></div>
   <section class="quick" aria-label="빠르게 앉기">
     <div class="lastbox" id="lastBox" hidden></div>
     <div class="qtop">
@@ -247,11 +259,12 @@ body:has(.catcard) .toast{top:104px}
     </div>
     <div id="hubOrders" style="display:grid;gap:8px"></div>
     <p class="total" id="hubTotal" hidden></p>
+    <div class="wcnudge" data-wcnudge hidden><span class="wi">🚻</span><div class="wt"><b>화장실은 건물 바깥에 있어요</b><small>가는 길을 미리 확인해 두세요</small></div><button class="btn small" type="button" data-wc>가는 길 보기</button><button class="x" type="button" data-wcx aria-label="안내 닫기">✕</button></div>
     <button class="btn primary" id="toMenu2">🍸 메뉴판 · 주문하기</button>
     <div class="row2"><button class="btn" id="lookBtn" type="button" style="white-space:nowrap">✏️ 꾸미기</button><button class="btn" id="cosBtn" type="button" style="white-space:nowrap">🎁 코스튬 뽑기</button></div>
     <div class="reqcard" id="reqCard"><div class="rqh"><b>🎮 하고 싶은 게임 신청</b><small>3명이 모이면 바로 시작해요</small></div><div id="reqList"></div><button class="btn small" id="reqOpen" type="button">+ 게임 고르기</button><div class="rqpick" id="reqPick" hidden></div></div>
     <div class="autocard" id="autoCard" hidden><b id="autoTxt"></b><small>📱 이 화면을 켜두면 게임이 시작될 때 바로 참여할 수 있어요. 화면이 꺼지면 알림을 못 받아요.</small><button class="btn small" id="keepOn" type="button">🔆 화면 켜두기</button></div>
-    <div class="wifi" data-wifi></div>
+    <div class="wifi" data-wifi></div><button class="btn wcbtn" type="button" data-wc>🚻 화장실 위치 보기</button>
     <section class="card">
       <h2>🙋 사장님 호출</h2>
       <div class="calls"><button class="btn" data-call="물 주세요">💧 물</button><button class="btn" data-call="계산할게요">🧾 계산</button><button class="btn" data-call="잠깐 와주세요">🙋 불러요</button></div>
@@ -294,6 +307,7 @@ body:has(.catcard) .toast{top:104px}
 <main id="menu" hidden style="padding-bottom:90px">
   <div class="mtop"><button class="btn small" id="menuBack" type="button">← 내 캐릭터</button><div class="brand">MENU · NOTSUN</div></div>
   <div id="seatedMsg" class="sub" style="color:var(--glow)"></div>
+  <div class="wcnudge" data-wcnudge hidden><span class="wi">🚻</span><div class="wt"><b>화장실은 건물 바깥에 있어요</b><small>가는 길을 미리 확인해 두세요</small></div><button class="btn small" type="button" data-wc>가는 길 보기</button><button class="x" type="button" data-wcx aria-label="안내 닫기">✕</button></div>
   <div id="orderStatus" style="display:grid;gap:8px"></div>
   <p class="total" id="menuTotal" hidden></p>
   <div id="recBox"></div>
@@ -314,6 +328,31 @@ body:has(.catcard) .toast{top:104px}
 </div>
 <button class="gchip" id="gChip" type="button" hidden>🎮 게임 중 · 열기</button>
 <div class="cartbar" id="cartbar" hidden><button class="btn primary" id="cartOpen"></button></div>
+<div class="sheet" id="wcSheet" hidden role="dialog" aria-label="화장실 위치 안내">
+  <div class="in">
+    <h3>🚻 화장실 가는 길</h3>
+        <svg id="wcMap" viewBox="0 0 340 300" role="img" aria-label="낯선에서 나와 건물 바깥 길을 따라 돌아 화장실로 가는 길">
+      <rect x="18" y="16" width="232" height="274" rx="6" fill="#1d1f24"></rect>
+      <rect x="58" y="42" width="244" height="182" rx="4" fill="#0f0b0c" stroke="#5a4440" stroke-width="2"></rect>
+      <path d="M250 16 H18 V290 H240" fill="none" stroke="#ffb27a" stroke-width="2.5" stroke-linejoin="round"></path>
+      <path d="M302 78 H336 M302 224 H336" stroke="#5a4440" stroke-width="2" stroke-dasharray="4 4"></path>
+      <text x="140" y="25" fill="#9aa3b2" font-size="8" text-anchor="middle">바깥 길</text><text x="150" y="286" fill="#9aa3b2" font-size="8" text-anchor="middle">바깥 길</text>
+      <rect x="198" y="46" width="100" height="36" rx="4" fill="#3a2418" stroke="#ffd36a" stroke-width="2"></rect>
+      <text x="248" y="69" fill="#ffd36a" font-size="15" text-anchor="middle" font-family="Do Hyeon, sans-serif">낯선 ◢</text>
+      <text x="180" y="138" fill="#5a4440" font-size="12" text-anchor="middle">건물</text>
+      <rect id="wcR1" x="90" y="222" width="42" height="32" rx="3" fill="#1a1516" stroke="#5a4440" stroke-width="1.5"></rect>
+      <text x="111" y="236" fill="#8a7a72" font-size="8" text-anchor="middle">다른</text><text x="111" y="246" fill="#8a7a72" font-size="8" text-anchor="middle">화장실</text>
+      <rect id="wcR2" x="184" y="222" width="58" height="30" rx="3" fill="#132a1c" stroke="#7ee08a" stroke-width="2.5"></rect>
+      <text x="213" y="241" fill="#e8ffe8" font-size="10" text-anchor="middle">낯선 화장실</text>
+      <path id="wcBg" fill="none" stroke="#7ee08a" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1 7" opacity=".45"></path><path id="wcTrail" fill="none" stroke="#7ee08a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"></path>
+      <circle id="wcGoal" r="10" fill="none" stroke="#7ee08a" stroke-width="2" opacity="0"></circle>
+      <g id="wcMe"><circle r="7" fill="#ffd36a" stroke="#1a0f10" stroke-width="2"></circle><text y="20" fill="#fff4d8" font-size="9" text-anchor="middle">나</text></g>
+    </svg>
+    <ol class="wcstep" id="wcSteps"></ol>
+    <div class="wcpw">화장실 비밀번호<b>0946</b></div>
+    <button class="btn" type="button" id="wcClose">닫기</button>
+  </div>
+</div>
 <div class="sheet" id="cartSheet" hidden role="dialog" aria-label="주문 확인">
   <div class="in" style="justify-items:stretch">
     <h1 style="margin:0;text-align:center">주문 확인</h1>
@@ -471,9 +510,12 @@ $('photo').addEventListener('change', e => {
   img.onerror = () => { URL.revokeObjectURL(url); showErr('사진을 읽지 못했어요. 다시 찍어주세요.'); };
   img.src = url;
 });
+function closedUi(){ const shut = N.LIVE && !N.shopOpen().open, b = $('closedBox'); if (!b) return; b.hidden = !shut; if (shut) $('closedTxt').textContent = `영업시간 ${N.shopOpen().text} · 매장에 오시면 스크린 속 바에 앉을 수 있어요`; }
+closedUi(); setInterval(closedUi, 60000);
 function showErr(m){ $('err').textContent = m; $('err').hidden = false; }
 async function submit(){
   if (!$('nick').value.trim()) return;
+  if (N.LIVE && !N.shopOpen().open) { showErr(`지금은 영업시간이 아니에요. 영업시간(${N.shopOpen().text})에 매장에서 앉아 주세요.`); closedUi(); return; }
   busy = true; check(); $('err').hidden = true; $('go').textContent = '앉는 중…'; $('quickGo').textContent = '앉는 중…';
   try {
     const v = visitCount();
@@ -942,6 +984,30 @@ function renderCart(){
 }
 $('cartOpen').onclick = () => { const me = loadMe(); $('cartNickWrap').hidden = !!me; if (!me && !$('cartNick').value) $('cartNick').value = $('nick').value.trim(); if (me) $('cartShow').checked = !me.nolast; $('cartErr').hidden = true; $('cartSheet').hidden = false; };
 $('cartClose').onclick = () => { $('cartSheet').hidden = true; };
+// 화장실 가는 길: 낯선 → 위쪽 복도 → 왼쪽 복도 → 아래 복도 → 화장실
+var wcRaf = 0;
+const WC_PATH = { 1: 'M248 64 L234 33 L36 33 L36 270 L111 270 L111 258', 2: 'M248 64 L234 33 L36 33 L36 270 L213 270 L213 256' };
+const WC_STEP = { 1: ['낯선 문을 나와 복도로', '복도를 따라 왼쪽으로 쭉', '끝에서 아래로 내려간 뒤 오른쪽', '첫 번째 문이 화장실 1'], 2: ['낯선 문을 나와 건물 밖으로', '건물을 끼고 왼쪽 길로 쭉', '모퉁이를 돌아 아래로, 다시 오른쪽으로', '첫 번째 문은 지나치고 끝 문으로'] };
+function wcGo(n){ cancelAnimationFrame(wcRaf);
+  $('wcSteps').innerHTML = WC_STEP[n].map(t => `<li>${t}</li>`).join('');
+  const tr = $('wcTrail'), me = $('wcMe'), goal = $('wcGoal'); tr.setAttribute('d', WC_PATH[n]); $('wcBg').setAttribute('d', WC_PATH[n]);
+  const L = tr.getTotalLength(), end = tr.getPointAtLength(L); goal.setAttribute('cx', end.x); goal.setAttribute('cy', end.y);
+  $('wcR2').setAttribute('stroke', '#7ee08a');
+  const dur = 4200, t0 = performance.now();
+  const step = now => { if ($('wcSheet').hidden) return; const k = Math.min(1, (now - t0) / dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2, d = L * e, p = tr.getPointAtLength(d), bob = k < 1 ? Math.abs(Math.sin(now / 90)) * 2 : 0;
+    tr.setAttribute('stroke-dasharray', `${d} ${L + 1}`);
+    me.setAttribute('transform', `translate(${p.x} ${p.y - bob})`);
+    const pu = k >= 1 ? (now / 600) % 1 : 0; goal.setAttribute('r', 8 + pu * 10); goal.setAttribute('opacity', k >= 1 ? (1 - pu).toFixed(2) : 0);
+    if (k >= 1 && now - t0 > dur + 2600) { wcGo(n); return; } wcRaf = requestAnimationFrame(step); };
+  wcRaf = requestAnimationFrame(step); }
+const WC_KEY = 'notsun-wc-seen', wcSeen = () => { try { return localStorage.getItem(WC_KEY) === '1'; } catch (e) { return false; } };
+function wcMark(){ try { localStorage.setItem(WC_KEY, '1'); } catch (e) {} wcNudgeUi(); }
+function wcNudgeUi(){ const seen = wcSeen(); document.querySelectorAll('[data-wcnudge]').forEach(n => n.hidden = seen); document.querySelectorAll('.wcbtn').forEach(b => b.classList.toggle('new', !seen)); }
+document.querySelectorAll('[data-wc]').forEach(b => b.onclick = () => { $('wcSheet').hidden = false; wcGo(2); wcMark(); });
+document.querySelectorAll('[data-wcx]').forEach(b => b.onclick = wcMark); wcNudgeUi();
+$('wcClose').onclick = () => { $('wcSheet').hidden = true; cancelAnimationFrame(wcRaf); };
+$('wcSheet').onclick = e => { if (e.target.id === 'wcSheet') $('wcClose').onclick(); };
+
 let sending = false, orderRid = null, orderSig = '';   // 같은 주문을 다시 눌러도 두 번 들어가지 않게 (주문 번호를 미리 정해 둠)
 $('sendOrder').onclick = async () => {
   if (sending || !cart.length) return; const me = loadMe(); const nick = me ? me.nick : $('cartNick').value.trim();
