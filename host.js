@@ -65,9 +65,11 @@
     }
     const nickOf = gid => (H.players || ps).find(p => p.gid === gid)?.nick || (gActs.find(a => a.gid === gid) || {}).nick || '';
     if (T2 === 'bal') {
-      const votes = {}; gActs.filter(a => a.kind === 'vote').forEach(a => { if (!(a.gid in votes)) votes[a.gid] = a.v; }); const n = Object.keys(votes).length, na = Object.values(votes).filter(v => v === 0).length;
-      if (G.phase === 'play') { gState(`⚖️ ${G.a} vs ${G.b} · ${n}명 참여 · ${Math.max(0, Math.ceil((H.endAt - now) / 1000))}초`); if (now >= H.endAt) { H.doneAt = now + 12000; await gSet({ ...G, phase: 'result' }); gState(`⚖️ 결과: ${G.a} ${na}명 · ${G.b} ${n - na}명`); } }
-      else if (now >= H.doneAt) await gEnd(lastText);
+      const rd = G.round || 0, tot = G.total || 1, more = rd && rd < tot && Array.isArray(G.qs) && G.qs[rd];
+      const votes = {}; gActs.filter(a => a.kind === 'vote' && (!rd || a.k === rd)).forEach(a => { if (!(a.gid in votes)) votes[a.gid] = a.v; }); const n = Object.keys(votes).length, na = Object.values(votes).filter(v => v === 0).length;
+      const tag = rd ? ` (${rd}/${tot})` : '';
+      if (G.phase === 'play') { gState(`⚖️${tag} ${G.a} vs ${G.b} · ${n}명 참여 · ${Math.max(0, Math.ceil((H.endAt - now) / 1000))}초`); if (now >= H.endAt) { H.doneAt = now + (more ? 7000 : 12000); await gSet({ ...G, phase: 'result' }); gState(`⚖️${tag} 결과: ${G.a} ${na}명 · ${G.b} ${n - na}명`); } }
+      else if (now >= H.doneAt) { if (more) { const q = G.qs[rd]; H.endAt = now + 20000; delete H.doneAt; await gSet({ ...G, phase: 'play', round: rd + 1, a: q[0], b: q[1], dur: 20 }); gState(`⚖️ ${rd + 1}/${tot}번째 질문`); } else await gEnd(lastText); }
     }
     if (T2 === 'nun') {
       if (G.phase === 'play') {

@@ -12,11 +12,17 @@
   const ACCS = ['없음', '안경', '모자', '리본'];
   // 꾸미기 확장 (look.ex = 5글자: 머리·상의·눈·소품·신발)
   const EX_RE = /^[0-9a-z]{5}$/;
-  const HAIR_X = ['펌', '똥머리', '투블럭', '웨이브', '포니테일', '단정 앞머리'];   // 1~6
-  const TOPS = ['티셔츠', '후드티', '셔츠·넥타이', '니트', '재킷', '멜빵·원피스'];   // 0~5
+  const HAIR_X = ['펌', '똥머리', '투블럭', '웨이브', '포니테일', '단정 앞머리', '바가지 머리', '스파이키', '양갈래 번', '집게핀 반묶음', '샤기컷', '크롭컷', '가르마펌', '댄디컷', '올백', '아이비리그컷', '리프컷', '예수컷'];   // 1~18 (7~11: 레트로·트렌드 · 12~18: 남자 트렌드 컷)
+  const TOPS = ['티셔츠', '후드티', '셔츠·넥타이', '니트', '재킷', '멜빵·원피스', '트랙 져지', '하트 프린트 티', '야구 져지', '청재킷', '크롭 티', '오버핏 셋업'];   // 0~11 (6~11: 레트로·트렌드)
   const EYES = ['반짝 눈', '웃는 눈', '또렷한 눈', '졸린 눈'];                    // 0~3
-  const ACC_X = ['선글라스', '비니', '귀걸이', '헤어밴드', '꽃핀'];                  // 1~5
-  const SHOES = ['흰 운동화', '검정 구두', '갈색 부츠', '빨간 운동화'];             // 0~3
+  const ACC_X = ['선글라스', '비니', '귀걸이', '헤어밴드', '꽃핀', '틴트 선글라스', '버킷햇', '헤드폰', '반다나', '나비핀'];   // 1~10 (6~10: 레트로)
+  const SHOES = ['흰 운동화', '검정 구두', '갈색 부츠', '빨간 운동화', '청키 스니커즈', '통굽 운동화', '어그 부츠'];   // 0~6 (4~6: 레트로)
+  // 컨셉 테마: 2000년대 레트로 아이템 묶음 (꾸미기 화면에서 테마로 골라 보기)
+  // 바지 핏: 신발 칸에 같이 저장 (신발 + 7 × 핏) → 0 기본 · 1 와이드 · 2 스키니
+  const FITS = ['기본 핏', '와이드', '스키니'];
+  const LOOK_THEMES = [{ k: 'trend', name: '🔥 요즘 핏', hx: [11, 3, 4], hxM: [16, 17, 18, 13, 14, 15, 12, 3], tp: [10, 11, 4, 3], ax2: [2, 7, 3], sh: [4, 0], fit: [1], hair: ['#1c1416', '#4a2e1f', '#c99a5b', '#e8e2da'], shirt: ['#f2ede6', '#1e1e24', '#c8b8a0', '#6b5a4a', '#8a9a7a'], pants: ['#1e1e24', '#c8b8a0', '#5a7ab0', '#6b5a4a'] },
+    { k: 'y2k', name: '✨ 2000년대 레트로', hx: [7, 8, 9, 10, 11], hxM: [8, 7, 16, 3], tp: [6, 7, 8, 9], ax2: [6, 7, 8, 9, 10], sh: [4, 5, 6], fit: [2], hair: ['#1c1416', '#c99a5b', '#9c3f2a', '#e8e2da', '#5a4a8a'], shirt: ['#ef9fbf', '#6b8fd6', '#f2ede6', '#d99a3a', '#7a1f22'], pants: ['#5a7ab0', '#2a2f45', '#c8b8a0', '#f2ede6'] }];
+  const SHOE_PAL = [['#f4f0ea', '#b9ada4'], ['#1e1a1e', '#3a3238'], ['#7a4a2a', '#4a2a16'], ['#e0303a', '#f4f0ea'], ['#f8f6f2', '#7ab8ff'], ['#1e1a1e', '#f4f0ea'], ['#c8a07a', '#8a6a4a']];
   const PANTS_COLORS = ['#2a2f45', '#1e1e24', '#5a7ab0', '#c8b8a0', '#5a4030', '#7a1f22', '#f2ede6'];
   const exOf = look => { const e = String(look && look.ex || ''); return EX_RE.test(e) ? [...e].map(c => parseInt(c, 36)) : [0, 0, 0, 0, 0]; };
   const HAIR_COLORS = ['#1c1416', '#4a2e1f', '#7a4a2a', '#c99a5b', '#9c3f2a', '#e8e2da', '#5a4a8a'];
@@ -58,8 +64,8 @@
     valentine: ['heartband', 'rosehair'], white: ['candy', 'heartband'], rose: ['rosehair', 'rosehair'], pepero: ['pepero', 'heartband'], seollal: ['hanbok3', 'hanbok'], chuseok: ['hanbok3', 'hanbok2'] };
   // 코스튬 뽑기: 손님마다 그날 한 번 (기기 uid + 영업일 기준, 닉네임을 바꿔도 그대로) · 일반 80% / 레어 17% / 시크릿 3%
   // 성별(캐릭터 체형) 맞춤: f=여성용, m=남성용, u=공용
-  const LEGEND = [['idolm', 'm'], ['idolm2', 'm'], ['idolf', 'f'], ['idolf2', 'f']];   // 레전드 1%: 아이돌 무대의상
-  const SECRET = [['goldking', 'm'], ['goldqueen', 'f'], ['unicorn', 'u']];
+  const LEGEND = [['idolm', 'm'], ['idolm2', 'm'], ['idolf', 'f'], ['idolf2', 'f'], ['king', 'm'], ['admiral', 'm'], ['silla', 'f'], ['nile', 'f'], ['bicorne', 'm'], ['caesar', 'm'], ['painter', 'm'], ['hwarang', 'm'], ['gwanggaeto', 'm'], ['genghis', 'm'], ['mozart', 'm'], ['shakespeare', 'm'], ['saimdang', 'f'], ['antoinette', 'f'], ['joan', 'f'], ['elizabeth', 'f']];   // 레전드 1%: 아이돌 무대의상 + 역사 속 인물 (실명 대신 별칭)
+  const SECRET = [['goldking', 'm'], ['goldqueen', 'f'], ['lincoln', 'm'], ['gogh', 'm'], ['beethoven', 'm'], ['jangys', 'm'], ['nightingale', 'f'], ['curie', 'f'], ['yanggf', 'f'], ['nanseol', 'f']];   // 시크릿 3%: 황금 왕·여왕 + 역사 인물 (쿠폰 없음)   // 유니콘은 뺌 (2026-10-26)
   const STAR_R = [['trot', 'u'], ['rock', 'u'], ['rapper', 'u'], ['topstar', 'u']];   // 연예인 '컨셉' 레어 (실존 인물 아님)
   const GACHA = {
     default: { n: [['', 'u']], r: [['shades', 'u'], ['flower', 'f'], ['cat', 'f'], ['hero', 'm'], ['heartband', 'f'], ['straw', 'u'], ['scarf', 'u'], ['horns', 'm']] },
@@ -76,7 +82,16 @@
     chuseok: { n: [['hanbok', 'u'], ['hanbok2', 'u'], ['hanbok3', 'u']], r: [['gat', 'm'], ['jokduri', 'f'], ['rabbit+hanbok2', 'u']] }
   };
   const COSTUMES = Object.fromEntries(Object.entries(GACHA).filter(([k]) => k !== 'default').map(([k, v]) => [k, v.n.map(x => x[0])]));
-  const COS_NAME = { idolm: '아이돌 (블랙·남)', idolf: '아이돌 (블랙·여)', idolm2: '아이돌 (벨벳·남)', idolf2: '아이돌 (벨벳·여)', trot: '트로트 스타', rock: '록스타', rapper: '래퍼', topstar: '톱배우', goldking: '황금 왕', goldqueen: '황금 여왕', unicorn: '유니콘', hero: '가면 히어로', villain: '마왕', starhero: '별 히어로', plague: '역병 의사', gwishin: '처녀귀신', astronaut: '우주비행사', robot: '로봇', alien: '외계인',
+  // 코스튬 설명 (뽑기 카드에 표시)
+  const COS_DESC = { king: '한글을 만든 세종대왕처럼 곤룡포에 익선관을 썼어요', admiral: '바다를 지킨 이순신 장군처럼 갑옷에 붉은 망토를 둘렀어요', silla: '신라의 선덕여왕처럼 나뭇가지 금관을 썼어요',
+    nile: '이집트의 클레오파트라처럼 황금 머리장식과 목걸이를 했어요', bicorne: '유럽을 호령한 나폴레옹처럼 이각모에 견장 군복을 입었어요', caesar: '로마의 율리우스 카이사르처럼 월계관을 쓰고 토가를 둘렀어요',
+    painter: '모나리자를 그린 레오나르도 다빈치처럼 베레모에 팔레트를 들었어요', hwarang: '화랑 출신 신라 명장 김유신처럼 깃털 머리띠에 칼을 찼어요',
+    gwanggaeto: '고구려 땅을 넓힌 광개토대왕처럼 금관에 붉은 갑옷을 입었어요', genghis: '초원을 하나로 묶은 칭기즈칸처럼 털모자에 전통 옷을 입었어요',
+    mozart: '천재 음악가 모차르트처럼 흰 가발에 붉은 연미복을 입었어요', shakespeare: '대문호 셰익스피어처럼 주름 칼라에 깃펜을 들었어요',
+    saimdang: '시와 그림에 뛰어났던 신사임당처럼 쪽머리에 비녀를 꽂고 한복을 입었어요', antoinette: '프랑스의 마리 앙투아네트처럼 높이 올린 머리에 분홍 드레스를 입었어요',
+    joan: '프랑스를 구한 잔 다르크처럼 은빛 갑옷에 깃발을 들었어요', elizabeth: '영국의 엘리자베스 1세처럼 레이스 칼라에 진주 드레스를 입었어요',
+    idolm: '무대 조명을 받는 아이돌 무대의상이에요', idolf: '무대 조명을 받는 아이돌 무대의상이에요', idolm2: '벨벳 무대의상의 아이돌이에요', idolf2: '벨벳 무대의상의 아이돌이에요', goldking: '온몸이 금빛인 황금 왕이에요', goldqueen: '다이아처럼 반짝이는 황금 여왕이에요' };
+  const COS_NAME = { lincoln: '에이브러햄 링컨', gogh: '빈센트 반 고흐', beethoven: '베토벤', jangys: '장영실', nightingale: '나이팅게일', curie: '마리 퀴리', yanggf: '양귀비', nanseol: '허난설헌', king: '세종대왕', admiral: '이순신 장군', silla: '선덕여왕', nile: '클레오파트라', bicorne: '나폴레옹', caesar: '율리우스 카이사르', painter: '레오나르도 다빈치', hwarang: '김유신', gwanggaeto: '광개토대왕', genghis: '칭기즈칸', mozart: '모차르트', shakespeare: '셰익스피어', saimdang: '신사임당', antoinette: '마리 앙투아네트', joan: '잔 다르크', elizabeth: '엘리자베스 1세', idolm: '아이돌 (블랙·남)', idolf: '아이돌 (블랙·여)', idolm2: '아이돌 (벨벳·남)', idolf2: '아이돌 (벨벳·여)', trot: '트로트 스타', rock: '록스타', rapper: '래퍼', topstar: '톱배우', goldking: '황금 왕', goldqueen: '황금 여왕', unicorn: '유니콘', hero: '가면 히어로', villain: '마왕', starhero: '별 히어로', plague: '역병 의사', gwishin: '처녀귀신', astronaut: '우주비행사', robot: '로봇', alien: '외계인',
     vampire: '뱀파이어', witch: '마녀', mummy: '미라', ghost: '유령', pumpkinhead: '호박머리', frank: '괴물', skeleton: '해골', zombie: '좀비', werewolf: '늑대인간', devil: '꼬마 악마', reaper: '저승사자', jiangshi: '강시', cat: '고양이', pirate: '해적',
     shades: '선글라스', flower: '꽃핀', heartband: '하트 머리띠', straw: '밀짚모자', scarf: '목도리', horns: '뿔', snowman: '눈사람', ginger: '진저브레드', xtree: '트리', wings: '천사 날개', santasuit: '산타', antler: '루돌프', elf: '요정', sweater: '스웨터', earmuff: '귀마개', swim: '수영복', hanbok: '색동 한복', hanbok2: '파스텔 한복', hanbok3: '단아한 한복', bokjumeoni: '복주머니', gat: '선비 (갓·도포)', jokduri: '족두리 신부', rabbit: '달토끼', lei: '꽃목걸이', rosehair: '장미', candy: '막대사탕', pepero: '빼빼로', party: '고깔모자' };
   // 사장 코스튬 고르기: '' = 시즌 기본(바텐더 복장 + 시즌 의상), 'none' = 바텐더 복장만, 그 외 = 고른 코스튬
@@ -90,10 +105,19 @@
   function drawCostume(theme, seed, style) {
     const g = GACHA[theme] || GACHA.default, sex = String(style || 'm')[0] === 'f' ? 'f' : 'm';
     const ok = l => l.filter(x => x[1] === 'u' || x[1] === sex), roll = fnv(seed + '|rar') % 1000;
-    const rar = roll < 10 ? 'L' : roll < 40 ? 's' : roll < 200 ? 'r' : 'n', pool = ok(rar === 'L' ? LEGEND : rar === 's' ? SECRET : rar === 'r' ? g.r.concat(STAR_R) : g.n);
+    const rar = roll < 10 ? 'L' : roll < 40 ? 's' : 'n', pool = rar === 'L' ? ok(LEGEND) : rar === 's' ? ok(SECRET) : [];   // 뽑기는 레전드·시크릿만 (나머지는 꽝 → 시즌 코스튬은 주사위로)
     const k = pool.length ? pool[fnv(seed + '|pick') % pool.length][0] : '';
-    return { k, rar: k ? rar : 'n', name: COS_NAME[k.replace('swim+', '').split('+')[0]] || (k ? '시즌 코스튬' : '') };
+    const base = k.replace('swim+', '').split('+')[0];
+    return { k, rar: k ? rar : 'n', name: COS_NAME[base] || (k ? '시즌 코스튬' : ''), desc: COS_DESC[base] || '' };
   }
+  // 시즌 코스튬 주사위: n(1~99)번째 시즌 의상 (성별에 맞는 것만)
+  function seasonPool(theme, style) { const g = GACHA[theme] || GACHA.default, sex = String(style || 'm')[0] === 'f' ? 'f' : 'm', seen = new Set();
+    return g.n.concat(g.r).filter(x => (x[1] === 'u' || x[1] === sex) && x[0] && !seen.has(x[0]) && seen.add(x[0])).map(x => x[0]); }
+  function seasonCostume(theme, n, style) { const pool = seasonPool(theme, style); if (!pool.length || !(n >= 1)) return { k: '', rar: 'n', name: '' };
+    const k = pool[(n - 1) % pool.length], base = k.replace('swim+', '').split('+')[0]; return { k, rar: 'n', name: COS_NAME[base] || '시즌 코스튬', dice: true }; }
+  function rollSeason(theme, style, cur) { const pool = seasonPool(theme, style); if (!pool.length) return 0; let n; do { n = 1 + Math.floor(Math.random() * pool.length); } while (pool.length > 1 && n === cur); return n; }
+  function cosOf(theme, g, day) { if (g.cos === true) return drawCostume(theme, cosSeed(g, day), g.style); if (Number.isInteger(g.cos) && g.cos > 0) return seasonCostume(theme, g.cos, g.style);
+    if (g.npc) { const d = drawCostume(theme, cosSeed(g, day), g.style); return d.k ? d : seasonCostume(theme, 1 + fnv(cosSeed(g, day) + '|npc') % 97, g.style); } return { k: '', rar: 'n', name: '' }; }
   const cosSeed = (g, day) => g.uid ? g.uid + '|' + (day || bizDate()) : (g.id || g.nick || '');
   const costumeFor = (theme, seed, style) => drawCostume(theme, seed, style).k;
   const BLOCK = ['시발', '씨발', 'ㅅㅂ', '병신', 'ㅂㅅ', '좆', '개새', '섹스', '꺼져', '죽어'];
@@ -165,7 +189,10 @@
     const dk = DRINKS.some(d => d.k === drink) ? drink : '';
     const exA = exOf(look), key = [hair, skin, shirt, pants, style, exA.join(''), sit ? 1 : 0, dk, frame, costume].join('|');
     if (cache.has(key)) return cache.get(key);
-    const fem = style[0] === 'f', [hx, tp, ey, ax2, sh] = exA, hs = hx ? [0, 0, 0, 0, 2, 0, 1][hx] : +style[1], bt = +style[2], ac = ax2 ? 0 : +style[3];
+    const fem = style[0] === 'f', [hx, tp, ey, ax2, shRaw] = exA, sh = shRaw % 7, hs = hx ? ([0, 0, 0, 0, 2, 0, 1, 0, 0, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0][hx] || 0) : +style[1], bt = +style[2], ac = ax2 ? 0 : +style[3];
+    let fit = Math.floor(shRaw / 7) % 3;
+    if (tp === 9 && !costume) shirt = '#4f6f9f';   // 청재킷: 데님 색 고정
+    if (tp === 11 && !costume) { pants = shade(shirt, .92); fit = 1; }   // 오버핏 셋업: 같은 색 와이드 바지
     const cw = 30, ch = sit ? 48 : 52, c = document.createElement('canvas'); c.width = cw; c.height = ch;
     const x = c.getContext('2d');
     const P = (px, py, w, h, col) => { x.fillStyle = col; x.fillRect(px + 2, py + 8, w, h); };
@@ -190,6 +217,7 @@
     if (has('gwishin')) { P(2, 6, 16, 24, '#0c0a10'); P(4, 12, 1, 14, '#2a3a5a'); P(15, 10, 1, 16, '#2a3a5a'); }
     if (has('astronaut')) { G(1, 18, ['.SSSSSSSSSSSSSSSS.', 'SsSSSSSSSSSSSSSSsS', 'SsSSSSSSSSSSSSSSsS', 'SsSSSSSSSSSSSSSSsS', 'SsSSSSSSSSSSSSSSsS', 'SsSSSSSSSSSSSSSSsS', 'SsSSSSSSSSSSSSSSsS', 'SsSSSSSSSSSSSSSSsS', '.ssssssssssssssss.'], { S: '#c8ccd4', s: '#8a90a0' }); }
     if (has('hero')) cape('#d6262e', '#8a1018', '#ff5a5a', '#ffd23a', true);
+    if (has('admiral')) cape('#a81c22', '#6a0c10', '#d8403a', '', true);
     if (has('wings')) { G(-2, 15, ['.WW', 'WWw', 'WWw', 'WWw', 'WWw', '.Ww', '..W'], { W: '#ffffff', w: '#d6def0' }); G(19, 15, ['WW.', 'wWW', 'wWW', 'wWW', 'wWW', 'wW.', 'W..'], { W: '#ffffff', w: '#d6def0' }); }
     P(8, 16, 4, 2, skin);                                                  // 목
     // 상체 (수영복이면 피부 + 비키니/수영바지)
@@ -207,6 +235,13 @@
       if (tp === 3) { P(7, 18, 6, 1, shade(shirt, .8)); for (let yy = 20; yy < 27; yy += 2) for (let xx = cw2[0] + 1; xx < cw2[1]; xx += 2) P(xx, yy, 1, 1, shade(shirt, .88)); P(cw2[0], 27, cw2[1] - cw2[0] + 1, 1, shade(shirt, .75)); }   // 니트: 짜임 + 밑단
       if (tp === 4) { P(8, 18, 4, 10, '#f4f0ea'); P(7, 18, 1, 5, shade(shirt, .6)); P(12, 18, 1, 5, shade(shirt, .6)); P(8, 18, 1, 2, shade(shirt, .75)); P(11, 18, 1, 2, shade(shirt, .75)); P(fem ? 6 : 5, 25, 2, 1, shade(shirt, .7)); }   // 재킷: 안에 흰 티 + 라펠
       if (tp === 5 && !fem) { P(6, 21, 8, 7, pants); P(6, 18, 1, 3, pants); P(13, 18, 1, 3, pants); P(7, 21, 1, 1, '#e0b040'); P(12, 21, 1, 1, '#e0b040'); P(8, 23, 4, 2, pd); }   // 멜빵
+      if (tp === 6) { P(7, 17, 6, 1, shade(shirt, .6)); P(10, 18, 1, 10, '#f4f0ea'); P(10, 19, 1, 1, '#c8c0b8'); P(cw2[0], 18, 1, 10, '#f4f0ea'); P(cw2[1], 18, 1, 10, '#f4f0ea'); P(cw2[0], 27, cw2[1] - cw2[0] + 1, 1, shade(shirt, .7)); }   // 트랙 져지: 지퍼 + 옆선
+      if (tp === 7) { const hc = /^#(?:e|f)[0-9a-f]9/i.test(shirt) ? '#ffffff' : '#ff5a8a'; G(7, 20, ['.H.H.', 'HHHHH', '.HHH.', '..H..'], { H: hc }); }   // 하트 프린트 티
+      if (tp === 8) { for (let xx = cw2[0] + 1; xx < cw2[1]; xx += 2) P(xx, 18, 1, 10, shade(shirt, .84)); P(7, 18, 6, 1, '#f4f0ea'); [20, 23, 26].forEach(yy => P(10, yy, 1, 1, '#f4f0ea')); P(6, 21, 2, 2, '#f4f0ea'); }   // 야구 져지: 핀스트라이프 + 단추
+      if (tp === 9) { P(8, 18, 4, 10, '#f4f0ea'); P(7, 18, 1, 9, '#3a5680'); P(12, 18, 1, 9, '#3a5680'); P(fem ? 6 : 5, 21, 2, 2, '#6a8ab8'); P(fem ? 12 : 13, 21, 2, 2, '#6a8ab8'); P(fem ? 6 : 5, 21, 2, 1, '#2e4466'); P(fem ? 12 : 13, 21, 2, 1, '#2e4466'); P(cw2[0], 27, cw2[1] - cw2[0] + 1, 1, '#e0b040'); }   // 청재킷: 흰 티 + 가슴 주머니 + 스티치
+      if (tp === 10 && fem) { const sk2 = shade(skin, .95); P(6, 24, 8, 4, skin); P(12, 24, 2, 4, sk2); P(6, 23, 8, 1, shade(shirt, .8)); P(9, 26, 2, 1, shade(skin, .85)); }   // 크롭 티 (여자): 배꼽 위까지
+      if (tp === 10 && !fem) { P(3, 18, 14, 11, shirt); P(14, 18, 3, 11, sd); P(7, 18, 6, 1, shade(shirt, .8)); P(3, 28, 14, 1, shade(shirt, .82)); }   // 오버핏 반팔 티 (남자): 박시하고 길게
+      if (tp === 11) { const sd2 = shade(shirt, .8); if (fem) { P(4, 18, 12, 11, shirt); P(13, 18, 3, 11, sd2); } else { P(3, 18, 14, 11, shirt); P(14, 18, 3, 11, sd2); } P(8, 18, 4, 9, '#f4f0ea'); P(7, 18, 1, 6, shade(shirt, .62)); P(12, 18, 1, 6, shade(shirt, .62)); P(10, 23, 1, 1, shade(shirt, .5)); P(10, 26, 1, 1, shade(shirt, .5)); }   // 오버핏 셋업: 박시한 재킷
     }
     const ax = fem ? 3 : 2;
     const raise = frame === 's' || frame === 'k';
@@ -218,6 +253,9 @@
     else P(ax, 19, 2, 8, arm), P(ax, 27, 2, 2, skin);                       // 왼팔
     if (clap) {} else if (!raise) { P(19 - ax - 1, 19, 2, 8, armD); P(19 - ax - 1, 27, 2, 2, skin); }   // 오른팔
     else { P(19 - ax - 1, 19, 2, 3, armD); P(19 - ax, 17, 2, 3, armD); P(19 - ax, 15, 2, 2, skin); }
+    if (!swim && noCos && tp === 6 && !clap) { P(ax, 19, 1, 8, '#f4f0ea'); if (!raise) P(19 - ax, 19, 1, 8, '#f4f0ea'); }   // 트랙 져지 소매 줄
+    if (!swim && noCos && tp === 10 && !clap) { if (fem) { P(ax, 23, 2, 4, skin); if (!raise) P(19 - ax - 1, 23, 2, 4, shade(skin, .95)); } else { P(ax - 1, 19, 3, 5, arm); P(ax, 24, 2, 3, skin); if (!raise) { P(19 - ax - 1, 19, 3, 5, armD); P(19 - ax - 1, 24, 2, 3, shade(skin, .95)); } } }   // 반팔: 여자 크롭 · 남자 오버핏 (넓은 소매)
+    if (!swim && noCos && tp === 11 && !clap) { P(ax - 1, 19, 3, 9, arm); P(ax - 1, 28, 3, 1, shade(arm, .75)); if (!raise) { P(19 - ax - 1, 19, 3, 9, armD); P(19 - ax - 1, 28, 3, 1, shade(armD, .75)); } }   // 오버핏 셋업: 넉넉한 소매
     // 하체
     if (swim) {
       const legTop = sit ? 28 : 28;
@@ -226,14 +264,23 @@
       if (!sit) { const ly = fem ? 30 : 33; P(6, ly, 3, 40 - ly, skin); P(11, ly, 3, 40 - ly, shade(skin, .92)); P(5, 40, 4, 1, '#ffffff'); P(11, 40, 4, 1, '#ffffff'); P(5, 41, 4, 1, sw); P(11, 41, 4, 1, sw); }
       else { P(5, fem ? 30 : 33, 10, 1, skin); P(6, 31, 3, 6, skin); P(11, 31, 3, 6, shade(skin, .92)); P(5, 37, 4, 1, sw); P(11, 37, 4, 1, sw); if (!fem) { P(5, 28, 10, 4, sw); P(5, 30, 10, 1, '#ffffff'); } }
     } else if (!sit) {
-      const [SH1, SH2] = [['#f4f0ea', '#b9ada4'], ['#1e1a1e', '#3a3238'], ['#7a4a2a', '#4a2a16'], ['#e0303a', '#f4f0ea']][sh] || ['#f4f0ea', '#b9ada4'];
+      const [SH1, SH2] = SHOE_PAL[sh] || SHOE_PAL[0];
       if (dress) { P(5, 28, 10, 2, shirt); P(4, 30, 12, 3, shirt); P(3, 33, 14, 2, shirt); P(3, 34, 14, 1, sd); P(7, 35, 2, 4, skin); P(11, 35, 2, 4, shade(skin, .92)); }
+      else if (bt === 0 && fit === 1) { P(5, 28, 10, 2, pants); P(4, 30, 6, 10, pants); P(10, 30, 6, 10, pd); P(10, 29, 1, 11, shade(pants, .65)); P(4, 39, 12, 1, shade(pants, .75)); }   // 와이드 바지
+      else if (bt === 0 && fit === 2) { P(6, 28, 8, 2, pants); P(7, 30, 3, 10, pants); P(10, 30, 3, 10, pd); P(10, 29, 1, 11, shade(pants, .65)); }   // 스키니
       else if (bt === 0) { P(6, 28, 4, 12, pants); P(10, 28, 4, 12, pd); P(10, 28, 1, 12, shade(pants, .65)); }
       else { P(5, 28, 10, 3, pants); P(4, 31, 12, 3, pants); P(4, 33, 12, 1, pd); P(7, 34, 2, 6, skin); P(11, 34, 2, 6, skin); }
+      if (bt === 0 && fit === 1) { P(5, 40, 4, 1, SH1); P(11, 40, 4, 1, SH1); P(5, 41, 5, 1, SH2); P(10, 41, 5, 1, SH2); } else {
       P(5, 39, 5, 2, SH1); P(10, 39, 5, 2, SH1); P(5, 41, 5, 1, SH2); P(10, 41, 5, 1, SH2); if (sh === 0 || sh === 3) { P(7, 39, 1, 1, shade(shirt, .9)); P(12, 39, 1, 1, shade(shirt, .9)); }
+      if (sh === 4) { P(4, 40, 6, 2, SH1); P(10, 40, 6, 2, SH1); P(4, 41, 6, 1, SH2); P(10, 41, 6, 1, SH2); P(6, 39, 2, 1, '#ff8ab0'); P(12, 39, 2, 1, '#ff8ab0'); }   // 청키
+      if (sh === 5) { P(5, 41, 5, 1, SH2); P(10, 41, 5, 1, SH2); P(5, 40, 5, 1, SH2); P(10, 40, 5, 1, SH2); }   // 통굽
+      if (sh === 6) { P(5, 36, 5, 4, SH1); P(10, 36, 5, 4, SH1); P(5, 36, 5, 1, '#efe2cc'); P(10, 36, 5, 1, '#efe2cc'); }   // 어그 부츠
+      }
     } else {
-      const [SH1, SH2] = [['#f4f0ea', '#b9ada4'], ['#1e1a1e', '#3a3238'], ['#7a4a2a', '#4a2a16'], ['#e0303a', '#f4f0ea']][sh] || ['#f4f0ea', '#b9ada4'];
+      const [SH1, SH2] = SHOE_PAL[sh] || SHOE_PAL[0];
       if (dress) { P(4, 28, 12, 4, shirt); P(4, 31, 12, 1, sd); P(6, 32, 3, 5, skin); P(11, 32, 3, 5, skin); }
+      else if (bt === 0 && fit === 1) { P(4, 28, 12, 4, pants); P(5, 32, 4, 5, pants); P(11, 32, 4, 5, pd); }
+      else if (bt === 0 && fit === 2) { P(5, 28, 10, 4, pants); P(6, 32, 2, 5, pants); P(12, 32, 2, 5, pd); }
       else if (bt === 0) { P(5, 28, 10, 4, pants); P(6, 32, 3, 5, pants); P(11, 32, 3, 5, pd); }
       else { P(4, 28, 12, 4, pants); P(6, 32, 3, 5, skin); P(11, 32, 3, 5, skin); }
       P(5, 37, 4, 2, SH1); P(11, 37, 4, 2, SH1); P(5, 38, 4, 1, SH2); P(11, 38, 4, 1, SH2);
@@ -256,10 +303,33 @@
     const hD = shade(hair, .8), hL = shade(hair, 1.3);
     if (hx === 1) { for (let an = 0; an < Math.PI * 2; an += Math.PI / 9) { const cx = 9.5 + Math.cos(an) * 10.2, cy = 7.5 + Math.sin(an) * 9.4; if (cy > 13) continue; P(Math.round(cx) - 1, Math.round(cy) - 1, 3, 3, hair); P(Math.round(cx), Math.round(cy) - 1, 1, 1, hL); } [[3, 2], [7, 1], [11, 2], [15, 3], [5, 4], [9, 3], [13, 4]].forEach(([a, b2]) => { P(a, b2, 1, 1, hD); P(a + 1, b2, 1, 1, hL); }); }   // 펌: 머리 둘레를 따라 뽀글뽀글
     if (hx === 2) { P(7, -4, 6, 4, hair); P(8, -5, 4, 1, hair); P(8, -4, 2, 1, hL); P(7, 0, 6, 1, shade(hair, .65)); }   // 똥머리
-    if (hx === 3) { P(0, 7, 2, 6, shade(skin, .82)); P(18, 7, 2, 6, shade(skin, .82)); P(0, 7, 1, 6, shade(hair, .75)); P(19, 7, 1, 6, shade(hair, .75)); P(2, -2, 16, 3, hair); P(3, -3, 13, 1, hair); P(4, -2, 6, 1, hL); }   // 투블럭: 옆은 짧게 밀고, 위는 볼륨
+    // 남자 컷 공통: 머리 볼륨을 줄여 두상에 붙이고(tight), 귀가 보이게 옆머리 정리(ears), 앞머리를 지우고 이마 보이기(brow)
+    const skinPx = (px, py) => { if (inHead(px, py)) P(px, py, 1, 1, (py >= 16 || !inHead(px + 2, py)) ? shade(skin, .93) : skin); else clr(px, py); };
+    const tight = () => { for (let py = -2; py <= 9; py++) for (let px = -2; px < 22; px++) if (!inHead(px, py)) clr(px, py); [[0, 6, 13], [1, 3, 16], [2, 2, 17], [3, 1, 18]].forEach(([py, a2, b2]) => { for (let px = a2; px <= b2; px++) if (!inHead(px, py)) P(px, py, 1, 1, py === 0 ? hD : hair); }); };
+    const ears = top => { for (let py = top; py <= 12; py++) for (const px of [0, 1, 2, 17, 18, 19]) skinPx(px, py); P(0, 10, 1, 2, shade(skin, .86)); P(19, 10, 1, 2, shade(skin, .86)); P(2, top, 1, 2, hD); P(17, top, 1, 2, hD); };
+    const brow = (a, b2) => { for (let px = 3; px <= 16; px++) for (let py = a; py <= b2; py++) skinPx(px, py); };
+    const mCut = !fem && [3, 11, 12, 13, 14, 15, 16].includes(hx);
+    if (mCut) tight();
+    if (hx === 3 && !fem) { brow(6, 7); for (let px = 0; px <= 19; px++) for (let py = 5; py <= 12; py++) if ((px <= 2 || px >= 17)) skinPx(px, py); P(0, 6, 3, 5, shade(skin, .8)); P(17, 6, 3, 5, shade(skin, .8)); P(3, -1, 14, 2, hair); P(4, -2, 11, 1, hair); P(4, 5, 12, 1, hair); P(6, 5, 2, 1, hD); P(11, 5, 2, 1, hD); P(5, -1, 5, 1, hL); }   // 남자 투블럭: 옆은 밀고 위는 볼륨, 이마 보이게
+    else if (hx === 3) { P(0, 7, 2, 6, shade(skin, .82)); P(18, 7, 2, 6, shade(skin, .82)); P(0, 7, 1, 6, shade(hair, .75)); P(19, 7, 1, 6, shade(hair, .75)); P(2, -2, 16, 3, hair); P(3, -3, 13, 1, hair); P(4, -2, 6, 1, hL); }   // 투블럭: 옆은 짧게 밀고, 위는 볼륨
     if (hx === 4) { for (let yy = 8; yy < 22; yy++) { const o = (yy >> 1) % 2; P(-1 + o, yy, 2, 1, hair); P(19 - o, yy, 2, 1, hair); } P(0, 21, 2, 1, hD); P(18, 21, 2, 1, hD); }   // 긴 웨이브
     if (hx === 5) { P(17, 4, 3, 3, hair); P(19, 7, 2, 9, hair); P(18, 16, 2, 2, hair); P(19, 8, 1, 6, hD); P(17, 5, 2, 1, '#e23b4a'); }   // 포니테일
     if (hx === 6) { P(1, 6, 18, 2, hair); P(1, 8, 18, 1, hD); P(0, 8, 2, 7, hair); P(18, 8, 2, 7, hair); }   // 단정한 일자 앞머리
+    const hatOn = ac === 2 || ax2 === 2 || ax2 === 7;   // 모자를 쓰면 정수리 장식(스파이키·번·집게핀)은 숨김
+    if (hx === 7) { P(0, 4, 20, 4, hair); P(0, 8, 3, 5, hair); P(17, 8, 3, 5, hair); P(1, 7, 18, 1, hD); P(3, 4, 6, 1, hL); }   // 바가지 머리
+    if (!hatOn && hx === 8) { for (let i = 0; i < 6; i++) { P(1 + i * 3, -2, 3, 3, hair); P(2 + i * 3, -4, 1, 2, hair); P(2 + i * 3, -2, 1, 1, hL); } }   // 스파이키 (젤 머리)
+    if (!hatOn && hx === 9) { [[0, -3], [15, -3]].forEach(([bx, by]) => { P(bx, by + 1, 5, 4, hair); P(bx + 1, by, 3, 6, hair); P(bx + 1, by + 1, 2, 1, hL); P(bx + 1, by + 5, 3, 1, '#ff7ab0'); }); }   // 양갈래 번
+    if (hx === 11 && !fem) { brow(6, 7); for (let px = 3; px <= 16; px += 2) P(px, 5, 1, 2 - (px % 4 === 1 ? 1 : 0), px % 4 === 1 ? hD : hair); ears(9); P(1, 8, 2, 4, hair); P(17, 8, 2, 4, hair); P(1, 11, 1, 1, hD); P(18, 11, 1, 1, hD); P(3, 0, 3, 1, hL); }   // 남자 샤기: 짧은 레이어 + 목선 살짝
+    else if (hx === 11) { for (let yy = 6; yy <= 16; yy++) { const j = (yy * 7) % 3; P(-1 + (j === 0 ? 1 : 0), yy, 2 + (j === 2 ? 1 : 0), 1, yy % 2 ? hair : hD); P(19 - (j === 2 ? 1 : 0), yy, 2 + (j === 0 ? 0 : 1) - 1, 1, yy % 2 ? hair : hD); } for (let xx = 2; xx < 18; xx += 2) P(xx, 6, 1, 2 + ((xx >> 1) % 3 === 0 ? 1 : 0), hD); P(1, 1, 3, 2, hair); P(16, 1, 3, 2, hair); P(4, 0, 2, 1, hL); P(13, 0, 2, 1, hL); }   // 샤기컷: 층을 낸 거친 레이어
+    if (hx === 12) { brow(6, 7); for (let px = 3; px <= 16; px++) P(px, 5, 1, px % 3 === 0 ? 2 : 1, px % 2 ? hair : hD); ears(7); for (let px = 3; px <= 16; px += 3) P(px, 1, 2, 1, hL); }   // 크롭컷: 짧은 직선 앞머리 + 아주 짧은 옆
+    if (hx === 13) { brow(6, 7); P(7, 0, 1, 5, shade(skin, .9)); P(8, 4, 9, 2, hair); P(12, 6, 5, 1, hair); P(3, 4, 4, 1, hair); [[9, 2], [12, 2], [15, 3], [4, 2]].forEach(([a2, b2]) => P(a2, b2, 2, 1, hL)); ears(8); }   // 가르마펌: 옆 가르마 + 볼륨
+    if (hx === 14) { brow(6, 7); for (let i = 0; i < 9; i++) P(4 + i, 5 + (i >> 2), 2, 1, i % 2 ? hair : hD); P(11, 7, 3, 1, hD); ears(8); P(4, 2, 4, 1, hL); }   // 댄디컷: 한쪽으로 내린 앞머리
+    if (hx === 15) { brow(4, 7); for (let px = 3; px <= 16; px++) P(px, 3, 1, 1, hD); for (let px = 4; px <= 15; px += 3) P(px, 1, 2, 1, hL); ears(7); }   // 올백: 이마를 시원하게
+    if (hx === 16) { brow(5, 7); P(6, 0, 1, 4, shade(skin, .9)); P(7, 3, 9, 2, hair); P(13, 4, 4, 1, hD); P(3, 3, 3, 1, hair); P(8, 1, 6, 1, hL); for (let px = 0; px <= 19; px++) for (let py = 5; py <= 11; py++) if (px <= 2 || px >= 17) skinPx(px, py); P(0, 6, 3, 4, shade(skin, .84)); P(17, 6, 3, 4, shade(skin, .84)); }   // 아이비리그컷: 짧은 옆가르마 + 아주 짧은 옆
+    if (hx === 17) { brow(6, 8); for (let py = 6; py <= 11; py++) { P(0, py, 3, 1, hair); P(17, py, 3, 1, hair); } P(-1, 11, 2, 1, hD); P(19, 11, 2, 1, hD); P(-1, 10, 1, 1, hair); P(20, 10, 1, 1, hair);   // 리프컷: 앞머리를 가운데서 살짝 갈라 양옆으로 흘리고 끝을 바깥으로 말아 올림
+      P(3, 5, 6, 1, hair); P(2, 6, 6, 1, hair); P(2, 7, 4, 1, hD); P(1, 8, 2, 1, hD); P(1, 7, 1, 1, hair); P(11, 5, 6, 1, hair); P(12, 6, 6, 1, hair); P(14, 7, 4, 1, hD); P(17, 8, 2, 1, hD); P(18, 7, 1, 1, hair); P(9, 4, 2, 2, shade(skin, .92)); P(4, 2, 3, 1, hL); P(13, 2, 3, 1, hL); P(7, 5, 1, 1, hL); P(12, 5, 1, 1, hL); }
+    if (hx === 18) { brow(5, 7); P(9, 0, 2, 6, shade(skin, .9)); for (let i = 0; i < 6; i++) { P(8 - i, 4 + i, 2, 1, hair); P(10 + i, 4 + i, 2, 1, hair); } for (let yy = 8; yy <= 21; yy++) { P(-1, yy, 3, 1, yy % 3 ? hair : hD); P(18, yy, 3, 1, yy % 3 ? hair : hD); } P(0, 21, 2, 1, hD); P(18, 21, 2, 1, hD); P(4, 1, 3, 1, hL); P(13, 1, 3, 1, hL); }   // 예수컷: 가운데 가르마 + 어깨까지 오는 긴 머리
+    if (!hatOn && hx === 10) { P(6, -2, 8, 3, hair); P(7, -3, 6, 1, hair); P(5, -1, 10, 1, '#b48aff'); [6, 8, 10, 12, 14].forEach(xx => P(xx, -2, 1, 1, '#d6c0ff')); }   // 집게핀 반묶음
     const hl = shade(hair, 1.45);
     P(5, 2, 4, 1, hl); P(4, 3, 1, 1, hl); P(12, 2, 2, 1, hl);                // 머리 윤기 (천사 링)
     // 눈: 크고 반짝이게 (3x4 + 하이라이트 2개)
@@ -293,8 +363,159 @@
     if (ax2 === 3) { P(0, 13, 1, 1, '#ffd84a'); P(0, 14, 1, 2, '#fff2a0'); P(19, 13, 1, 1, '#ffd84a'); P(19, 14, 1, 2, '#fff2a0'); }   // 귀걸이
     if (ax2 === 4) { P(1, 4, 18, 1, '#ff7ab0'); P(2, 3, 16, 1, '#ff7ab0'); P(4, 3, 4, 1, '#ffb0d0'); }   // 헤어밴드
     if (ax2 === 5) { G(14, 1, ['.p.', 'pYp', '.p.'], { p: '#ff8ac0', Y: '#ffe060' }); }   // 꽃핀
+    if (ax2 === 6) { const k2 = '#2a1e1e', t2 = '#ff9ac0'; P(3, 10, 5, 3, t2); P(12, 10, 5, 3, t2); P(3, 10, 5, 1, k2); P(12, 10, 5, 1, k2); P(8, 10, 4, 1, k2); P(4, 11, 1, 1, '#ffe0ec'); P(13, 11, 1, 1, '#ffe0ec'); }   // 틴트 선글라스
+    if (ax2 === 7) { const bc = shade(shirt, .9), bd = shade(bc, .75); for (let py = -2; py <= 5; py++) for (let px = 0; px < 20; px++) if ((((px - 9.5) / 9.2) ** 2 + ((py - 5.5) / 7.5) ** 2) <= 1) P(px, py, 1, 1, bc); P(-2, 5, 24, 2, bd); P(-1, 4, 22, 1, bc); P(3, 0, 5, 1, shade(bc, 1.25)); }   // 버킷햇
+    if (ax2 === 8) { const hp = '#2a2a32', ha = '#ff7ab0'; P(2, -3, 16, 1, hp); P(1, -2, 1, 2, hp); P(18, -2, 1, 2, hp); P(0, 0, 1, 8, hp); P(19, 0, 1, 8, hp); P(-2, 8, 3, 6, hp); P(19, 8, 3, 6, hp); P(-2, 9, 1, 4, ha); P(21, 9, 1, 4, ha); }   // 헤드폰
+    if (ax2 === 9) { const bd2 = '#d6262e'; P(1, 3, 18, 3, bd2); P(1, 5, 18, 1, '#a01a20'); [3, 7, 11, 15].forEach(xx => P(xx, 4, 1, 1, '#ffffff')); P(19, 4, 3, 2, bd2); P(20, 6, 2, 2, bd2); }   // 반다나
+    if (ax2 === 10) { G(0, 2, ['b.b', 'bbb', '.b.'], { b: '#9ad0ff' }); G(16, 3, ['p.p', 'ppp', '.p.'], { p: '#ffb0d8' }); P(1, 3, 1, 1, '#ffffff'); P(17, 4, 1, 1, '#ffffff'); }   // 나비핀
     // 시즌 코스튬 (픽셀 도안: 외곽선 · 기본색 · 밝은면 · 그림자)
     for (const cs of csAll) {
+    if (cs === 'king') {   // 성군: 붉은 곤룡포 + 금색 용 흉배 + 익선관
+      const R = '#c0262e', Rd = '#8a1820', Y = '#ffd84a';
+      P(1, 19, 4, 10, R); P(15, 19, 4, 10, Rd); P(3, 18, 14, 11, R); P(13, 18, 4, 11, Rd); P(8, 18, 4, 2, '#f4f0ea'); P(9, 18, 2, 1, skin);
+      G(7, 20, ['.YYYY.', 'YRYYRY', 'YYRRYY', '.YRRY.', '..YY..'], { Y, R }); P(3, 26, 14, 1, '#2a3a8a'); P(9, 26, 2, 1, Y);
+      P(4, 28, 12, 11, R); P(11, 28, 5, 11, Rd); P(4, 38, 12, 1, Rd); P(2, 28, 2, 2, skin); P(16, 28, 2, 2, skin);
+      G(2, -4, ['...KKKKKKKKKKK...', '..KKKKKKKKKKKKK..', '.KKKKKKKKKKKKKKK.', 'KKKKKKKKKKKKKKKKK'], { K: '#18161c' }); P(-1, -4, 3, 2, '#18161c'); P(18, -4, 3, 2, '#18161c'); P(5, -3, 4, 1, '#3a3640'); }
+    if (cs === 'admiral') {   // 바다의 장군: 철 투구 + 비늘 갑옷 + 장군 칼 (뒤에 붉은 망토)
+      const A = '#3a3a48', a = '#5a5a6a', Y = '#ffd84a';
+      P(1, 19, 4, 9, A); P(15, 19, 4, 9, A); P(3, 18, 14, 11, A); for (let yy = 19; yy < 29; yy += 2) for (let xx = 3 + (yy % 4 === 1 ? 1 : 0); xx < 17; xx += 2) P(xx, yy, 1, 1, a);
+      P(3, 25, 14, 1, '#8a1a20'); P(9, 25, 2, 1, Y); P(4, 28, 12, 5, A); P(4, 32, 12, 1, a); P(2, 28, 2, 2, skin); P(16, 28, 2, 2, skin);
+      P(18, 18, 1, 15, '#d8dce4'); P(17, 18, 3, 1, Y); P(18, 16, 1, 2, '#6a4a2a');
+      G(1, -6, ['........YY........', '.......YYYY.......', '....AAAAAAAAAA....', '..AAAAAAAAAAAAAA..', '.AAAAAAAAAAAAAAAA.', 'AAaaaaaaaaaaaaaaAA'], { A, a, Y }); P(0, 0, 2, 9, A); P(18, 0, 2, 9, A); P(0, 8, 2, 1, a); P(18, 8, 2, 1, a); }
+    if (cs === 'silla') {   // 선덕 여왕: 신라 금관(나뭇가지 장식 + 곡옥) + 왕실 의복
+      const Y = '#ffd84a', g = '#3ac080', V = '#7a34c0', R = '#c0262e';
+      P(2, 19, 3, 9, V); P(15, 19, 3, 9, V); P(5, 18, 10, 7, V); P(8, 18, 4, 1, Y); P(7, 19, 1, 4, Y); P(12, 19, 1, 4, Y); P(5, 24, 10, 1, Y);
+      P(3, 25, 14, 15, R); P(3, 39, 14, 1, Y); P(12, 25, 5, 15, '#9a1a22'); P(2, 28, 2, 2, skin); P(16, 28, 2, 2, skin);
+      G(1, -7, ['.Y...Y..Y..Y...Y.', '.YY..YY.YY.YY..YY', '..Y..Y...Y..Y..Y.', 'YYYYYYYYYYYYYYYYY', 'YgYYgYYgYYgYYgYYY'], { Y, g }); P(0, -2, 1, 6, Y); P(18, -2, 1, 6, Y); P(0, 4, 1, 1, g); P(18, 4, 1, 1, g); }
+    if (cs === 'nile') {   // 나일의 여왕: 줄무늬 황금 머리장식 + 코브라 + 넓은 목걸이 + 흰 드레스
+      const Y = '#ffd84a', B = '#2a5ab0';
+      P(4, 18, 12, 11, '#f4f0ea'); P(3, 28, 14, 12, '#f4f0ea'); P(12, 28, 5, 12, '#e0dcd4'); P(3, 27, 14, 1, Y); P(2, 19, 2, 8, skin); P(16, 19, 2, 8, skin);
+      G(4, 17, ['BYBYBYBYBYBY', '.YBYBYBYBYB.', '..YYYYYYYY..'], { B, Y }); P(2, 21, 2, 1, Y); P(16, 21, 2, 1, Y);
+      for (let yy = 0; yy <= 18; yy++) { const c2 = yy % 2 ? Y : B; P(-1, yy, 3, 1, c2); P(18, yy, 3, 1, c2); } P(1, -1, 18, 2, Y); P(2, -2, 16, 1, B); P(9, -4, 2, 3, Y); P(9, -4, 1, 1, '#c8302a');
+      P(3, 11, 1, 1, '#141018'); P(16, 11, 1, 1, '#141018'); P(4, 8, 3, 1, B); P(13, 8, 3, 1, B); }
+    if (cs === 'bicorne') {   // 황제의 이각모: 가로로 긴 모자 + 견장 군복 + 흰 바지와 승마 부츠
+      const N2 = '#1e2a5a', Y = '#ffd84a';
+      P(1, 19, 4, 9, N2); P(15, 19, 4, 9, N2); P(3, 18, 14, 11, N2); P(8, 18, 4, 10, '#f4f0ea'); [20, 22, 24, 26].forEach(yy => { P(7, yy, 1, 1, Y); P(12, yy, 1, 1, Y); });
+      P(1, 18, 4, 2, Y); P(15, 18, 4, 2, Y); P(1, 20, 4, 1, '#c8a030'); P(15, 20, 4, 1, '#c8a030'); P(3, 27, 14, 1, '#f4f0ea');
+      P(5, 28, 10, 8, '#f4f0ea'); P(10, 28, 1, 8, '#d8d4cc'); P(5, 35, 10, 6, '#151518'); P(5, 35, 10, 1, '#3a3438'); P(2, 28, 2, 2, skin); P(16, 28, 2, 2, skin);
+      G(-2, 0, ['........KKKKK........', '......KKKKKKKKK......', '....KKKKKKKKKKKKK....', '..KKKKKKKKKKKKKKKKK..', 'KKKKKKKKKKKKKKKKKKKKK', '.YYYYYYYYYYYYYYYYYYY.'], { K: '#151518', Y }); P(8, 1, 3, 3, '#3a5ad0'); P(9, 2, 1, 1, '#ffffff'); P(8, 1, 1, 1, '#e0303a'); }
+    if (cs === 'caesar') {   // 로마 황제: 월계관 + 흰 토가 + 보라 띠 + 샌들
+      const W = '#f4f0ea', w = '#d8d4cc', V = '#7a2a8a', L = '#4a9a3a', l = '#7ac860';
+      P(2, 19, 3, 9, skin); P(15, 19, 3, 9, skin); P(3, 18, 14, 12, W); P(12, 18, 5, 12, w); for (let i = 0; i < 11; i++) P(4 + i, 18 + i, 2, 1, V);
+      P(4, 28, 12, 9, W); P(11, 28, 5, 9, w); P(4, 36, 12, 1, V); P(6, 37, 3, 3, skin); P(11, 37, 3, 3, shade(skin, .92)); P(6, 38, 3, 1, '#7a4a2a'); P(11, 38, 3, 1, '#7a4a2a');
+      for (let px = 1; px <= 18; px += 2) { const yy = px < 5 || px > 14 ? 5 : px < 8 || px > 11 ? 3 : 2; P(px, yy, 2, 1, L); P(px, yy - 1, 1, 1, l); } P(9, 1, 2, 1, '#ffd84a'); }
+    if (cs === 'painter') {   // 천재 화가: 베레모 + 물감 묻은 작업복 + 팔레트와 붓 (남자는 흰 수염)
+      const Bm = '#7a1f22', S = '#e8e0d0';
+      P(1, 19, 4, 9, S); P(15, 19, 4, 9, S); P(3, 18, 14, 11, S); P(12, 18, 5, 11, '#d0c8b8'); [[5, 21, '#e0303a'], [11, 23, '#3a6ae0'], [7, 26, '#ffd84a'], [13, 20, '#3ab060']].forEach(([a2, b2, c2]) => P(a2, b2, 2, 1, c2)); P(8, 18, 4, 2, '#2a2a30');
+      P(2, 28, 2, 2, skin); P(16, 28, 2, 2, skin); G(14, 23, ['.DDDD.', 'DRDBDD', 'DYDGD.', '.DDD..'], { D: '#d8b88a', R: '#e0303a', B: '#3a6ae0', Y: '#ffd84a', G: '#3ab060' }); P(1, 20, 1, 7, '#8a5a2a'); P(1, 19, 1, 1, '#e0303a');
+      if (!fem) { P(5, 14, 10, 3, '#d8d4cc'); P(6, 17, 8, 3, '#d8d4cc'); P(8, 20, 4, 2, '#d8d4cc'); P(8, 14, 4, 1, shade(skin, .8)); }
+      G(0, -2, ['...BBBBBBBBBBB....', '.BBBBBBBBBBBBBBB..', 'BBBBBBBBBBBBBBBBBB'], { B: Bm }); P(9, -3, 2, 1, Bm); P(2, -1, 5, 1, '#9a3a3a'); }
+    if (cs === 'hwarang') {   // 화랑: 깃털 머리띠 + 푸른 저고리 + 흰 바지·행전 + 칼
+      const Bl = '#2a5ab0', bl = '#1e4488', W = '#f4f0ea';
+      P(1, 19, 4, 9, Bl); P(15, 19, 4, 9, bl); P(3, 18, 14, 10, Bl); P(12, 18, 5, 10, bl); for (let i = 0; i < 6; i++) P(7 + i, 18 + i, 1, 1, W); P(3, 26, 14, 1, '#c0262e'); P(14, 26, 2, 3, '#c0262e');
+      P(4, 27, 12, 9, W); P(10, 27, 1, 9, '#d8d4cc'); P(5, 35, 4, 4, '#2a2a30'); P(11, 35, 4, 4, '#2a2a30'); P(2, 28, 2, 2, skin); P(16, 28, 2, 2, skin);
+      P(18, 21, 1, 12, '#c8ccd4'); P(17, 21, 3, 1, '#ffd84a'); P(1, 3, 18, 2, Bl); P(1, 4, 18, 1, bl); P(15, -4, 2, 7, '#ffffff'); P(16, -5, 1, 2, '#ffffff'); P(14, 1, 1, 2, '#e8e8f0'); }
+    if (cs === 'gwanggaeto') {   // 광개토대왕: 불꽃 금관 + 붉은 찰갑 + 창
+      const R = '#a8282a', r = '#d04a3a', Y = '#ffd84a', y = '#c8a030';
+      P(1, 19, 4, 9, R); P(15, 19, 4, 9, R); P(3, 18, 14, 11, R); for (let yy = 19; yy < 28; yy += 2) for (let xx = 4; xx < 16; xx += 2) P(xx + (yy % 4 === 1 ? 1 : 0), yy, 1, 1, r);
+      P(3, 18, 14, 1, Y); P(3, 26, 14, 1, Y); P(4, 27, 12, 6, R); P(4, 32, 12, 1, Y); P(5, 33, 10, 6, '#3a2a22'); P(2, 28, 2, 2, skin); P(16, 28, 2, 2, skin);
+      P(0, 6, 1, 28, '#6a4a2a'); G(-1, 2, ['.W.', 'WWW', 'WWW'], { W: '#d8dce4' }); P(-1, 5, 3, 1, '#c0262e');
+      G(1, -6, ['..Y.....Y.....Y..', '.YY....YYY....YY.', '.Y.Y..Y.Y.Y..Y.Y.', 'YYYYYYYYYYYYYYYYY', 'yYgYyYgYyYgYyYgYy'], { Y, y, g: '#3ac080' }); }
+    if (cs === 'genghis') {   // 칭기즈칸: 털 테두리 모자 + 델(몽골 전통옷) + 띠 + 수염
+      const D = '#2a4a8a', d = '#1e3666', F = '#8a6a4a', f = '#b89a72', S = '#e0a030';
+      P(1, 19, 4, 9, D); P(15, 19, 4, 9, d); P(3, 18, 14, 11, D); P(12, 18, 5, 11, d); for (let i = 0; i < 7; i++) P(10 + i, 18 + i, 1, 1, S); P(3, 26, 14, 2, '#c0262e');
+      P(4, 28, 12, 9, D); P(11, 28, 5, 9, d); P(5, 37, 4, 3, '#4a2a1a'); P(11, 37, 4, 3, '#4a2a1a'); P(1, 27, 4, 1, F); P(15, 27, 4, 1, F); P(2, 28, 2, 2, skin); P(16, 28, 2, 2, skin);
+      if (!fem) { P(7, 14, 1, 2, '#2a1e1e'); P(12, 14, 1, 2, '#2a1e1e'); P(8, 13, 4, 1, '#2a1e1e'); P(9, 16, 2, 3, '#2a1e1e'); }
+      G(1, -5, ['.....RRRRRRR.....', '...RRRRRRRRRRR...', '..RRRRRRRRRRRRR..', 'FfFfFfFfFfFfFfFfF', 'fFfFfFfFfFfFfFfFf'], { R: '#c0262e', F, f }); P(9, -7, 2, 2, S); }
+    if (cs === 'mozart') {   // 모차르트: 흰 말린 가발 + 붉은 연미복 + 레이스 자보 + 흰 스타킹
+      const R = '#b0283a', r = '#801a2a', Y = '#ffd84a', W = '#f4f0ea', w = '#d8d4cc';
+      P(1, 19, 4, 9, R); P(15, 19, 4, 9, r); P(3, 18, 14, 12, R); P(13, 18, 4, 12, r); P(7, 18, 6, 10, '#f0e0b0'); G(7, 18, ['WWWWWW', '.WwWW.', '..WW..', '..Ww..'], { W, w }); P(6, 18, 1, 12, Y); P(13, 18, 1, 12, Y);
+      P(3, 28, 3, 6, R); P(14, 28, 3, 6, r); P(6, 28, 8, 4, '#f0e0b0'); P(6, 32, 3, 6, W); P(11, 32, 3, 6, W); P(6, 38, 3, 2, '#151518'); P(11, 38, 3, 2, '#151518'); P(1, 28, 3, 1, W); P(16, 28, 3, 1, W); P(2, 29, 2, 2, skin); P(16, 29, 2, 2, skin);
+      for (let py = -2; py <= 5; py++) for (let px = 0; px < 20; px++) if ((((px - 9.5) / 9.6) ** 2 + ((py - 5) / 7) ** 2) <= 1) P(px, py, 1, 1, (px + py) % 3 ? W : w);
+      P(0, 4, 3, 10, W); P(17, 4, 3, 10, W); P(1, 6, 1, 6, w); P(18, 6, 1, 6, w); [7, 10, 13].forEach(yy => { G(-2, yy, ['WWW', 'WwW', '.W.'], { W, w }); G(19, yy, ['WWW', 'WwW', '.W.'], { W, w }); }); P(19, 16, 2, 4, '#1a1a1e'); P(21, 18, 2, 2, '#1a1a1e'); }
+    if (cs === 'shakespeare') {   // 셰익스피어: 흰 주름 칼라 + 검은 더블릿 + 깃펜 + 콧수염
+      const K = '#1e1c24', k = '#34303c', W = '#f4f0ea', w = '#c8c4bc';
+      P(1, 19, 4, 9, K); P(15, 19, 4, 9, K); P(3, 18, 14, 11, K); for (let yy = 20; yy < 28; yy += 2) P(9, yy, 2, 1, '#c8a030'); P(4, 19, 2, 8, k); P(14, 19, 2, 8, k);
+      P(4, 28, 12, 5, K); P(5, 33, 4, 7, '#2a2a30'); P(11, 33, 4, 7, '#2a2a30'); P(2, 28, 2, 2, skin); P(16, 28, 2, 2, skin);
+      for (let px = 1; px < 19; px++) { P(px, 17, 1, 2, px % 2 ? W : w); } P(2, 16, 16, 1, W);
+      if (!fem) { P(7, 13, 6, 1, shade(hair, .9)); P(9, 16, 2, 1, shade(hair, .9)); }
+      P(18, 19, 1, 9, '#f4f0ea'); P(19, 17, 1, 6, '#f4f0ea'); P(20, 16, 1, 4, '#d8d4cc'); P(18, 28, 1, 2, '#2a2a30'); }
+    if (cs === 'saimdang') {   // 신사임당: 쪽머리 + 비녀 + 연두 저고리 + 남색 치마 + 붓
+      const G2 = '#8ac890', g2 = '#5aa060', Nv = '#2a3a6a', nv = '#1e2a50', Y = '#ffd84a';
+      P(2, 19, 3, 8, G2); P(15, 19, 3, 8, g2); P(5, 18, 10, 6, G2); P(12, 18, 3, 6, g2); for (let i = 0; i < 4; i++) P(8 + i, 18 + i, 1, 1, '#ffffff'); P(10, 22, 1, 4, '#a0283a'); P(9, 22, 1, 3, '#a0283a');
+      P(3, 24, 14, 16, Nv); P(12, 24, 5, 16, nv); P(2, 26, 2, 2, skin); P(16, 26, 2, 2, skin); P(2, 27, 2, 1, '#6a3a8a'); P(16, 27, 2, 1, '#6a3a8a');
+      P(19, 22, 1, 7, '#8a5a2a'); P(19, 29, 1, 2, '#1a1a1e');
+      G(14, 6, ['.HHH..', 'HHHHH.', 'HHHHH.', '.HHH..'], { H: shade(hair, .9) }); P(12, 7, 9, 1, Y); P(20, 6, 1, 3, Y); P(12, 7, 1, 1, '#3ac080'); }
+    if (cs === 'antoinette') {   // 마리 앙투아네트: 높이 올린 흰 머리 + 리본 + 분홍 드레스
+      const Pk = '#f4a0c0', pk = '#d878a0', W = '#f4f0ea', w = '#d8d4cc', Rb = '#ff6aa0';
+      P(2, 19, 3, 7, pk); P(15, 19, 3, 7, pk); P(5, 18, 10, 7, Pk); P(7, 18, 6, 2, skin); P(5, 18, 10, 1, W); for (let yy = 20; yy < 25; yy += 2) P(9, yy, 2, 1, Rb);
+      for (let yy = 25; yy < 40; yy++) { const hw = Math.min(10, 5 + (yy - 25)); P(10 - hw, yy, hw * 2, 1, yy % 4 === 3 ? W : Pk); P(10, yy, hw, 1, yy % 4 === 3 ? w : pk); }
+      P(1, 25, 2, 2, skin); P(17, 25, 2, 2, skin); G(-1, 26, ['.YY.', 'YYYY', 'YrrY'], { Y: '#ffe0f0', r: Rb });
+      for (let py = -12; py <= 5; py++) for (let px = 1; px < 19; px++) if ((((px - 9.5) / 8) ** 2 + ((py + 3) / 9) ** 2) <= 1) P(px, py, 1, 1, (px + py) % 3 ? W : w);
+      P(0, 4, 3, 12, W); P(17, 4, 3, 12, W); P(1, 7, 1, 7, w); P(18, 7, 1, 7, w); G(12, -10, ['RR.RR', '.RRR.', 'RR.RR'], { R: Rb }); P(4, -6, 1, 1, '#ffd0e0'); P(7, -10, 1, 1, '#ffd0e0'); P(6, -3, 2, 1, '#ffd0e0'); }
+    if (cs === 'joan') {   // 잔 다르크: 은빛 판금 갑옷 + 흰 겉옷에 금 백합 + 깃발
+      const S = '#c8ccd8', s2 = '#8a90a0', W = '#f4f0ea', Y = '#ffd84a';
+      P(1, 19, 4, 9, S); P(15, 19, 4, 9, s2); P(1, 18, 4, 2, s2); P(15, 18, 4, 2, s2); P(3, 18, 14, 11, W); P(3, 18, 2, 11, S); P(15, 18, 2, 11, S); G(8, 20, ['.Y..', 'YYY.', '.Y..', 'Y.Y.'], { Y }); P(9, 20, 1, 4, Y); P(8, 21, 3, 1, Y);
+      P(4, 28, 12, 3, W); P(5, 31, 4, 8, S); P(11, 31, 4, 8, s2); P(5, 34, 4, 1, s2); P(11, 34, 4, 1, '#6a707e'); P(5, 39, 4, 1, '#4a4e5a'); P(11, 39, 4, 1, '#4a4e5a'); P(2, 28, 2, 2, S); P(16, 28, 2, 2, s2);
+      P(0, -4, 1, 36, '#6a4a2a'); P(1, -4, 7, 5, W); P(1, -4, 7, 1, Y); G(2, -3, ['.Y.', 'YYY', '.Y.'], { Y }); }
+    if (cs === 'elizabeth') {   // 엘리자베스 1세: 부채꼴 레이스 칼라 + 작은 왕관 + 진주 박힌 드레스
+      const K = '#2a1e34', k = '#3e2e4c', Y = '#ffd84a', W = '#f4f0ea', w = '#c8c4bc';
+      P(2, 19, 3, 8, K); P(15, 19, 3, 8, K); P(5, 18, 10, 8, K); G(6, 18, ['YWYWYWYW', '.YWYWYW.', '..YWYW..', '...YY...'], { Y, W });
+      for (let yy = 26; yy < 40; yy++) { const hw = Math.min(9, 5 + ((yy - 26) >> 1)); P(10 - hw, yy, hw * 2, 1, K); P(10, yy, hw, 1, k); } [[5, 29], [14, 29], [4, 34], [15, 34], [9, 32], [10, 37], [7, 37], [12, 37]].forEach(([a2, b2]) => P(a2, b2, 1, 1, W));
+      P(2, 27, 2, 2, skin); P(16, 27, 2, 2, skin);
+      for (let px = -4; px < 24; px++) { if (px > 1 && px < 18) continue; const h2 = 9 - Math.round(Math.abs(px - 9.5) / 2.5); if (h2 > 0) P(px, 18 - h2, 1, h2, px % 2 ? W : w); } for (let px = 2; px < 18; px++) P(px, 17, 1, 1, px % 2 ? W : w);
+      G(5, -4, ['Y.Y.Y.Y.Y.', 'YYYYYYYYYY', 'YrYYwYYrYY'], { Y, r: '#c0262e', w: W }); }
+    if (cs === 'lincoln') {   // 링컨: 높은 실크햇 + 검은 프록코트 + 나비 넥타이 + 턱수염
+      const K = '#1a181e', k = '#2e2a34', W = '#f4f0ea';
+      P(1, 19, 4, 9, K); P(15, 19, 4, 9, K); P(3, 18, 14, 12, K); P(7, 18, 6, 9, W); P(8, 18, 4, 1, K); G(8, 19, ['KK.KK', '.KKK.'], { K }); P(7, 18, 1, 9, k); P(12, 18, 1, 9, k);
+      P(3, 29, 3, 5, K); P(14, 29, 3, 5, K); P(6, 29, 8, 10, '#26242c'); P(10, 29, 1, 10, '#1a181e'); P(5, 39, 4, 1, '#0e0e10'); P(11, 39, 4, 1, '#0e0e10'); P(2, 28, 2, 2, skin); P(16, 28, 2, 2, skin);
+      if (!fem) { const bd = shade(hair, .85); P(1, 12, 2, 4, bd); P(17, 12, 2, 4, bd); P(2, 15, 16, 2, bd); P(4, 17, 12, 1, bd); P(8, 14, 4, 1, skin); }
+      P(4, -11, 12, 12, K); P(4, -3, 12, 2, '#3a3440'); P(2, 1, 16, 2, K); P(5, -10, 2, 8, k); }
+    if (cs === 'gogh') {   // 반 고흐: 밀짚모자 + 파란 작업복 + 주황 수염 + 해바라기
+      const B = '#2a5ab0', b = '#1e4488', Y = '#e8c860', y = '#b8983a', O = '#d8702a';
+      P(1, 19, 4, 9, B); P(15, 19, 4, 9, b); P(3, 18, 14, 11, B); P(12, 18, 5, 11, b); P(8, 18, 4, 2, '#e8e0d0'); P(4, 21, 1, 1, '#6aa0e0'); P(14, 24, 1, 1, '#6aa0e0');
+      P(4, 29, 12, 6, '#5a4a3a'); P(5, 35, 4, 4, '#5a4a3a'); P(11, 35, 4, 4, '#4a3a2e'); P(5, 39, 4, 1, '#2a1e18'); P(11, 39, 4, 1, '#2a1e18'); P(2, 28, 2, 2, skin); P(16, 28, 2, 2, skin);
+      if (!fem) { P(2, 13, 2, 3, O); P(16, 13, 2, 3, O); P(3, 15, 14, 2, O); P(5, 17, 10, 1, O); P(8, 14, 4, 1, skin); }
+      G(-3, -2, ['........YYYYYYYY......', '.......YyYYYYYYyY.....', '.......YYYYYYYYYY.....', '.......OOOOOOOOOO.....', 'YYYYYYYYYYYYYYYYYYYYYYYY', '.YyYYyYYyYYyYYyYYyYYyY.'], { Y, y, O: '#3a5ab0' });
+      G(-3, 22, ['.YYY.', 'YYOYY', '.YYY.', '..G..', '..G..', '..G..'], { Y: '#ffd03a', O: '#6a3a1a', G: '#3a8a3a' }); }
+    if (cs === 'beethoven') {   // 베토벤: 부스스한 머리 + 진회색 코트 + 흰 크라바트 + 악보
+      const C = '#2e2a36', c2 = '#423c4c', W = '#f4f0ea', Hh = shade(hair, 1.1);
+      P(1, 19, 4, 9, C); P(15, 19, 4, 9, C); P(3, 18, 14, 11, C); P(4, 19, 2, 9, c2); P(14, 19, 2, 9, c2); G(7, 18, ['WWWWWW', '.WWWW.', '..WW..'], { W }); P(7, 21, 6, 6, '#8a2a2a'); P(9, 22, 2, 1, '#ffd84a');
+      P(4, 29, 12, 4, C); P(5, 33, 4, 6, '#2a2830'); P(11, 33, 4, 6, '#2a2830'); P(5, 39, 4, 1, '#0e0e10'); P(11, 39, 4, 1, '#0e0e10'); P(2, 28, 2, 2, skin); P(16, 28, 2, 2, skin);
+      [[-2, 2], [-1, 0], [1, -2], [4, -3], [8, -4], [12, -3], [15, -2], [18, 0], [20, 2], [-2, 6], [20, 6], [-1, 10], [19, 10]].forEach(([a2, b2]) => P(a2, b2, 3, 3, Hh));
+      G(16, 22, ['WWWWW', 'W.W.W', 'WWWWW', 'W..WW', 'WWWWW'], { W: '#f0e8d0' }); P(17, 23, 1, 1, '#1a1a1e'); P(19, 25, 1, 1, '#1a1a1e'); }
+    if (cs === 'jangys') {   // 장영실: 사모(관모) + 녹색 관복 + 흉배 + 해시계
+      const Gn = '#2a7a5a', gn = '#1e5a42', Y = '#ffd84a', K = '#1a181e';
+      P(1, 19, 4, 10, Gn); P(15, 19, 4, 10, gn); P(3, 18, 14, 11, Gn); P(12, 18, 5, 11, gn); P(8, 18, 4, 2, '#f4f0ea'); P(9, 18, 2, 1, skin); G(7, 21, ['YYYYYY', 'YbWWbY', 'YWbbWY', 'YYYYYY'], { Y, b: '#3a6ae0', W: '#f4f0ea' }); P(3, 26, 14, 1, '#c0262e');
+      P(4, 28, 12, 11, Gn); P(11, 28, 5, 11, gn); P(2, 28, 2, 2, skin); P(16, 28, 2, 2, skin);
+      G(-4, 24, ['.GGGG.', 'GYYYYG', 'GY.KYG', 'GYYYYG', '.GGGG.'], { G: '#8a6a3a', Y: '#e8d8a8', K });
+      G(2, -5, ['....KKKKKKKK....', '..KKKKKKKKKKKK..', '.KKKKKKKKKKKKKK.', 'KKKKKKKKKKKKKKKK'], { K }); P(-2, -2, 4, 3, K); P(18, -2, 4, 3, K); P(-1, -1, 2, 1, '#3a3640'); P(19, -1, 2, 1, '#3a3640'); }
+    if (cs === 'nightingale') {   // 나이팅게일: 흰 간호 모자 + 남색 드레스 + 흰 앞치마 + 등불
+      const Nv = '#2a3460', nv = '#1e2648', W = '#f4f0ea', w = '#d8d4cc';
+      P(2, 19, 3, 8, Nv); P(15, 19, 3, 8, nv); P(5, 18, 10, 8, Nv); P(8, 18, 4, 1, W); P(6, 19, 8, 7, W); P(6, 19, 1, 7, w);
+      for (let yy = 26; yy < 40; yy++) { const hw = Math.min(8, 5 + ((yy - 26) >> 2)); P(10 - hw, yy, hw * 2, 1, Nv); P(10, yy, hw, 1, nv); } P(6, 26, 8, 12, W); P(12, 26, 2, 12, w);
+      P(2, 27, 2, 2, skin); P(16, 27, 2, 2, skin);
+      G(16, 26, ['.KK.', 'KYYK', 'KyYK', 'KYYK', '.KK.'], { K: '#3a2e22', Y: '#ffe07a', y: '#fff6c0' }); P(17, 24, 2, 2, '#3a2e22');
+      G(2, -3, ['....WWWWWWWW....', '..WWWWWWWWWWWW..', 'WWWWwwwwwwwwWWWW', '.wwwwwwwwwwwwww.'], { W, w }); }
+    if (cs === 'curie') {   // 마리 퀴리: 올림머리 + 검은 드레스 + 흰 실험복 + 빛나는 플라스크
+      const K = '#26222c', W = '#f4f0ea', w = '#d0ccc4';
+      P(1, 19, 4, 9, W); P(15, 19, 4, 9, w); P(3, 18, 14, 12, W); P(12, 18, 5, 12, w); P(7, 18, 6, 10, K); P(8, 18, 4, 1, '#f4f0ea'); P(7, 18, 1, 10, w); P(12, 18, 1, 10, w); P(5, 23, 2, 1, '#3a6ae0');
+      for (let yy = 29; yy < 40; yy++) P(4, yy, 12, 1, yy < 33 ? W : K); P(10, 33, 6, 7, '#1a161e'); P(2, 28, 2, 2, skin); P(16, 28, 2, 2, skin);
+      G(16, 22, ['.WW.', '.WW.', 'WggW', 'WggW', 'gGGg', '.gg.'], { W: '#d8eef0', g: '#7af0a0', G: '#c8ffd8' });
+      G(5, -4, ['..HHHHHH..', '.HHHHHHHH.', 'HHHHHHHHHH'], { H: shade(hair, .95) }); }
+    if (cs === 'yanggf') {   // 양귀비: 당나라 높은 올림머리 + 꽃 장식 + 붉은 비단옷 + 긴 소매 + 부채
+      const R = '#c8283a', r = '#901a2a', Pk = '#ffb0c8', Y = '#ffd84a';
+      P(0, 19, 5, 10, Pk); P(15, 19, 5, 10, '#e890b0'); P(5, 18, 10, 6, Pk); P(7, 18, 6, 2, skin); P(5, 24, 10, 2, Y);
+      for (let yy = 26; yy < 40; yy++) { const hw = Math.min(9, 6 + ((yy - 26) >> 2)); P(10 - hw, yy, hw * 2, 1, R); P(10, yy, hw, 1, r); } [[6, 30], [12, 33], [7, 36], [13, 28]].forEach(([a2, b2]) => P(a2, b2, 2, 2, Y));
+      P(1, 29, 2, 1, skin); P(17, 29, 2, 1, skin); P(-2, 20, 3, 12, '#ffd0e0');
+      G(3, -6, ['...HHHH.HHHH...', '..HHHHHHHHHHHH..', '...HHHHHHHHHH...', '....HHHHHHHH....', '...HHHHHHHHHH...'], { H: shade(hair, .9) }); G(1, -1, ['.R.', 'RYR', '.R.'], { R: '#ff4a6a', Y }); G(15, -3, ['.R.', 'RYR', '.R.'], { R: '#ff4a6a', Y }); P(8, -2, 4, 1, Y);
+      G(15, 23, ['.YYYY', 'YRRRY', 'YRRY.', '.YY..'], { Y, R: '#ff7aa0' }); }
+    if (cs === 'nanseol') {   // 허난설헌: 쪽머리 + 노랑 저고리 + 다홍 치마 + 시를 쓴 두루마리
+      const Y = '#f4d860', y = '#d0b040', R = '#d8384a', r = '#a82a3a';
+      P(2, 19, 3, 8, Y); P(15, 19, 3, 8, y); P(5, 18, 10, 6, Y); P(12, 18, 3, 6, y); for (let i = 0; i < 4; i++) P(8 + i, 18 + i, 1, 1, '#ffffff'); P(10, 22, 1, 4, '#7a2a8a'); P(9, 22, 1, 3, '#7a2a8a'); P(2, 25, 3, 2, '#7a2a8a'); P(15, 25, 3, 2, '#7a2a8a');
+      P(3, 24, 14, 16, R); P(12, 24, 5, 16, r); P(2, 27, 2, 2, skin); P(16, 27, 2, 2, skin);
+      G(16, 22, ['B....B', 'WWWWWW', 'WkWkWW', 'WWkWkW', 'WWWWWW', 'B....B'], { B: '#8a5a2a', W: '#f4ecd8', k: '#2a2a30' });
+      G(14, 6, ['.HHH..', 'HHHHH.', 'HHHHH.', '.HHH..'], { H: shade(hair, .9) }); P(12, 7, 9, 1, '#e8e8f0'); P(20, 6, 1, 3, '#e8e8f0'); P(12, 7, 1, 1, '#ff6a8a'); }
     if (cs === 'witch') {
       G(2, -8, ['...........kk.....', '..........hKk.....', '.........hKKk.....', '........hKKKk.....', '.......hKSKKk.....', '......hKKKKKKk....', '.....hKKKKKKKk....', '....hKKKKKKKKKk...', '...pppppYYppppp...', '..hKKKKKKKKKKKKk..'], { K: '#2e2440', k: '#181222', h: '#54467a', p: '#8a4ad0', Y: '#ffd84a', S: '#ffe46a' });
       G(-2, 2, ['hhhhhhhhhhhhhhhhhhhhhhhh', 'kKKKKKKKKKKKKKKKKKKKKKKk'], { K: '#2e2440', k: '#181222', h: '#54467a' }); }
@@ -623,7 +844,7 @@
   // ---------- 인스타 스토리용 캐릭터 카드 (1080x1920) ----------
   function makeCard(look, drink, costume, nick, msg, themeKey, visits) {
     const W2 = 1080, H2 = 1920, c = document.createElement('canvas'); c.width = W2; c.height = H2;
-    const g = c.getContext('2d'), floorY = 1430;
+    const g = c.getContext('2d'), floorY = 1220;   // 인스타 스토리 아래쪽 답장창(약 250px)에 글자가 가리지 않게 위로
     // 벽 (붉은 커튼 줄무늬) + 바닥
     const wall = g.createLinearGradient(0, 0, 0, floorY); wall.addColorStop(0, '#3a0d10'); wall.addColorStop(0.45, '#6e1a1c'); wall.addColorStop(1, '#5a1517');
     g.fillStyle = wall; g.fillRect(0, 0, W2, floorY);
@@ -716,7 +937,7 @@
     list.forEach((gu, i) => {
       const r = Math.floor(i / cols), cIdx = i % cols, inRow = Math.min(cols, n - r * cols), offX = (cols - inRow) * cw / 2;
       const gx = 40 + offX + cIdx * cw + cw / 2, gy = top + r * ch + ch - 34;
-      const sp = sprite(gu, false, gu.drink, 'n', costumeFor(th, cosSeed(gu), gu.style));
+      const sp = sprite(gu, false, gu.drink, 'n', cosOf(th, gu).k);
       g.fillStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.ellipse(gx, gy - 2, 12 * k, 2.4 * k, 0, 0, Math.PI * 2); g.fill();
       g.drawImage(sp, gx - (CX + 2) * k, gy - (sp.height - 2) * k, sp.width * k, sp.height * k);
       const tr = null, vip = gu.id && vipSet.has(gu.id), best = o.best && gu.id === o.best;
@@ -1221,7 +1442,7 @@
       const enterY = p => { const id = p.g.id || p.g.nick + p.g.ms; if (!seen.has(id)) seen.set(id, t < 1500 ? -1e9 : t); const e = (t - seen.get(id)) / 900;
         if (e >= 1) return 0; p.entering = e; return -Math.round(Math.abs(Math.cos(e * Math.PI * 1.5)) * (1 - e) * 26); };
       const bdaySet = new Set(opts.bdays || []);
-      const draw = p => { const bd = p.g.id && bdaySet.has(p.g.id), dc = bd ? { k: 'party', rar: 'n' } : (p.g.cos === true || p.g.npc) ? drawCostume(th, cosSeed(p.g, opts.day), p.g.style) : { k: '', rar: 'n', name: '' }; p._cs = dc.k; p._rar = dc.rar;
+      const draw = p => { const bd = p.g.id && bdaySet.has(p.g.id), dc = bd ? { k: 'party', rar: 'n' } : cosOf(th, p.g, opts.day); p._cs = dc.k; p._rar = dc.rar;
         const ey = enterY(p);
         if (p.g.id && cosSeen.has(p.g.id) && cosSeen.get(p.g.id) !== dc.k && t > 4000) poofAt.set(p.g.id, t); if (p.g.id) cosSeen.set(p.g.id, dc.k);   // 코스튬을 입거나 벗으면 '펑' 반짝
         if ((dc.rar === 's' || dc.rar === 'L') && p.g.id && !secretSeen.has(p.g.id)) { secretSeen.add(p.g.id); if (t > 4000) { secretAnn = { nick: p.g.nick, name: dc.name, ms: Date.now(), L: dc.rar === 'L', k: dc.k }; setTimeout(() => sfxCos(dc.k), 300); } }
@@ -1443,6 +1664,12 @@
       heartFx(ctx, s, t, placed, headY);
       const bdOn = opts.bday && Date.now() - opts.bday.ms < BD_END;
       if (opts.q && !bdOn && !opts.game && !(opts.lucky && opts.lucky.ms && Date.now() - opts.lucky.ms < 16000)) qBanner(ctx, s, t, opts.q);
+      // 스토리 공유 안내: 8분마다 25초, 화면 아래 가운데에 은은하게 (게임·추첨·생일·주문 연출 중에는 쉼)
+      if (opts.storyTip && STORY.on && !opts.game && !bdOn && !(opts.lucky && opts.lucky.ms && Date.now() - opts.lucky.ms < 16000) && !(opts.order && opts.order.ms && Date.now() - opts.order.ms < 9000)) {
+        const ph = Date.now() % 480000; if (ph < 25000) { const a = Math.min(1, ph / 1500, (25000 - ph) / 1500); ctx.save(); ctx.globalAlpha = a; ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+          ctx.font = `${5.2 * s}px "Do Hyeon", sans-serif`; const l1 = `📸 ${STORY.screen}`, l2 = STORY.tag; ctx.font = `${5.2 * s}px "Do Hyeon", sans-serif`; const w1 = ctx.measureText(l1).width; ctx.font = `${6 * s}px "Do Hyeon", sans-serif`; const w = Math.max(w1, ctx.measureText(l2).width) + 16 * s, h = 18 * s, x = 240 * s - w / 2, y = (H - 22) * s;
+          ctx.fillStyle = 'rgba(34,8,10,.78)'; ctx.beginPath(); ctx.roundRect(x, y, w, h, 5 * s); ctx.fill(); ctx.strokeStyle = `rgba(255,128,104,${.25 + Math.sin(t / 900) * .12})`; ctx.lineWidth = .7 * s; ctx.stroke();
+          ctx.font = `${5.2 * s}px "Do Hyeon", sans-serif`; ctx.fillStyle = '#f3d6c8'; ctx.fillText(l1, 240 * s, y + 5.6 * s); ctx.font = `${6 * s}px "Do Hyeon", sans-serif`; ctx.fillStyle = '#ff9f86'; ctx.fillText(l2, 240 * s, y + 12.8 * s); ctx.restore(); } }
       // 손님 게임 신청 현황 (왼쪽 위, 정각 예고 아래)
       const rq = opts.reqs && opts.reqs[0]; if (rq && !opts.game) { ctx.save(); ctx.textBaseline = 'middle'; ctx.textAlign = 'left'; const txt = `🙋 ${rq.label} 신청 ${rq.n}/${REQ_NEED} · 폰에서 '나도!'를 누르면 바로 시작`;
         ctx.font = `${5.6 * s}px "Do Hyeon", sans-serif`; const w = ctx.measureText(txt).width + 8 * s, y = (opts.auto && opts.auto.left <= 300000 ? 25 : 15) * s;
@@ -1581,9 +1808,9 @@
       const overHead = (gid, str, col, sz) => { const p = find(gid); if (p) T(str, p.x, headY(p) - 8, sz || 6, col); };
       const wrap = (str, max) => { const out = []; let line = ''; for (const ch of String(str)) { if ((line + ch).length > max && ch !== ' ') { out.push(line); line = ch; } else line += ch; } if (line) out.push(line); return out.map(l => l.trim()); };
       if (g.type === 'bal') {
-        const votes = {}; acts.filter(a => a.kind === 'vote' && a.gid).forEach(a => { if (!(a.gid in votes)) votes[a.gid] = a.v; });
+        const votes = {}; acts.filter(a => a.kind === 'vote' && a.gid && (!g.round || a.k === g.round)).forEach(a => { if (!(a.gid in votes)) votes[a.gid] = a.v; });
         const n = Object.keys(votes).length, na = Object.values(votes).filter(v => v === 0).length, nb = n - na, res = g.phase === 'result';
-        banner(ctx, s, t, '⚖️ 밸런스 게임', res ? (n ? (na === nb ? '딱 반반! 서로 이야기해 보세요' : '여러분의 선택은?') : '아무도 고르지 않았어요') : `휴대폰에서 골라주세요 · ${n}명 참여 · ${left()}초`, '#ffb3cc');
+        banner(ctx, s, t, `⚖️ 밸런스 게임${g.round ? ` ${g.round}/${g.total}` : ''}`, res ? (n ? (na === nb ? '딱 반반! 서로 이야기해 보세요' : '여러분의 선택은?') : '아무도 고르지 않았어요') : `휴대폰에서 골라주세요 · ${n}명 참여 · ${left()}초`, '#ffb3cc');
         const draw = (x, txt, col, cnt, pct, win) => { box(x, 40, 146, 80, col, 'rgba(14,9,10,.95)'); const ls = wrap(txt, 9);
           ls.slice(0, 2).forEach((l, i) => T(l, x + 73, (res ? 60 : 72) + (i - (Math.min(2, ls.length) - 1) / 2) * 11, 10, '#fff4ea'));
           if (res) { ctx.save(); ctx.fillStyle = col; ctx.globalAlpha = .25; ctx.fillRect((x + 10) * s, 84 * s, 126 * s, 9 * s); ctx.globalAlpha = .9; const k = Math.min(1, e / 900) * pct; ctx.fillRect((x + 10) * s, 84 * s, 126 * k * s, 9 * s); ctx.restore();
@@ -1591,7 +1818,7 @@
         draw(87, g.a || 'A', '#ff8a8a', na, n ? na / n : 0, res && n > 1 && na < nb && na > 0);
         draw(247, g.b || 'B', '#7ab8ff', nb, n ? nb / n : 0, res && n > 1 && nb < na && nb > 0);
         T('VS', 240, 80, 12 + (res ? 0 : Math.sin(t / 160) * 1.5), '#ffd36a'); if (!res) clutch('#ffb3cc');
-        if (res && n > 1) once('bal' + g.n, () => { sfxSlam(false); shake(300, 5); burst(na >= nb ? 160 : 320, 60, 30, CONF, 1); });
+        if (res && n > 1) once('bal' + g.n + '|' + (g.round || 0), () => { sfxSlam(false); shake(300, 5); burst(na >= nb ? 160 : 320, 60, 30, CONF, 1); });
         if (!res) Object.keys(votes).forEach(gid => overHead(gid, '✔', '#7ee08a', 6));
       }
       if (g.type === 'nun') {
@@ -1932,7 +2159,7 @@
   const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
   function valid(g) {
     return g && typeof g.nick === 'string' && g.nick.length >= 1 && g.nick.length <= 8 && typeof g.msg === 'string' && g.msg.length <= 24 &&
-      DRINKS.some(d => d.k === g.drink) && isHex(g.hair) && isHex(g.skin) && isHex(g.shirt) && isHex(g.pants) && STYLE_RE.test(g.style) && (g.ex === undefined || EX_RE.test(g.ex)) && (g.cos === undefined || typeof g.cos === 'boolean') &&
+      DRINKS.some(d => d.k === g.drink) && isHex(g.hair) && isHex(g.skin) && isHex(g.shirt) && isHex(g.pants) && STYLE_RE.test(g.style) && (g.ex === undefined || EX_RE.test(g.ex)) && (g.cos === undefined || typeof g.cos === 'boolean' || (Number.isInteger(g.cos) && g.cos >= 1 && g.cos <= 99)) &&
       (g.v === undefined || (Number.isInteger(g.v) && g.v >= 1 && g.v <= 999)) && (g.talk === undefined || [0, 1, 2].includes(g.talk)) && (g.bd === undefined || typeof g.bd === 'boolean') && (g.nolast === undefined || typeof g.nolast === 'boolean') && (g.noheart === undefined || typeof g.noheart === 'boolean') && (g.hearts === undefined || (Number.isInteger(g.hearts) && g.hearts >= 0)) && (g.npc === undefined || typeof g.npc === 'boolean') && (g.left === undefined || typeof g.left === 'boolean');
   }
   async function addGuest(g) {
@@ -2136,8 +2363,13 @@
       let u = localStorage.getItem('notsun-demo-uid'); if (!u) { u = 'demo' + Math.random().toString(36).slice(2, 10); localStorage.setItem('notsun-demo-uid', u); } return u; } catch (e) { return 'demo'; } }
   const myUid = () => LIVE ? guestUid() : Promise.resolve(demoUid());
   function couponCode() { const A = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; let c = ''; for (let i = 0; i < 6; i++) c += A[Math.floor(Math.random() * A.length)]; return c; }
-  function couponState(c) { const today = bizDate(); if (!c) return 'none'; if (c.status === 'used') return 'used'; if (c.expDay && today > c.expDay) return 'expired'; return c.issuedDay === today ? 'today' : 'ready'; }
-  function normCoupon(id, v) { return { code: id, uid: v.uid || '', nick: String(v.nick || ''), reward: String(v.reward || '무료 쿠폰'), status: v.status === 'used' ? 'used' : 'issued', issuedDay: v.issuedDay || '', expDay: v.expDay || '', usedDay: v.usedDay || '', ms: v.issuedAt && v.issuedAt.toMillis ? v.issuedAt.toMillis() : (v.ms || 0) }; }
+  function couponState(c) { const today = bizDate(); if (!c) return 'none'; if (c.status === 'used') return 'used'; if (c.expDay && today > c.expDay) return 'expired'; if (c.kind === 'legend' || c.kind === 'secret') return 'ready'; return c.issuedDay === today ? 'today' : 'ready'; }
+  // 레전드 뽑기 보상: 당일만 쓰는 칵테일 1잔 쿠폰 (손님 휴대폰이 직접 발급 · 하루 1장 · 직원이 레전드 카드를 확인하고 사용 처리)
+  async function issueLegendCoupon(nick, secret) { const uid = await myUid(); if (!uid) throw new Error('auth'); const day = bizDate(), code = `${secret ? 'S' : 'L'}-${day}-${uid}`;   // 레전드=칵테일 1잔 · 시크릿=서비스 안주
+    const doc = { uid, nick: String(nick || '').slice(0, 8), reward: secret ? '서비스 안주 1개' : '칵테일 1잔 무료', status: 'issued', issuedDay: day, expDay: day, kind: secret ? 'secret' : 'legend' };
+    if (LIVE) { const ref = fs.collection('coupons').doc(code); try { const d = await ref.get(); if (d.exists) return code; } catch (e) {} await ref.set({ ...doc, issuedAt: firebase.firestore.FieldValue.serverTimestamp() }); return code; }
+    const all = lsGet('notsun-coupons', {}); if (!all[code]) { all[code] = { ...doc, ms: Date.now() }; lsSet('notsun-coupons', all); ping(); } return code; }
+  function normCoupon(id, v) { return { show: /^L-/.test(id) ? 'LG-' + id.slice(-4).toUpperCase() : /^S-/.test(id) ? 'SC-' + id.slice(-4).toUpperCase() : id, kind: ['legend', 'secret'].includes(v.kind) ? v.kind : '', code: id, uid: v.uid || '', nick: String(v.nick || ''), reward: String(v.reward || '무료 쿠폰'), status: v.status === 'used' ? 'used' : 'issued', issuedDay: v.issuedDay || '', expDay: v.expDay || '', usedDay: v.usedDay || '', ms: v.issuedAt && v.issuedAt.toMillis ? v.issuedAt.toMillis() : (v.ms || 0) }; }
   async function issueCoupon({ uid, nick, reward }) {
     const code = couponCode(), day = bizDate();
     const doc = { uid: uid || '', nick: String(nick || '').slice(0, 8), reward: String(reward || '칵테일 1잔 무료').slice(0, 20), status: 'issued', issuedDay: day, expDay: addDays(day, COUPON_DAYS) };
@@ -2169,27 +2401,31 @@
   // ---------- 게임 데이터 ----------
   const GAME_TYPES = ['bomb', 'ten', 'toast', 'bal', 'nun', 'rou', 'race', 'rps', 'ox'];
   // 매시 정각 자동 게임: 스크린이 진행 · 사장님이 리모컨에서 다음 게임을 고를 수 있음 (안 고르면 순서대로)
-  const AUTO_ORDER = ['race', 'bal', 'rou', 'ox', 'toast', 'rps', 'bomb', 'nun', 'ten'];
+  const AUTO_ORDER = ['race', 'bal', 'rou', 'ox', 'rps', 'bomb', 'nun', 'ten'];   // 다 같이 건배는 뺌 (2026-10-26)
   const AUTO_LABEL = { race: '🏇 픽셀 경마', bal: '⚖️ 밸런스 게임', rou: '🎡 행운의 룰렛', ox: '⭕ OX 서바이벌', toast: '🥂 다 같이 건배', rps: '✊ 사장님과 가위바위보', bomb: '💣 폭탄 돌리기', nun: '🙊 눈치게임', ten: '⏱ 10초 맞추기' };
   const HOUR = 3600000;
   function autoInfo(auto, now) {
     if (auto && auto.on === false) return null; now = now || Date.now();
     const at = Math.floor(now / HOUR) * HOUR + HOUR, hr = new Date(at + 9 * HOUR).getUTCHours();
+    if (LIVE && !shopOpen(at, true).open) return null;   // 영업시간(마감 정각 제외)에만 정각 게임·사장님 알림
     const chosen = auto && auto.slot === at && AUTO_ORDER.includes(auto.next);
     const type = chosen ? auto.next : AUTO_ORDER[hr % AUTO_ORDER.length];
     return { at, hr, type, label: AUTO_LABEL[type], chosen: !!chosen, left: at - now }; }
+  // 밸런스 게임: 한 판에 3문제 (문제마다 20초 고르기 → 6초 결과)
+  const BAL_N = 3, BAL_SEC = 20;
+  function balSet(first){ const pool = BAL_QS.filter(q => !first || q[0] !== first[0]), out = first ? [first] : []; const a = pool.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } while (out.length < BAL_N && a.length) out.push(a.pop()); return out.map(q => [String(q[0]).slice(0, 16), String(q[1]).slice(0, 16)]); }
   function autoSpec(type) {
     const sh = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
     const q = BAL_QS[Math.floor(Math.random() * BAL_QS.length)];
     return ({
-      race: [{ phase: 'pick', dur: 30 }, n => ({ pickUntil: n + 30000 }), '🏇 경마 우승마 고르는 중 (30초)…'],
-      bal: [{ phase: 'play', a: q[0].slice(0, 16), b: q[1].slice(0, 16), dur: 30 }, n => ({ endAt: n + 30000 }), '⚖️ 밸런스 게임 진행 중 (30초)…'],
-      rou: [{ phase: 'join', dur: 30 }, n => ({ joinUntil: n + 30000 }), '🎡 룰렛 참여자 모집 (30초)…'],
-      ox: [{ phase: 'join', dur: 30 }, n => ({ joinUntil: n + 30000, qs: sh(OX_QS).slice(0, 5) }), '⭕ OX 서바이벌 참여자 모집 (30초)…'],
+      race: [{ phase: 'pick', dur: 20 }, n => ({ pickUntil: n + 20000 }), '🏇 경마 우승마 고르는 중 (20초)…'],
+      bal: (() => { const qs = balSet(); return [{ phase: 'play', a: qs[0][0], b: qs[0][1], qs, round: 1, total: qs.length, dur: BAL_SEC }, n => ({ endAt: n + BAL_SEC * 1000 }), `⚖️ 밸런스 게임 ${qs.length}문제 진행 중…`]; })(),
+      rou: [{ phase: 'join', dur: 20 }, n => ({ joinUntil: n + 20000 }), '🎡 룰렛 참여자 모집 (20초)…'],
+      ox: [{ phase: 'join', dur: 20 }, n => ({ joinUntil: n + 20000, qs: sh(OX_QS).slice(0, 5) }), '⭕ OX 서바이벌 참여자 모집 (20초)…'],
       toast: [{ phase: 'count' }, n => ({ endAt: n + 13000 }), '🥂 건배 타임!'],
-      rps: [{ phase: 'join', dur: 30 }, n => ({ joinUntil: n + 30000 }), '✊ 가위바위보 참여자 모집 (30초)…'],
-      bomb: [{ phase: 'join', mission: '', dur: 30 }, n => ({ joinUntil: n + 30000 }), '💣 참여자 모집 중 (30초)…'],
-      nun: [{ phase: 'join', dur: 30 }, n => ({ joinUntil: n + 30000 }), '🙊 눈치게임 참여자 모집 (30초)…'],
+      rps: [{ phase: 'join', dur: 20 }, n => ({ joinUntil: n + 20000 }), '✊ 가위바위보 참여자 모집 (20초)…'],
+      bomb: [{ phase: 'join', mission: '', dur: 20 }, n => ({ joinUntil: n + 20000 }), '💣 참여자 모집 중 (20초)…'],
+      nun: [{ phase: 'join', dur: 20 }, n => ({ joinUntil: n + 20000 }), '🙊 눈치게임 참여자 모집 (20초)…'],
       ten: [{ phase: 'play' }, n => ({ endAt: n + 60000 }), '⏱ 10초 맞추기 진행 중 (60초)…'] })[type]; }
   const saveAuto = v => saveEvent('auto', { on: v.on !== false, req: v.req !== false, next: AUTO_ORDER.includes(v.next) ? v.next : '', slot: +v.slot || 0 });
   // 손님 게임 신청: games 컬렉션(n=0, kind='req', v=게임 번호) · 20분 안에 다른 손님 3명이 모이면 스크린이 자동 시작
@@ -2274,7 +2510,7 @@
     { k: 'high', name: '칵테일 · 높은 도수', en: 'HIGH PROOF', icon: 'cocktail', items: [M('몽상', 13000), M('마티니', 15000), M('갓파더', 14000), M('파우스트', 13000), M('카타르시스', 13000), M('블랙러시안', 12000), M('잭로즈', 13000)] },
     { k: 'hb', name: '하이볼', en: 'HIGHBALL', icon: 'whisky', items: [M('산토리 하이볼', 12000), M('애플 하이볼', 12000), M('피치 하이볼', 12000), M('생제르맹 하이볼', 13000)] },
     { k: 'whisky', name: '위스키', en: 'WHISKY', icon: 'whisky', note: '잔은 30ml · 하이볼로 변경 +2,000 · 바틀 킵 기간 2달', items: [
-      W_('몽키숄더', '40%', 10000, 170000, 'BLENDED & CASUAL'), W_('조니워커 블랙', '40%', 10000, 130000, 'BLENDED & CASUAL'), W_('제임슨', '40%', 9000, 120000, 'BLENDED & CASUAL'),
+      W_('몽키숄더', '40%', 10000, 170000, 'BLENDED & CASUAL'), W_('조니워커 블랙', '40%', 10000, 140000, 'BLENDED & CASUAL'), W_('제임슨', '40%', 9000, 120000, 'BLENDED & CASUAL'),
       W_('잭다니엘 올드 No.7', '40%', 9000, 150000, 'BOURBON'), W_('메이커스 마크', '45%', 10000, 170000, 'BOURBON'), W_('버팔로 트레이스', '45%', 11000, 190000, 'BOURBON'), W_('와일드터키 101 8년', '50.5%', 10000, 170000, 'BOURBON'), W_('러셀 리저브 싱글배럴', '55%', 13000, 250000, 'BOURBON'),
       W_('글렌모렌지 12년 오리지널', '40%', 11000, 210000, 'SINGLE MALT'), W_('글렌피딕 12년', '40%', 12000, 230000, 'SINGLE MALT'), W_('발베니 12년 더블우드', '40%', 14000, 270000, 'SINGLE MALT'),
       W_('글렌드로낙 12년', '43%', 14000, 270000, 'SHERRY CASK'), W_('맥캘란 12년 쉐리오크', '40%', 15000, 280000, 'SHERRY CASK'), W_('글렌알라키 12년', '46%', 15000, 300000, 'SHERRY CASK'),
@@ -2586,10 +2822,11 @@
     if (!isHex(up.hair) || !isHex(up.skin) || !isHex(up.shirt) || !isHex(up.pants) || !STYLE_RE.test(up.style) || !DRINKS.some(d => d.k === up.drink)) throw new Error('invalid');
     if (LIVE) { await fs.collection('days').doc(day).collection('guests').doc(id).update(up); return; }
     const list = lsGet(DEMO_KEY(day), []), g = list.find(x => x.id === id); if (g) { Object.assign(g, up); lsSet(DEMO_KEY(day), list); ping(); setTimeout(() => listeners.forEach(f => f()), 0); } }
+  const cosVal = on => Number.isInteger(on) && on >= 1 && on <= 99 ? on : !!on;
   async function setGuestCos(gid, on) {
     if (!gid) return; const day = bizDate();
-    if (LIVE) { await fs.collection('days').doc(day).collection('guests').doc(gid).update({ cos: !!on }); return; }
-    const list = lsGet(DEMO_KEY(day), []), g = list.find(x => x.id === gid); if (g) { g.cos = !!on; lsSet(DEMO_KEY(day), list); ping(); setTimeout(() => listeners.forEach(f => f()), 0); } }
+    if (LIVE) { await fs.collection('days').doc(day).collection('guests').doc(gid).update({ cos: cosVal(on) }); return; }
+    const list = lsGet(DEMO_KEY(day), []), g = list.find(x => x.id === gid); if (g) { g.cos = cosVal(on); lsSet(DEMO_KEY(day), list); ping(); setTimeout(() => listeners.forEach(f => f()), 0); } }
   async function setGuestLeft(gid, left) {
     if (!gid) return; const day = bizDate(), v = !!left;
     if (LIVE) { await fs.collection('days').doc(day).collection('guests').doc(gid).update(v ? { left: true, lts: firebase.firestore.FieldValue.serverTimestamp() } : { left: false }); return; }
@@ -2610,10 +2847,12 @@
   const setNtfy = topic => saveEvent('ntfy', String(topic || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64));
   const renotify = o => notifyPhones({ ...o, nick: `⏰ 아직 접수 전 · ${o.nick || '손님'}` });
   const testNtfy = topic => notifyPhones({ nick: '테스트', items: [{ name: '알림 테스트', qty: 1 }], note: '', total: 0 }, topic);
+  // 스토리 공유 안내 (2주 테스트) · 문구·해시태그는 여기 한 곳에서만 바꾸면 손님 화면과 스크린에 같이 바뀜
+  const STORY = { tag: '#낯선아바타', offer: '이 카드를 인스타 스토리에 올리고 직원에게 보여주시면 서비스를 드려요 🍸', note: '계정 태그는 안 해도 괜찮아요 · 친한 친구 공개 스토리도 인정돼요', screen: '캐릭터 카드를 스토리에 올리고 직원에게 보여주시면 작은 서비스를 드려요', on: true };
   // 영업시간 (한국 시간): 금·토 19:00~03:00, 그 외 19:00~01:00 · 앞뒤 30분 여유 (새벽 6시 전은 전날 영업으로 봄)
   const SHOP_HOURS_TEXT = '오후 7시 ~ 새벽 1시 (금·토는 새벽 3시까지)';
-  function shopOpen(now){ const k = new Date((now || Date.now()) + 9 * 3600e3), h = k.getUTCHours() + k.getUTCMinutes() / 60; let dow = k.getUTCDay(); if (h < 6) dow = (dow + 6) % 7;
-    const close = dow === 5 || dow === 6 ? 3 : 1; return { open: h >= 18.5 || (h < 6 && h < close + 0.5), text: SHOP_HOURS_TEXT }; }
+  function shopOpen(now, strict){ const k = new Date((now || Date.now()) + 9 * 3600e3), h = k.getUTCHours() + k.getUTCMinutes() / 60; let dow = k.getUTCDay(); if (h < 6) dow = (dow + 6) % 7;
+    const close = dow === 5 || dow === 6 ? 3 : 1, pad = strict ? 0 : 0.5; return { open: h >= 19 - pad || (h < 6 && h < close + pad), text: SHOP_HOURS_TEXT }; }
   const onScreen = (l, keepLeft) => l.filter(g => valid(g) && clean(g.nick) && clean(g.msg) && (keepLeft || !g.left));   // 계산 완료(퇴장)한 손님은 자리에서 뺌
   async function saveTheme(theme) {
     if (!THEMES.some(t => t.k === theme)) return;
@@ -2626,6 +2865,6 @@
     lsSet('notsun-owner-live', { who, msg, ms: Date.now() }); ping();
   }
 
-  global.Notsun = { setGuestLeft, resetDay, watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, horseSprite, raceProg, raceInfo, RACE_T0, BAL_QS, OX_QS, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, BOTTOMS, ACCS, HAIR_X, TOPS, EYES, ACC_X, SHOES, PANTS_COLORS, EX_RE, setGuestCos, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
-    shopOpen, setCatVisit, watchCatVisit, petCat, safeReload, netErr, newOrderId: () => LIVE ? fs.collection('orders').doc().id : 'o' + Date.now(), watchCatPets, THEMES, resolveTheme, costumeFor, drawCostume, cosSeed, OWNER_COS, ownerCostume, cardAura, AURA_FX, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, announceServed, drinkColor, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, saveGameEnd, REQ_NEED, reqTally, requestGame, markReqDone, AUTO_ORDER, AUTO_LABEL, autoInfo, autoSpec, saveAuto, notifyOwner, updateLook, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
+  global.Notsun = { setGuestLeft, resetDay, watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, horseSprite, raceProg, raceInfo, RACE_T0, BAL_QS, OX_QS, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, LOOK_THEMES, FITS, COS_DESC, issueLegendCoupon, BOTTOMS, ACCS, HAIR_X, TOPS, EYES, ACC_X, SHOES, PANTS_COLORS, EX_RE, setGuestCos, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
+    shopOpen, STORY, balSet, BAL_SEC, setCatVisit, watchCatVisit, petCat, safeReload, netErr, newOrderId: () => LIVE ? fs.collection('orders').doc().id : 'o' + Date.now(), watchCatPets, THEMES, resolveTheme, costumeFor, drawCostume, cosSeed, seasonCostume, rollSeason, cosOf, OWNER_COS, ownerCostume, cardAura, AURA_FX, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, announceServed, drinkColor, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, saveGameEnd, REQ_NEED, reqTally, requestGame, markReqDone, AUTO_ORDER, AUTO_LABEL, autoInfo, autoSpec, saveAuto, notifyOwner, updateLook, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
 })(window);

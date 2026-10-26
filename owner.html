@@ -146,7 +146,7 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
         <button class="btn primary" id="gBomb" type="button">💣 폭탄 돌리기</button>
         <button class="btn primary" id="gNun" type="button">🙊 눈치게임</button>
         <button class="btn primary" id="gRps" type="button">✊ 사장님과 가위바위보</button>
-        <button class="btn primary" id="gToast" type="button">🥂 다 같이 건배</button>
+        <button class="btn primary" id="gToast" type="button" hidden>🥂 다 같이 건배</button>
       </div>
       <b class="glab">🧠 머리 쓰기</b>
       <div class="gbtns">
@@ -530,11 +530,11 @@ try { const r = localStorage.getItem('notsun-reward'); if (r !== null) $('reward
 let couponsNow = [];
 function renderCoupons(){
   const el = $('coupons'); el.innerHTML = ''; const q = $('couponFind').value.trim().toUpperCase();
-  const list = couponsNow.filter(c => !q || c.code.includes(q) || c.nick.toUpperCase().includes(q));
+  const list = couponsNow.filter(c => !q || c.code.includes(q) || c.show.includes(q) || c.nick.toUpperCase().includes(q));
   if (!list.length) { el.innerHTML = '<p class="sub">' + (q ? '찾는 쿠폰이 없어요.' : '아직 발급한 쿠폰이 없어요.') + '</p>'; return; }
   list.forEach(c => {
     const st = N.couponState(c), r = document.createElement('div'); r.className = 'row';
-    const t = document.createElement('span'); t.textContent = `${c.code} · ${c.nick} · ${c.reward}`;
+    const t = document.createElement('span'); t.textContent = `${c.kind === 'legend' ? '🌟 ' : c.kind === 'secret' ? '✨ ' : ''}${c.show} · ${c.nick} · ${c.reward}${c.kind === 'legend' ? ' (레전드 · 오늘만)' : c.kind === 'secret' ? ' (시크릿 · 오늘만)' : ''}`;
     const info = document.createElement('small');
     info.textContent = st === 'today' ? `오늘 발급 (다음 방문부터)` : st === 'ready' ? `사용 가능 · ~${c.expDay.slice(5).replace('-', '/')}` : st === 'used' ? `사용 완료 ${c.usedDay.slice(5).replace('-', '/')}` : '기간 만료';
     if (st === 'ready') info.style.color = '#9fe0a5';
@@ -542,7 +542,7 @@ function renderCoupons(){
     if (st === 'ready' || st === 'today') {
       const b = document.createElement('button'); b.className = 'btn small'; b.textContent = '사용 처리';
       b.onclick = async () => {
-        if (b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = st === 'today' ? '오늘 발급분이에요. 그래도?' : `${c.code} 사용할까요?`; setTimeout(() => { if (!b.disabled) { b.dataset.sure = ''; b.textContent = '사용 처리'; } }, 4000); return; }
+        if (b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = st === 'today' ? '오늘 발급분이에요. 그래도?' : `${c.show} 사용할까요?`; setTimeout(() => { if (!b.disabled) { b.dataset.sure = ''; b.textContent = '사용 처리'; } }, 4000); return; }
         b.disabled = true; try { await N.useCoupon(c.code); c.status = 'used'; c.usedDay = N.bizDate(); renderCoupons(); } catch (e) { b.textContent = '실패'; b.disabled = false; } };
       acts.append(b);
     }
@@ -657,6 +657,7 @@ setInterval(gUi, 700);
 // 매시 정각 자동 게임: 켜기/끄기 + 다음 게임 고르기 (정각 10분 전에 이 폰으로 알림이 와요 · 안 고르면 순서대로)
 N.AUTO_ORDER.forEach(k => { const o = document.createElement('option'); o.value = k; o.textContent = N.AUTO_LABEL[k]; $('autoNext').appendChild(o); });
 function autoUi(){ const au = (ownerSt && ownerSt.auto) || { on: true }, a = N.autoInfo({ ...au, on: true }); $('autoOn').checked = au.on !== false;
+  if (!a) { $('autoAt').textContent = '--:00'; $('autoLeft').textContent = '영업시간이 아니라 쉬는 중이에요. 영업시간(' + N.shopOpen().text + ')에만 정각 게임과 알림이 있어요.'; $('autoNext').disabled = true; return; }
   $('autoAt').textContent = String(a.hr).padStart(2, '0') + ':00'; if (document.activeElement !== $('autoNext')) $('autoNext').value = a.type;
   const m = Math.ceil(a.left / 60000); $('autoLeft').textContent = au.on === false ? '꺼져 있어요. 켜면 정각마다 스크린이 게임을 시작해요.' : `${m}분 뒤 시작 · ${a.chosen ? '사장님이 고른 게임' : '순서대로 정해진 게임'} · 정각 10분 전에 알림이 와요 (알림 채널 설정 필요)`;
   $('autoNext').disabled = au.on === false; }
@@ -670,7 +671,7 @@ function reqUi(){ const au = (ownerSt && ownerSt.auto) || {}; $('reqOn').checked
 setInterval(reqUi, 5000);
 $('reqOn').onchange = async () => { const au = (ownerSt && ownerSt.auto) || {}; try { await N.saveAuto({ ...au, req: $('reqOn').checked }); } catch (e) { $('reqOn').checked = !$('reqOn').checked; } };
 $('autoOn').onchange = async () => { const au = (ownerSt && ownerSt.auto) || {}; try { await N.saveAuto({ ...au, on: $('autoOn').checked }); } catch (e) { $('autoOn').checked = !$('autoOn').checked; } autoUi(); };
-$('autoNext').onchange = async () => { const a = N.autoInfo({ on: true }); try { await N.saveAuto({ on: $('autoOn').checked, req: $('reqOn').checked, next: $('autoNext').value, slot: a.at }); } catch (e) {} autoUi(); };
+$('autoNext').onchange = async () => { const a = N.autoInfo({ on: true }); if (!a) return; try { await N.saveAuto({ on: $('autoOn').checked, req: $('reqOn').checked, next: $('autoNext').value, slot: a.at }); } catch (e) {} autoUi(); };
 // 리모컨을 밤새 켜 두면: 영업일이 바뀌었을 때(새벽 6시) 게임 중이 아니면 새로 열어서 오늘 주문·손님이 보이게
 const bootDay = N.bizDate(); setInterval(() => { if (N.bizDate() !== bootDay && !host.game()) N.safeReload('owner.html'); }, 60000);
 // 이 리모컨이 진행 중일 때는 화면이 꺼지지 않게
@@ -680,19 +681,19 @@ const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { c
 var gMsgUntil = 0; const gMsg = t => { $('gState').textContent = t; gMsgUntil = Date.now() + 4000; };
 const gStart = (type, extra, hostState, msg) => async () => { if (host.game()) { gMsg('이미 진행 중인 게임이 있어요. 끝나거나 멈춘 뒤에 시작해 주세요.'); return; }
   try { await host.start(type, extra(), hostState, msg); gUi(); } catch (e) { gMsg('게임을 시작하지 못했어요. 로그인 상태를 확인해 주세요.'); } };
-$('gBomb').onclick = gStart('bomb', () => ({ phase: 'join', mission: $('gMission').value.trim().slice(0, 24), dur: 30 }), n => ({ joinUntil: n + 30000 }), '💣 참여자 모집 중 (30초)…');
+$('gBomb').onclick = gStart('bomb', () => ({ phase: 'join', mission: $('gMission').value.trim().slice(0, 24), dur: 20 }), n => ({ joinUntil: n + 20000 }), '💣 참여자 모집 중 (20초)…');
 $('gTen').onclick = gStart('ten', () => ({ phase: 'play', reward: gReward() }), n => ({ endAt: n + 60000 }), '⏱ 10초 맞추기 진행 중 (60초)…');
 $('gToast').onclick = gStart('toast', () => ({ phase: 'count' }), n => ({ endAt: n + 13000 }), '🥂 건배 타임!');
 N.BAL_QS.forEach((q, i) => { const o = document.createElement('option'); o.value = i; o.textContent = `${q[0]} vs ${q[1]}`; $('gBalQ').appendChild(o); });
 $('gBalQ').insertAdjacentHTML('afterbegin', '<option value="r">🎲 랜덤 질문</option>'); $('gBalQ').value = 'r';
 $('gBal').onclick = gStart('bal', () => { const ca = $('gBalA').value.trim(), cb = $('gBalB').value.trim(); let q;
-    if (ca && cb) q = [ca, cb]; else { const v = $('gBalQ').value; q = v === 'r' ? N.BAL_QS[Math.floor(Math.random() * N.BAL_QS.length)] : N.BAL_QS[+v]; }
-    return { phase: 'play', a: q[0].slice(0, 16), b: q[1].slice(0, 16), dur: 30 }; }, n => ({ endAt: n + 30000 }), '⚖️ 밸런스 게임 진행 중 (30초)…');
-$('gNun').onclick = gStart('nun', () => ({ phase: 'join', dur: 30 }), n => ({ joinUntil: n + 30000 }), '🙊 눈치게임 참여자 모집 (30초)…');
-$('gRou').onclick = gStart('rou', () => ({ phase: 'join', dur: 30, reward: gReward() }), n => ({ joinUntil: n + 30000 }), '🎡 룰렛 참여자 모집 (30초)…');
-$('gRace').onclick = gStart('race', () => ({ phase: 'pick', dur: 30, reward: gReward() }), n => ({ pickUntil: n + 30000 }), '🏇 경마 우승마 고르는 중 (30초)…');
-$('gRps').onclick = gStart('rps', () => ({ phase: 'join', dur: 30, reward: gReward() }), n => ({ joinUntil: n + 30000 }), '✊ 가위바위보 참여자 모집 (30초)…');
-$('gOx').onclick = gStart('ox', () => ({ phase: 'join', dur: 30, reward: gReward() }), n => ({ joinUntil: n + 30000, qs: shuffle(N.OX_QS).slice(0, 5) }), '⭕ OX 서바이벌 참여자 모집 (30초)…');
+    if (ca && cb) q = [ca, cb]; else { const v = $('gBalQ').value; q = v === 'r' ? null : N.BAL_QS[+v]; }
+    const qs = N.balSet(q); return { phase: 'play', a: qs[0][0], b: qs[0][1], qs, round: 1, total: qs.length, dur: N.BAL_SEC }; }, n => ({ endAt: n + N.BAL_SEC * 1000 }), '⚖️ 밸런스 게임 3문제 진행 중…');
+$('gNun').onclick = gStart('nun', () => ({ phase: 'join', dur: 20 }), n => ({ joinUntil: n + 20000 }), '🙊 눈치게임 참여자 모집 (20초)…');
+$('gRou').onclick = gStart('rou', () => ({ phase: 'join', dur: 20, reward: gReward() }), n => ({ joinUntil: n + 20000 }), '🎡 룰렛 참여자 모집 (20초)…');
+$('gRace').onclick = gStart('race', () => ({ phase: 'pick', dur: 20, reward: gReward() }), n => ({ pickUntil: n + 20000 }), '🏇 경마 우승마 고르는 중 (20초)…');
+$('gRps').onclick = gStart('rps', () => ({ phase: 'join', dur: 20, reward: gReward() }), n => ({ joinUntil: n + 20000 }), '✊ 가위바위보 참여자 모집 (20초)…');
+$('gOx').onclick = gStart('ox', () => ({ phase: 'join', dur: 20, reward: gReward() }), n => ({ joinUntil: n + 20000, qs: shuffle(N.OX_QS).slice(0, 5) }), '⭕ OX 서바이벌 참여자 모집 (20초)…');
 $('gStop').onclick = () => host.stop('게임을 멈췄어요.');
 // 레시피 (사장님만)
 var recipes = {}, rcpName = '';
