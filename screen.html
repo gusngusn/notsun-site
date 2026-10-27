@@ -132,8 +132,9 @@ N.watchMenu(cats => { recName = cats.flatMap(c => c.items).filter(it => it.rec &
 const canRunAuto = () => !!gameHost && (!N.LIVE || (isOwnerUser() && isDesignated()));
 let autoPrev = null, reqActs = [], reqDay = '', reqOff = null;
 const reqSub = () => { if (reqDay === N.bizDate()) return; reqDay = N.bizDate(); reqOff && reqOff(); reqOff = N.watchGameActs(0, l => { reqActs = l; }); }; reqSub();
-const reqList = () => ownerState ? N.reqTally(reqActs, ownerState.rqdone) : []; const autoDone = k => { try { const v = JSON.parse(localStorage.getItem('notsun-auto-done') || '{}'); return !!v[k]; } catch (e) { return false; } };
-const autoMark = k => { try { const v = JSON.parse(localStorage.getItem('notsun-auto-done') || '{}'); v[k] = 1; Object.keys(v).sort().slice(0, -30).forEach(x => delete v[x]); localStorage.setItem('notsun-auto-done', JSON.stringify(v)); } catch (e) {} };
+const reqList = () => ownerState ? N.reqTally(reqActs, ownerState.rqdone) : []; const autoMem = {};   // 저장소가 막히거나 꽉 차도 같은 알림·게임이 두 번 나가지 않게 메모리에도 기록
+const autoDone = k => { if (autoMem[k]) return true; try { const v = JSON.parse(localStorage.getItem('notsun-auto-done') || '{}'); return !!v[k]; } catch (e) { return false; } };
+const autoMark = k => { autoMem[k] = 1; try { const v = JSON.parse(localStorage.getItem('notsun-auto-done') || '{}'); v[k] = 1; const ms = x => +(x.match(/\d+$/) || [0])[0]; Object.keys(v).sort((a, b) => ms(a) - ms(b)).slice(0, -30).forEach(x => delete v[x]); localStorage.setItem('notsun-auto-done', JSON.stringify(v)); } catch (e) {} };
 setInterval(async () => { if (!ownerState || !canRunAuto()) { autoPrev = null; return; } const now = Date.now(), a = N.autoInfo(ownerState.auto, now);
   const real = guests.filter(g => !g.left && !g.npc).length;
   if (a && a.left <= 600000 && !autoDone('n' + a.at) && real >= 1) { autoMark('n' + a.at); N.notifyOwner(`⏰ ${String(a.hr).padStart(2, '0')}:00 정각 게임`, `${a.label} 예정이에요. 다른 게임으로 바꾸려면 리모컨 → 게임 → '다음 정각 게임'에서 골라주세요.`); }
