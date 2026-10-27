@@ -2507,7 +2507,7 @@
   const DEFAULT_MENU = [
     { k: 'low', name: '칵테일 · 약한 도수', en: 'LOW PROOF', icon: 'cocktail', items: [M('피치크러쉬', 13000), M('미도리사워', 13000), M('준벅', 14000), M('진토닉', 12000), M('데킬라 선라이즈', 13000), M('블루사파이어', 13000), M('스푸모니', 13000), M('말리부 오렌지', 12000), M('깔루아밀크', 12000), M('베일리스 밀크', 12000), M('말리부 밀크', 12000), M('칼리모초', 13000), M('보치볼', 13000), M('요거마신 딸기', 13000), M('요거마신 포도', 13000)] },
     { k: 'mid', name: '칵테일 · 중간 도수', en: 'MEDIUM PROOF', icon: 'cocktail', items: [M('롱아일랜드아이스티', 13000), M('톰콜린스', 13000), M('진피즈', 14000), M('그레이하운드', 13000), M('섹스온더비치', 13000), M('화이트러시안', 13000), M('벤시', 13000), M('오르가즘', 13000), M('샤르도네', 13000), M('잭콕', 13000), M('럼콕', 13000), M('쿠바리브레', 13000)] },
-    { k: 'high', name: '칵테일 · 높은 도수', en: 'HIGH PROOF', icon: 'cocktail', items: [M('몽상', 13000), M('마티니', 15000), M('갓파더', 14000), M('파우스트', 13000), M('카타르시스', 13000), M('블랙러시안', 12000), M('잭로즈', 13000)] },
+    { k: 'high', name: '칵테일 · 높은 도수', en: 'HIGH PROOF', icon: 'cocktail', items: [M('몽상', 13000), M('마티니', 15000), M('갓파더', 14000), M('파우스트', 13000), M('카타르시스', 13000), M('블랙러시안', 12000), M('잭로즈', 13000), M('데드', 13000)] },
     { k: 'hb', name: '하이볼', en: 'HIGHBALL', icon: 'whisky', items: [M('산토리 하이볼', 12000), M('애플 하이볼', 12000), M('피치 하이볼', 12000), M('생제르맹 하이볼', 13000)] },
     { k: 'whisky', name: '위스키', en: 'WHISKY', icon: 'whisky', note: '잔은 30ml · 하이볼로 변경 +2,000 · 바틀 킵 기간 2달', items: [
       W_('몽키숄더', '40%', 10000, 170000, 'BLENDED & CASUAL'), W_('조니워커 블랙', '40%', 10000, 140000, 'BLENDED & CASUAL'), W_('제임슨', '40%', 9000, 120000, 'BLENDED & CASUAL'),
@@ -2527,7 +2527,7 @@
     '피치크러쉬': '약 4%', '미도리사워': '약 3%', '준벅': '약 8%', '섹스온더비치': '약 12%', '진토닉': '약 10%', '데킬라 선라이즈': '약 10%', '블루사파이어': '약 6%', '스푸모니': '약 4%',
     '말리부 오렌지': '약 6%', '깔루아밀크': '약 5%', '베일리스 밀크': '약 4%', '말리부 밀크': '약 5%', '칼리모초': '약 6%', '보치볼': '약 4%', '벤시': '약 12%', '요거마신 딸기': '약 3%', '요거마신 포도': '약 6%',
     '롱아일랜드아이스티': '약 15%', '톰콜린스': '약 12%', '진피즈': '약 10%', '그레이하운드': '약 10%', '화이트러시안': '약 12%', '오르가즘': '약 18%', '샤르도네': '약 14%', '잭콕': '약 12%', '럼콕': '약 12%', '쿠바리브레': '약 12%',
-    '몽상': '약 26%', '마티니': '약 30%', '갓파더': '약 30%', '파우스트': '약 45%', '카타르시스': '약 40%', '블랙러시안': '약 33%', '잭로즈': '약 18%',
+    '몽상': '약 26%', '마티니': '약 30%', '갓파더': '약 30%', '파우스트': '약 45%', '카타르시스': '약 40%', '블랙러시안': '약 33%', '잭로즈': '약 18%', '데드': '약 49%',
     '산토리 하이볼': '약 10%', '애플 하이볼': '약 5%', '피치 하이볼': '약 5%', '생제르맹 하이볼': '약 5%',
     '레몬드랍': '약 20%', '데킬라샷': '40%', '치즈케이크': '약 8%', '소맥드랍 (6잔)': '약 8%', '선셋펀치': '무알콜', '플로리다': '무알콜', '셜리템플': '무알콜'
   };
@@ -2544,7 +2544,7 @@
     '화이트러시안': '진하고 부드러운 커피우유', '오르가즘': '달콤 고소한 진한 디저트', '샤르도네': '새콤달콤한 멜론맛 (와인 아니에요)',
     '잭콕': '달큰하고 청량', '럼콕': '달콤하고 청량', '쿠바리브레': '라임향이 상쾌한 청량함',
     '몽상': '과일향 깔끔, 은근히 세요', '마티니': '드라이하고 강렬', '갓파더': '아몬드향 달큰, 훈연 시나몬 향',
-    '파우스트': '블랙커런트 향, 아주 강해요', '카타르시스': '아몬드향에 새콤함, 아주 강해요', '블랙러시안': '진한 커피향, 묵직해요', '잭로즈': '새콤달콤한 사과맛',
+    '파우스트': '블랙커런트 향, 아주 강해요', '카타르시스': '아몬드향에 새콤함, 아주 강해요', '블랙러시안': '진한 커피향, 묵직해요', '잭로즈': '새콤달콤한 사과맛', '데드': '아니스·바닐라 향, 가장 독해요',
     '산토리 하이볼': '깔끔하고 청량', '애플 하이볼': '상큼달콤한 사과', '피치 하이볼': '달콤 상큼한 복숭아', '생제르맹 하이볼': '꽃향, 은은한 단맛',
     '레몬드랍': '새콤달콤 원샷', '데킬라샷': '강렬한 원샷', '치즈케이크': '진짜 치즈케이크 같은 맛', '아이리쉬카밤': '고소 쌉싸름, 바로 원샷', '소맥드랍 (6잔)': '6잔 한 세트',
     '선셋펀치': '상큼한 과일 탄산', '플로리다': '새콤 상큼한 시트러스', '셜리템플': '달콤한 생강 탄산',
@@ -2562,8 +2562,13 @@
   function normMenu(v) {
     if (!v || !Array.isArray(v.cats) || !v.cats.length) return DEFAULT_MENU;
     return v.cats.slice(0, 20).map((c, ci) => ({ k: String(c.k || 'c' + ci).slice(0, 12), name: String(c.name || '').slice(0, 20), en: String(c.en || '').slice(0, 20), icon: c.icon || 'cocktail', note: c.note ? String(c.note).slice(0, 60) : '',
-      items: (Array.isArray(c.items) ? c.items : []).slice(0, 60).map((it, i) => ({ id: String(it.id || (c.k + '-' + i)).slice(0, 24), name: String(it.name || '').slice(0, 24), price: Math.max(0, it.price | 0),
-        bottle: it.bottle ? Math.max(0, it.bottle | 0) : 0, abv: String(it.abv || MENU_ABV[String(it.name || '')] || '').slice(0, 8), group: it.group ? String(it.group).slice(0, 24) : '', desc: String(it.desc != null ? it.desc : (MENU_DESC[String(it.name || '')] || '')).slice(0, 60), whisky: !!it.whisky, soldout: !!it.soldout, rec: !!it.rec, first: it.first === undefined ? FIRST_PICKS.includes(String(it.name || '')) : !!it.first })).filter(it => it.name) }));
+      items: addNew(c, (Array.isArray(c.items) ? c.items : []).slice(0, 60).map((it, i) => ({ id: String(it.id || (c.k + '-' + i)).slice(0, 24), name: String(it.name || '').slice(0, 24), price: Math.max(0, it.price | 0),
+        bottle: it.bottle ? Math.max(0, it.bottle | 0) : 0, abv: String(it.abv || MENU_ABV[String(it.name || '')] || '').slice(0, 8), group: it.group ? String(it.group).slice(0, 24) : '', desc: String(it.desc != null ? it.desc : (MENU_DESC[String(it.name || '')] || '')).slice(0, 60), whisky: !!it.whisky, soldout: !!it.soldout, rec: !!it.rec, first: it.first === undefined ? FIRST_PICKS.includes(String(it.name || '')) : !!it.first })).filter(it => it.name)) }));
+  }
+  // 저장된 메뉴판에 아직 없는 새 메뉴 자동 추가 (데드 2026-10-27)
+  function addNew(c, items) {
+    if (c.k === 'high' && !items.some(it => it.name === '데드')) items.push({ id: 'high-dead', name: '데드', price: 13000, bottle: 0, abv: MENU_ABV['데드'], group: '', desc: MENU_DESC['데드'], whisky: false, soldout: false, rec: false, first: false });
+    return items;
   }
   function watchMenu(cb) {
     if (LIVE) return fs.collection('owner').doc('menu').onSnapshot(d => cb(normMenu(d.exists ? d.data() : null)), () => cb(DEFAULT_MENU));
