@@ -68,7 +68,7 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
 .gbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}.glab{display:block;margin:12px 0 6px;color:var(--glow);font-size:16px}.balcus{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}.balcus input,#gBalQ{font:15px sans-serif;color:var(--ink);background:#140e0f;border:1px solid var(--line);border-radius:6px;padding:8px;width:100%}.gbtns .btn{padding:14px 4px;font-size:16px}
 .ocard.accepted{border-color:#7ee08a}.ocard.done,.ocard.rejected{opacity:.55}
 .ocard .hd{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.ocard .hd b{font-weight:400;font-size:19px}
-.ocard ul{margin:0;padding-left:18px;font-size:17px;line-height:1.5}.ocard .note2{color:#ffd36a;font-size:15px}
+.ocard ul{margin:0;padding-left:18px;font-size:17px;line-height:1.5}.bgline{font-size:15px;color:var(--muted);line-height:1.5}.bgline b{font-weight:400;color:var(--ink)}.bgline.rej{text-decoration:line-through;opacity:.6}.ocard .note2{color:#ffd36a;font-size:15px}
 .obtns{display:flex;gap:8px;flex-wrap:wrap}.obtns .btn{flex:1;min-width:90px}
 .badge{display:inline-block;min-width:22px;padding:2px 7px;border-radius:999px;background:#ff5a4a;color:#fff;font-size:14px;text-align:center;margin-left:6px}
 .medit{display:grid;gap:6px}.mrow2{display:grid;grid-template-columns:1fr 84px auto auto;gap:6px;align-items:center}
@@ -111,6 +111,7 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
       <button class="btn primary" id="alertOn">🔔 주문 알림 소리 켜기</button>
       <p class="sub" id="alertState">주문이 들어오면 '띵동' 소리와 진동이 울려요. 이 화면을 켜둔 채로 두세요.</p>
       <div class="list" id="orders"></div>
+      <details class="pastbox" id="byGuestBox"><summary id="byGuestSum">👥 손님별 주문 내역 (눌러서 펼치기)</summary><div class="list" id="byGuest" style="margin-top:8px"></div></details>
       <details><summary class="sub" style="cursor:pointer">휴대폰 잠금화면 알림 (ntfy 앱) 설정</summary>
         <div style="display:grid;gap:8px;margin-top:8px">
           <p class="sub" style="font-size:14px">1) 플레이스토어/앱스토어에서 'ntfy' 앱 설치 → 2) 앱에서 + 눌러 아래 채널 이름으로 구독 → 3) 저장 후 '테스트 알림'. 두 분 휴대폰 모두 같은 채널로 구독하면 둘 다 울려요.</p>
@@ -572,6 +573,7 @@ $('alertOn').onclick = () => { try { const AC = window.AudioContext || window.we
   $('alertOn').textContent = '🔔 알림 켜짐 (테스트 소리 다시 듣기)'; $('alertState').textContent = '켜졌어요. 화면이 꺼지지 않게 해둘게요. 다른 앱을 쓰거나 화면을 끄면 소리가 안 나니, 잠금화면 알림(ntfy)도 같이 쓰세요.'; };
 function seatOf(gid){ if (!gid) return ''; const p = N.placeGuests(N.onScreen(guestsNow, true), seats).find(x => x.g.id === gid); return p && p.slot ? seatName(p.slot.code) : ''; }
 function renderOrders(){
+  renderByGuest();
   const el = $('orders'); el.innerHTML = '';
   const nNew = ordersNow.filter(o => o.status === 'new').length; $('newCount').hidden = !nNew; $('newCount').textContent = nNew;
   document.title = nNew ? `(${nNew}) 새 주문 · 낯선 사장` : '낯선 사장 전용';
@@ -616,6 +618,28 @@ function renderOrders(){
       all.disabled = true; try { for (const o of ordersNow) await N.deleteOrder(o.id); ordersNow = []; renderOrders(); } catch (e) { all.textContent = '일부 삭제 실패 · 다시 눌러주세요'; all.disabled = false; } };
     inner.appendChild(all); el.appendChild(det);
   }
+}
+// 손님별 주문 내역 (오늘 영업일 · 호출 제외 · 거절은 줄 긋고 합계에서 뺌)
+function renderByGuest(){
+  const el = $('byGuest'), box = $('byGuestBox'); if (!el) return; el.innerHTML = '';
+  const os = (ordersNow || []).filter(o => o.kind !== 'call');
+  const grp = new Map();
+  os.forEach(o => { const k = o.gid || ('n:' + (o.nick || '손님')); if (!grp.has(k)) grp.set(k, { gid: o.gid, nick: o.nick || '손님', list: [] }); grp.get(k).list.push(o); });
+  const sum = $('byGuestSum'), lab = `👥 손님별 주문 내역 · ${grp.size}명`;
+  sum.textContent = lab + (box.open ? '' : ' (눌러서 펼치기)'); box.ontoggle = () => { sum.textContent = lab + (box.open ? '' : ' (눌러서 펼치기)'); };
+  if (!grp.size) { el.innerHTML = '<p class="sub">오늘 주문한 손님이 아직 없어요.</p>'; return; }
+  const last = g => Math.max(...g.list.map(o => o.ms));
+  [...grp.values()].sort((a, b) => last(b) - last(a)).forEach(g => {
+    const ok = g.list.filter(o => o.status !== 'rejected'), total = ok.reduce((a, o) => a + o.total, 0);
+    const per = {}; ok.forEach(o => o.items.forEach(it => { per[it.name] = (per[it.name] || 0) + it.qty; }));
+    const gs = guestsNow.find(x => x.id === g.gid), seat = seatOf(g.gid), gone = gs && gs.left;
+    const st = { new: '새 주문', accepted: '만드는 중', done: '완료', rejected: '거절' };
+    const c = document.createElement('div'); c.className = 'ocard';
+    c.innerHTML = `<div class="hd"><b>${seat ? seat + ' · ' : ''}${escO(g.nick)}${gone ? ' 🚪' : ''}</b><small>${ok.length}건 · ${wonO(total)}</small></div>`
+      + `<div style="font-size:17px">${Object.entries(per).map(([n, q]) => `${escO(n)} ×${q}`).join(', ') || '(거절된 주문만 있어요)'}</div>`
+      + [...g.list].sort((a, b) => a.ms - b.ms).map(o => `<div class="bgline${o.status === 'rejected' ? ' rej' : ''}">${new Date(o.ms).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} · <b>${o.items.map(it => `${escO(it.name)} ×${it.qty | 0}`).join(', ')}</b> · ${st[o.status] || ''}${o.note ? ` · 요청: ${escO(o.note)}` : ''}</div>`).join('');
+    el.appendChild(c);
+  });
 }
 const escO = t => String(t).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
 function startOrders(){
