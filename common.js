@@ -2380,6 +2380,19 @@
     if (LIVE) { await fs.collection('coupons').doc(code).update({ status: 'used', usedDay: bizDate(), usedAt: firebase.firestore.FieldValue.serverTimestamp() }); return; }
     const all = lsGet('notsun-coupons', {}); if (all[code]) { all[code].status = 'used'; all[code].usedDay = bizDate(); lsSet('notsun-coupons', all); ping(); }
   }
+  // 사장: 사용 완료된 쿠폰 정리 (오늘 사용분은 남김 — 같은 날 재발급 방지)
+  async function clearUsedCoupons(dryRun) {
+    const today = bizDate();
+    if (LIVE) {
+      const sn = await fs.collection('coupons').where('status', '==', 'used').get();
+      const ids = sn.docs.filter(d => (d.data().usedDay || '') < today).map(d => d.id);
+      if (dryRun) return ids.length;
+      for (let i = 0; i < ids.length; i += 400) { const b = fs.batch(); ids.slice(i, i + 400).forEach(id => b.delete(fs.collection('coupons').doc(id))); await b.commit(); }
+      return ids.length;
+    }
+    const all = lsGet('notsun-coupons', {}); const ids = Object.keys(all).filter(k => all[k].status === 'used' && (all[k].usedDay || '') < today);
+    if (!dryRun) { ids.forEach(k => delete all[k]); lsSet('notsun-coupons', all); ping(); } return ids.length;
+  }
   // 손님: 내 쿠폰 (이 휴대폰의 익명 열쇠 기준)
   function watchMyCoupons(cb) {
     let off = () => {}, dead = false;
@@ -2871,5 +2884,5 @@
   }
 
   global.Notsun = { setGuestLeft, resetDay, watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, horseSprite, raceProg, raceInfo, RACE_T0, BAL_QS, OX_QS, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, LOOK_THEMES, FITS, COS_DESC, issueLegendCoupon, BOTTOMS, ACCS, HAIR_X, TOPS, EYES, ACC_X, SHOES, PANTS_COLORS, EX_RE, setGuestCos, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
-    shopOpen, STORY, balSet, muteSfx: v => { SFX.mute = !!v; }, BAL_SEC, setCatVisit, watchCatVisit, petCat, safeReload, netErr, newOrderId: () => LIVE ? fs.collection('orders').doc().id : 'o' + Date.now(), watchCatPets, THEMES, resolveTheme, costumeFor, drawCostume, cosSeed, seasonCostume, rollSeason, cosOf, OWNER_COS, ownerCostume, cardAura, AURA_FX, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, announceServed, drinkColor, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, saveGameEnd, REQ_NEED, reqTally, requestGame, markReqDone, AUTO_ORDER, AUTO_LABEL, autoInfo, autoSpec, saveAuto, notifyOwner, updateLook, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
+    shopOpen, STORY, balSet, muteSfx: v => { SFX.mute = !!v; }, BAL_SEC, setCatVisit, watchCatVisit, petCat, safeReload, netErr, newOrderId: () => LIVE ? fs.collection('orders').doc().id : 'o' + Date.now(), watchCatPets, THEMES, resolveTheme, costumeFor, drawCostume, cosSeed, seasonCostume, rollSeason, cosOf, OWNER_COS, ownerCostume, cardAura, AURA_FX, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, clearUsedCoupons, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, announceServed, drinkColor, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, saveGameEnd, REQ_NEED, reqTally, requestGame, markReqDone, AUTO_ORDER, AUTO_LABEL, autoInfo, autoSpec, saveAuto, notifyOwner, updateLook, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
 })(window);

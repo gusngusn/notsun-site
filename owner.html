@@ -194,6 +194,7 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
       <p class="sub">럭키 손님에게 자동으로 발급돼요. 다음 방문부터 30일 동안 쓸 수 있어요. 손님이 휴대폰 쿠폰 화면을 보여주면 코드를 확인하고 '사용 처리'를 누르세요.</p>
       <input id="couponFind" type="text" maxlength="8" placeholder="쿠폰번호나 닉네임으로 찾기" aria-label="쿠폰 찾기">
       <div class="list" id="coupons"></div>
+      <button type="button" class="btn small" id="clearUsed" style="margin-top:10px">🧹 사용된 쿠폰 정리</button>
     </section>
 
     <section id="menuSec">
@@ -561,6 +562,20 @@ function renderCoupons(){
   });
 }
 $('couponFind').addEventListener('input', renderCoupons);
+$('clearUsed').onclick = async () => {
+  const b = $('clearUsed');
+  if (b.dataset.sure !== '1') {
+    b.disabled = true; let n = 0; try { n = await N.clearUsedCoupons(true); } catch (e) { b.textContent = '불러오기 실패'; b.disabled = false; return; }
+    b.disabled = false;
+    if (!n) { b.textContent = '정리할 쿠폰이 없어요'; setTimeout(() => { b.textContent = '🧹 사용된 쿠폰 정리'; }, 3000); return; }
+    b.dataset.sure = '1'; b.textContent = `사용 완료 ${n}장 지울까요? (되돌릴 수 없어요)`;
+    setTimeout(() => { if (!b.disabled) { b.dataset.sure = ''; b.textContent = '🧹 사용된 쿠폰 정리'; } }, 5000); return;
+  }
+  b.disabled = true; b.dataset.sure = '';
+  try { const n = await N.clearUsedCoupons(false); b.textContent = `${n}장 정리했어요`; }
+  catch (e) { b.textContent = '정리 실패 (보안 규칙 확인 필요)'; }
+  setTimeout(() => { b.disabled = false; b.textContent = '🧹 사용된 쿠폰 정리'; }, 3000);
+};
 function startCoupons(){ N.watchCoupons(list => { couponsNow = list; renderCoupons(); }); }
 // ---------- 주문 ----------
 var pastOpen = false, ordersNow = [], seenOrders = null, alertOk = false, wakeLock = null;
