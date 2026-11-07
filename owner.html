@@ -238,6 +238,8 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
     <section id="guestSec">
       <h2>오늘 손님 관리</h2>
       <p class="sub">🎂축하: 스크린에 생일 축하 띄우기(🎂생일 표시는 손님이 체크한 것) · ★한줄: 오늘의 한 줄 · VIP: 금테 표시 · 숨기기: 스크린에서 사라짐</p>
+      <div class="chips"><button class="chip" id="dupClean" type="button" hidden>🧹 중복 캐릭터 정리</button></div>
+      <p class="sub" id="dupNote" style="font-size:13px" hidden></p>
       <div class="list" id="guests"></div>
     </section>
 
@@ -438,12 +440,25 @@ $('saveOwners').onclick = async () => {
 
 // 오늘 손님
 function guestSum(gid){ if (!ordersNow) return ''; const os = ordersNow.filter(o => o.gid === gid && o.kind !== 'call' && o.status !== 'rejected'); if (!os.length) return ''; return ` · 🧾${os.reduce((a, o) => a + o.total, 0).toLocaleString()}원`; }
+// 중복 캐릭터: 같은 휴대폰(uid) 또는 같은 닉네임으로 앉아 있는 캐릭터 중 가장 최근 것만 남기고 나머지
+function dupGuests(list){ const keep = new Map(), out = [];
+  [...list].reverse().forEach(g => { if (g.left || g.npc) return; const ks = [g.uid ? 'u:' + g.uid : '', 'n:' + String(g.nick || '').trim().toLowerCase()].filter(Boolean);
+    if (ks.some(k => keep.has(k))) out.push(g); else ks.forEach(k => keep.set(k, g.id)); });
+  return out; }
+function renderDup(list){ const d = dupGuests(list), b = $('dupClean'), n = $('dupNote'); b.hidden = !d.length && b.dataset.sure !== '1'; n.hidden = !d.length;
+  if (d.length) n.textContent = `⚠ 같은 휴대폰·같은 닉네임으로 여러 번 앉은 캐릭터 ${d.length}개 (최근 것만 남기고 정리하면 스크린에서 내려가요. 주문 기록은 그대로)`;
+  if (b.dataset.sure !== '1') b.textContent = `🧹 중복 캐릭터 ${d.length}개 정리`; }
+$('dupClean').onclick = async () => { const b = $('dupClean'), d = dupGuests(guestsNow); if (!d.length) return;
+  if (b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = `${d.length}개 내릴까요? 한 번 더 누르기`; setTimeout(() => { if (b.dataset.sure === '1') { b.dataset.sure = ''; renderDup(guestsNow); } }, 4000); return; }
+  b.dataset.sure = ''; b.disabled = true; b.textContent = '정리 중…'; let fail = 0;
+  for (const g of d) { try { await N.setGuestLeft(g.id, true); } catch (e) { fail++; } }
+  b.disabled = false; b.textContent = fail ? `정리 실패 ${fail}개` : '✅ 정리했어요'; setTimeout(() => renderDup(guestsNow), 2500); };
 function renderGuests(list){
-  const el = $('guests'); el.innerHTML = '';
+  const el = $('guests'); el.innerHTML = ''; renderDup(list); const dupIds = new Set(dupGuests(list).map(g => g.id));
   if (!list.length) { el.innerHTML = '<p class="sub">아직 오늘 등록한 손님이 없어요.</p>'; return; }
   [...list].reverse().forEach(g => {
     const r = document.createElement('div'); r.className = 'row';
-    const t = document.createElement('span'); const tr = N.tierOf(g.v); t.textContent = `${g.nick}${tr ? ' (' + (g.v | 0) + '회)' : ''}${g.talk === 1 ? ' 💬' : g.talk === 2 ? ' 🌙' : ''}${g.bd ? ' 🎂생일' : ''}${guestSum(g.id)} · ${g.msg || '(한 줄 없음)'}`;
+    const t = document.createElement('span'); const tr = N.tierOf(g.v); t.textContent = `${g.nick}${tr ? ' (' + (g.v | 0) + '회)' : ''}${g.talk === 1 ? ' 💬' : g.talk === 2 ? ' 🌙' : ''}${g.bd ? ' 🎂생일' : ''}${guestSum(g.id)}${dupIds.has(g.id) ? ' · ⚠중복' : ''} · ${g.msg || '(한 줄 없음)'}`;
     const tm = document.createElement('small'); tm.textContent = g.ms ? new Date(g.ms).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : '';
     // 계산 완료 → 스크린에서 캐릭터 퇴장 (기록은 남고, 실수면 다시 앉히기)
     const b = document.createElement('button'); b.className = 'btn small' + (g.left ? '' : ' pay'); b.textContent = g.left ? '↩ 다시 앉히기' : '💳 계산완료';

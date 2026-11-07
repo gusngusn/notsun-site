@@ -2186,6 +2186,18 @@
     const id = 'd' + Date.now(), list = lsGet(DEMO_KEY(day), []); list.push({ ...doc, uid: demoUid(), ms: Date.now(), ms0: Date.now(), id }); lsSet(DEMO_KEY(day), list); ping();
     return { day, id, editable: true };
   }
+  // 이 기기(uid)로 오늘 이미 앉은 캐릭터 찾기 (있으면 새로 만들지 않고 이어서 쓰기)
+  async function findMyGuest() {
+    const day = bizDate();
+    if (LIVE) {
+      const uid = await guestUid(); if (!uid) return null;
+      const snap = await withTimeout(fs.collection('days').doc(day).collection('guests').where('uid', '==', uid).get(), 8000, 'get');
+      const l = snap.docs.map(d => ({ ...d.data(), id: d.id })).filter(g => !g.left).sort((a, b) => (b.ts && b.ts.toMillis ? b.ts.toMillis() : 0) - (a.ts && a.ts.toMillis ? a.ts.toMillis() : 0));
+      return l[0] ? { ...l[0], day } : null;
+    }
+    const uid = demoUid(), l = lsGet(DEMO_KEY(day), []).filter(g => g.uid === uid && !g.left);
+    return l.length ? { ...l[l.length - 1], day } : null;
+  }
   // 손님 간단 설정 (대화 아이콘, 술 이름 표시)
   async function updatePrefs(day, id, pr) {
     const up = {};
@@ -2218,7 +2230,9 @@
   // 안전한 새로고침: 사이트가 정상으로 열릴 때만 (인터넷이 불안할 때 브라우저 오류 화면에 멈추지 않게)
   async function safeReload(page) { try { const r = await fetch((page || location.pathname.split('/').pop() || 'index.html') + '?ping=' + Date.now(), { cache: 'no-store' }); const t = r.ok ? await r.text() : ''; if (r.ok && /common\.js/.test(t)) { location.reload(); return true; } } catch (e) {} return false; }
   function watchGuests(day, cb, all) {
-    const keep = l => all ? l : l.filter(g => valid(g) && clean(g.nick) && clean(g.msg));
+    // 같은 기기(uid)가 오늘 여러 번 앉았으면 스크린에는 가장 최근 캐릭터 하나만 (기록은 그대로, 리모컨에선 전부 보임)
+    const oneEach = l => { const last = new Map(); l.forEach(g => { if (g.uid && !g.left) last.set(g.uid, g); }); return l.filter(g => !g.uid || g.left || last.get(g.uid) === g); };
+    const keep = l => all ? l : oneEach(l.filter(g => valid(g) && clean(g.nick) && clean(g.msg)));
     if (LIVE) {
       return relisten((err, ok) => fs.collection('days').doc(day).collection('guests').orderBy('ts').limit(300).onSnapshot(snap => { ok();
         cb(keep(snap.docs.map(d => { const g = d.data(); return { ...g, id: d.id, ms: g.mts ? g.mts.toMillis() : g.ts ? g.ts.toMillis() : Date.now() }; })));
@@ -2883,6 +2897,6 @@
     lsSet('notsun-owner-live', { who, msg, ms: Date.now() }); ping();
   }
 
-  global.Notsun = { setGuestLeft, resetDay, watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, horseSprite, raceProg, raceInfo, RACE_T0, BAL_QS, OX_QS, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, LOOK_THEMES, FITS, COS_DESC, issueLegendCoupon, BOTTOMS, ACCS, HAIR_X, TOPS, EYES, ACC_X, SHOES, PANTS_COLORS, EX_RE, setGuestCos, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
+  global.Notsun = { setGuestLeft, findMyGuest, resetDay, watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, horseSprite, raceProg, raceInfo, RACE_T0, BAL_QS, OX_QS, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, LOOK_THEMES, FITS, COS_DESC, issueLegendCoupon, BOTTOMS, ACCS, HAIR_X, TOPS, EYES, ACC_X, SHOES, PANTS_COLORS, EX_RE, setGuestCos, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
     shopOpen, STORY, balSet, muteSfx: v => { SFX.mute = !!v; }, BAL_SEC, setCatVisit, watchCatVisit, petCat, safeReload, netErr, newOrderId: () => LIVE ? fs.collection('orders').doc().id : 'o' + Date.now(), watchCatPets, THEMES, resolveTheme, costumeFor, drawCostume, cosSeed, seasonCostume, rollSeason, cosOf, OWNER_COS, ownerCostume, cardAura, AURA_FX, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, clearUsedCoupons, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, announceServed, drinkColor, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, saveGameEnd, REQ_NEED, reqTally, requestGame, markReqDone, AUTO_ORDER, AUTO_LABEL, autoInfo, autoSpec, saveAuto, notifyOwner, updateLook, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
 })(window);
