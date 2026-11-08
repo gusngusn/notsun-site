@@ -967,12 +967,14 @@
   const L = (layer, xs, foot, extra) => xs.map(x => ({ x, foot, layer, ...extra }));
   const SLOTS = {
     stool: L('stool', [20, 45, 70, 95, 120, 145, 170], 210, { sit: true, zone: 'bar' }),
-    gBack: L('gBack', [232, 262, 292, 322, 352, 382, 412], 180, { zone: 'g' }),
-    gIn: L('gIn', [262, 318, 374], 216, { zone: 'g' }),
-    // ㄴ은 ㄱ을 180° 돌린 모양 (가운데 x=337 기준 대칭) → 자리도 ㄱ과 같은 7+3
-    nFront: L('nFront', [262, 292, 322, 352, 382, 412, 442], 268, { zone: 'n' }),
-    nLeft: [],
-    nIn: L('nIn', [300, 356, 412], 246, { zone: 'n' }),
+    // 2026-11-08 사장님 그림: 왼쪽 ㄴ(세로판 왼쪽·아래판 오른쪽으로) 10석 + 오른쪽 ㄱ(윗판·세로판 오른쪽) 10석, 나란히
+    // ㄱ: 위 3 · 왼쪽 위 모서리 1 (뒤) / 안쪽 3 · 오른쪽 3
+    gBack: [...L('gBack', [376, 404, 432], 183, { zone: 'g' }), ...L('gBack', [340], 197, { zone: 'g' })],
+    gIn: [...L('gIn', [372, 404], 225, { zone: 'g' }), ...L('gIn', [404], 251, { zone: 'g' }), ...L('gIn', [464, 464, 464], 0, { zone: 'g' }).map((p, i) => ({ ...p, foot: [217, 237, 257][i] }))],
+    // ㄴ: 아래 3 (앞) / 위 1 (뒤) · 왼쪽 3 · 안쪽 3
+    nFront: L('nFront', [254, 286, 318], 270, { zone: 'n' }),
+    nLeft: L('gBack', [247], 186, { zone: 'n' }),
+    nIn: [...L('nIn', [224, 224, 224], 0, { zone: 'n' }).map((p, i) => ({ ...p, foot: [206, 226, 246][i] })), ...L('nIn', [272], 212, { zone: 'n' }), ...L('nIn', [272, 304], 234, { zone: 'n' })],
     standBack: L('standBack', [247, 287, 327, 367, 407, 447], 162, { zone: 'stand' }),
     standFront: L('standFront', [20, 47, 74, 101, 128, 155, 182], 266, { zone: 'stand' })
   };
@@ -1201,17 +1203,18 @@
       legs.forEach(lx => px(lx, y1 + 5, 2, 12, LEG));
     }
     // ㄱ과 ㄴ은 (337, 209) 기준 180° 대칭: 윗판·아랫판은 같은 길이, 다리도 같은 길이
-    const A = [214, 168, 460, 184], B = [440, 184, 460, 226];   // ㄱ
-    const C = [214, 192, 234, 234], D = [214, 234, 460, 250];   // ㄴ
+    // 2026-11-08 사장님 그림대로: 왼쪽 ㄴ + 오른쪽 ㄱ 나란히
+    const A = [352, 174, 452, 190], B = [432, 190, 452, 246];   // ㄱ (윗판 · 오른쪽 세로판)
+    const C = [236, 178, 258, 226], D = [236, 226, 336, 242];   // ㄴ (왼쪽 세로판 · 아랫판)
     const lamp = (lx, ly) => { px(lx - 4, ly - 12, 9, 2, '#efe2c0'); px(lx, ly - 10, 1, 9, '#c9b48a'); px(lx - 3, ly - 1, 7, 2, '#c9b48a'); };
     const card = (mx, my) => { px(mx, my - 7, 6, 8, '#efe9de'); px(mx + 1, my - 6, 4, 3, '#3a3a3a'); };
     function tableBack() {
-      slab(A, [216, 456]); slab(B, [442, 456]); slab(C, [216, 230]);
-      lamp(276, 178); lamp(396, 178); lamp(450, 210); lamp(224, 218);
-      card(334, 180); card(445, 196); card(223, 230);
+      slab(A, [354, 430]); slab(B, [434, 448]); slab(C, [238, 254]);
+      lamp(372, 184); lamp(412, 184); lamp(442, 224); lamp(247, 202);
+      card(392, 187); card(441, 240); card(245, 220);
     }
-    function tableFront() { slab(D, [216, 290, 382, 456]); lamp(278, 244); lamp(398, 244); card(340, 246); }
-    const glowsAt = [[44, 133], [150, 133], [276, 167], [396, 167], [450, 199], [224, 207], [278, 233], [398, 233]];
+    function tableFront() { slab(D, [238, 290, 332]); lamp(270, 236); lamp(318, 236); card(294, 239); }
+    const glowsAt = [[44, 133], [150, 133], [372, 173], [412, 173], [442, 213], [247, 191], [270, 225], [318, 225]];
     const blit = (sp, cx, foot) => HIRES ? b.drawImage(hiSprite(sp), Math.round(cx - CX - 2), Math.round(foot - sp.height + 1), sp.width, sp.height) : b.drawImage(sp, Math.round(cx - CX - 2), Math.round(foot - sp.height + 1));
     function bubble(ctx, s, ax, ay, text, kind, age, icon) {
       const pop = Math.min(1, age / 220), k = 0.6 + 0.4 * (1 - (1 - pop) ** 3);
@@ -1526,7 +1529,7 @@
       if (hiFx.length) { hiFx.forEach(fn => fn(ctx, s)); hiFx.length = 0; }
       if (frontFx.length) { ctx.save(); const P2 = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x * s, y * s, w * s, h * s); }; frontFx.forEach(fn => fn(P2)); ctx.restore(); }   // 잔·반짝임은 고양이보다 앞에
       wallSign(ctx, s, t);
-      cats.forEach((c, ci) => { if (c.st === 'jump' || c.lx === undefined) return; ctx.save(); ctx.font = `${6.4 * s}px "Do Hyeon", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';   // 고양이 이름표 (머리 바로 위, 목걸이 색 테두리)
+      cats.forEach((c, ci) => { if (c.st === 'jump' || c.lx === undefined || c._hid) return; ctx.save(); ctx.font = `${6.4 * s}px "Do Hyeon", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';   // 고양이 이름표 (머리 바로 위, 목걸이 색 테두리)
         const tw = ctx.measureText(c.name).width + 5 * s, th = 8.4 * s, cy = Math.max(th / 2 + s, (c.ly - 6.2) * s), cx = Math.max(tw / 2 + 2 * s, Math.min(W * s - tw / 2 - 2 * s, c.lx * s)), kc = CAT_PAL[ci].K;
         ctx.fillStyle = 'rgba(20,12,14,.78)'; ctx.beginPath(); ctx.roundRect(cx - tw / 2, cy - th / 2, tw, th, 4 * s); ctx.fill(); ctx.strokeStyle = kc; ctx.lineWidth = .8 * s; ctx.stroke();
         const ax = Math.max(cx - tw / 2 + 3 * s, Math.min(cx + tw / 2 - 3 * s, c.lx * s)); ctx.beginPath(); ctx.moveTo(ax - 1.6 * s, cy + th / 2); ctx.lineTo(ax + 1.6 * s, cy + th / 2); ctx.lineTo(ax, cy + th / 2 + 2 * s); ctx.closePath(); ctx.fillStyle = kc; ctx.fill();
@@ -2883,6 +2886,19 @@
   const STORY = { tag: '#낯선아바타', offer: '이 카드를 인스타 스토리에 올리고 직원에게 보여주시면 서비스를 드려요 🍸', note: '계정 태그는 안 해도 괜찮아요 · 친한 친구 공개 스토리도 인정돼요', screen: '캐릭터 카드를 스토리에 올리고 직원에게 보여주시면 작은 서비스를 드려요', on: true };
   // 영업시간 (한국 시간): 금·토 19:00~03:00, 그 외 19:00~01:00 · 앞뒤 30분 여유 (새벽 6시 전은 전날 영업으로 봄)
   const SHOP_HOURS_TEXT = '오후 7시 ~ 새벽 1시 (금·토는 새벽 3시까지)';
+  // 고양이 숨바꼭질 시간표 (손님 폰 · 스크린 공용, 2026-11-08): 영업시간(19~03시) 매시 10분·40분에 3분 동안, 숨는 곳은 영업일+회차로 정해짐
+  const CAT_HIDE = (() => {
+    const SPOTS = [{ label: '가운데 조명 옆', x: 262, y: 74 }, { label: '술장 위 창문 옆', x: 152, y: 41 }, { label: '오른쪽 벽 장식 아래', x: 456, y: 128 }, { label: '왼쪽 아래 바 의자 옆', x: 96, y: 238 }];
+    const DUR = 180000, HRS = [19, 20, 21, 22, 23, 0, 1, 2];
+    const kst = ms => new Date(ms + 9 * 3600e3);
+    const hsh = s => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 999983, 17);
+    function slotAt(start){ const d = new Date(start + 3 * 3600e3).toISOString().slice(0, 10), k = hsh(d + '|' + start), spot = k % SPOTS.length, cat = (Math.floor(start / 1800000)) % 2;
+      return { start, end: start + DUR, spot, cat, name: cat ? '록이' : '말숙이', k }; }
+    function nextStart(now){ for (let t = Math.floor((now - DUR - 600000) / 1800000) * 1800000 + 600000; t < now + 26 * 3600e3; t += 1800000) { const k = kst(t); if (HRS.includes(k.getUTCHours()) && t + DUR > now && shopOpen(t).open) return t; } return now + 3600e3; }   // 매시 10분·40분
+    function now(ms){ ms = ms || Date.now(); const s = nextStart(ms), r = slotAt(s); r.on = ms >= s && ms < s + DUR; r.next = r.on ? nextStart(s + DUR) : s; return r; }
+    function order(r){ return SPOTS.map((_, i) => i).sort((a, b) => hsh(r.k + 'o' + a) - hsh(r.k + 'o' + b)); }
+    return { SPOTS, DUR, now, order };
+  })();
   function shopOpen(now, strict){ const k = new Date((now || Date.now()) + 9 * 3600e3), h = k.getUTCHours() + k.getUTCMinutes() / 60; let dow = k.getUTCDay(); if (h < 6) dow = (dow + 6) % 7;
     const close = dow === 5 || dow === 6 ? 3 : 1, pad = strict ? 0 : 0.5; return { open: h >= 19 - pad || (h < 6 && h < close + pad), text: SHOP_HOURS_TEXT }; }
   const onScreen = (l, keepLeft) => l.filter(g => valid(g) && clean(g.nick) && clean(g.msg) && (keepLeft || !g.left));   // 계산 완료(퇴장)한 손님은 자리에서 뺌
@@ -2898,5 +2914,5 @@
   }
 
   global.Notsun = { setGuestLeft, findMyGuest, resetDay, watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, horseSprite, raceProg, raceInfo, RACE_T0, BAL_QS, OX_QS, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, LOOK_THEMES, FITS, COS_DESC, issueLegendCoupon, BOTTOMS, ACCS, HAIR_X, TOPS, EYES, ACC_X, SHOES, PANTS_COLORS, EX_RE, setGuestCos, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
-    shopOpen, STORY, balSet, muteSfx: v => { SFX.mute = !!v; }, BAL_SEC, setCatVisit, watchCatVisit, petCat, safeReload, netErr, newOrderId: () => LIVE ? fs.collection('orders').doc().id : 'o' + Date.now(), watchCatPets, THEMES, resolveTheme, costumeFor, drawCostume, cosSeed, seasonCostume, rollSeason, cosOf, OWNER_COS, ownerCostume, cardAura, AURA_FX, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, clearUsedCoupons, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, announceServed, drinkColor, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, saveGameEnd, REQ_NEED, reqTally, requestGame, markReqDone, AUTO_ORDER, AUTO_LABEL, autoInfo, autoSpec, saveAuto, notifyOwner, updateLook, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
+    CAT_HIDE, shopOpen, STORY, balSet, muteSfx: v => { SFX.mute = !!v; }, BAL_SEC, setCatVisit, watchCatVisit, petCat, safeReload, netErr, newOrderId: () => LIVE ? fs.collection('orders').doc().id : 'o' + Date.now(), watchCatPets, THEMES, resolveTheme, costumeFor, drawCostume, cosSeed, seasonCostume, rollSeason, cosOf, OWNER_COS, ownerCostume, cardAura, AURA_FX, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, clearUsedCoupons, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, announceServed, drinkColor, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, saveGameEnd, REQ_NEED, reqTally, requestGame, markReqDone, AUTO_ORDER, AUTO_LABEL, autoInfo, autoSpec, saveAuto, notifyOwner, updateLook, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
 })(window);

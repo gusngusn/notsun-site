@@ -145,6 +145,10 @@ details.fold{border:1.5px solid var(--glow);background:linear-gradient(180deg,#2
 .storybox{width:100%;box-sizing:border-box;border:1px solid #7a2a26;background:linear-gradient(180deg,#2a0f10,#1a0b0c);border-radius:14px;padding:14px;display:grid;gap:8px;justify-items:center;text-align:center}.storybox p{margin:0;color:#f3d6c8;font-size:15px;line-height:1.5}.storybox .tg b{font-weight:400;color:#ff9f86;font-family:"Do Hyeon",sans-serif;font-size:18px}.storybox small{color:#b89a90;font-size:12.5px;line-height:1.5}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:8;display:grid;grid-template-columns:repeat(4,1fr);background:#140d0e;border-top:1px solid #3a2a26;padding:4px max(8px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));box-shadow:0 -6px 20px #0008}.bnav[hidden]{display:none}
 .bnav button{background:none;border:0;color:#bfaea6;display:grid;justify-items:center;gap:1px;font-size:21px;padding:6px 0 4px;min-height:54px;font-family:inherit}.bnav button span{font-size:12.5px}.bnav button.on{color:#ffd36a}.bnav button.on span{font-weight:700}
+.solo3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.sbtn{display:grid;justify-items:center;gap:2px;padding:12px 4px;border-radius:12px;border:1px solid var(--line);background:#1e1416;color:var(--ink);font:24px "Do Hyeon",sans-serif;cursor:pointer}.sbtn b{font-weight:400;font-size:16px}.sbtn small{font-size:11.5px;color:var(--muted)}.sbtn.live{border-color:#ffd36a;animation:wcPulse 1.8s ease-in-out infinite}.sbtn.live small{color:#ffd36a}
+.sdim{position:fixed;inset:0;z-index:14;background:#000a}.solop{z-index:16;max-height:88vh;overflow-y:auto}.solop .gopt.on{border-color:var(--glow);background:#2a1d1f;color:#ffe2c4}.sstep{font:12px "DotGothic16",monospace;color:#ff8f7a;letter-spacing:.1em}
+.sres{border:1px solid #ffd36a66;border-radius:12px;padding:12px;background:#1f1710;display:grid;gap:4px}.sres small{color:#ffcf9e;font-size:13px}.sres b{font-weight:400;font-size:30px;color:#ffd36a}.sres span{color:#f2e6dc;font-size:15px;line-height:1.45}
+.stl{text-align:left;display:grid;gap:6px}.stl div{border-left:3px solid #7a2a26;padding:5px 10px;color:#f3d6c8;font-size:16px;background:#20110f}.stl div small{color:#b89a90;margin-left:6px;font-size:12px}.stl .me{border-color:var(--glow)}
 body.hasnav{padding-bottom:74px}body.hasnav .cartbar{bottom:62px}body.hasnav .rcnote{margin-bottom:30px}
 .hubcard{justify-self:start;margin-top:8px;border-color:#ff9f86;color:#ffd9c8}
 .quick5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.quick5 .qk{display:grid;justify-items:center;gap:3px;padding:10px 2px;border:1px solid var(--line);background:#1a1214;border-radius:12px;color:#ece0d6;font-size:20px;min-height:62px}.quick5 .qk span{font-size:12px;white-space:nowrap}.quick5 .qk:disabled{opacity:.5}
@@ -280,6 +284,10 @@ body:has(.catcard) .toast{top:104px}
     <button class="btn primary" id="toMenu2">🍸 메뉴판 · 주문하기</button>
     <div class="row2"><button class="btn" id="lookBtn" type="button" style="white-space:nowrap">✏️ 꾸미기</button><button class="btn" id="cosBtn" type="button" style="white-space:nowrap">🎁 레전드 뽑기</button></div>
     <button class="btn small" id="cosDice" type="button" hidden>🎲 다른 시즌 코스튬으로 다시 굴리기</button>
+    <section class="card solocard" id="soloCard">
+      <h2>🎲 혼자서도 놀거리</h2>
+      <div class="solo3"><button type="button" class="sbtn" data-solo="drink">🍸<b>오늘의 한 잔</b><small>질문 3개로 추천</small></button><button type="button" class="sbtn" data-solo="cat">🐱<b>고양이 찾기</b><small id="catWhen">스크린 숨바꼭질</small></button><button type="button" class="sbtn" data-solo="story">📖<b>한 줄 이어쓰기</b><small>오늘 밤 이야기</small></button></div>
+    </section>
     <div class="reqcard" id="reqCard"><div class="rqh"><b>🎮 하고 싶은 게임 신청</b><small>3명이 모이면 바로 시작해요</small></div><div id="reqList"></div><button class="btn small" id="reqOpen" type="button">+ 게임 고르기</button><div class="rqpick" id="reqPick" hidden></div></div>
     <div class="autocard" id="autoCard" hidden><b id="autoTxt"></b><small>📱 이 화면을 켜두면 게임이 시작될 때 바로 참여할 수 있어요. 화면이 꺼지면 알림을 못 받아요.</small><button class="btn small" id="keepOn" type="button">🔆 화면 켜두기</button></div>
     <section class="card qkcard" id="qkCard">
@@ -343,25 +351,32 @@ body:has(.catcard) .toast{top:104px}
   <div id="gBody"></div>
 </div>
 <button class="gchip" id="gChip" type="button" hidden>🎮 게임 중 · 열기</button>
+<div class="sdim" id="soloDim" hidden></div>
+<div class="gpanel solop" id="soloPanel" hidden role="dialog" aria-label="혼자서도 놀거리">
+  <button class="gx" id="soloClose" type="button" aria-label="닫기">✕</button>
+  <div id="soloBody"></div>
+</div>
 <div class="cartbar" id="cartbar" hidden><button class="btn primary" id="cartOpen"></button></div>
 <div class="sheet" id="wifiSheet" hidden role="dialog" aria-label="와이파이"><div class="in" style="justify-items:stretch;width:min(420px,100%)"><div class="wifi" data-wifi></div><button class="btn" type="button" id="wifiClose">닫기</button></div></div>
 <nav class="bnav" id="bnav" hidden aria-label="빠른 이동"><button type="button" data-nav="menu">🍸<span>메뉴</span></button><button type="button" data-nav="seat">🪑<span>내 자리</span></button><button type="button" data-nav="call">🙋<span>호출</span></button><button type="button" data-nav="card">📸<span>카드</span></button></nav>
 <div class="sheet" id="wcSheet" hidden role="dialog" aria-label="화장실 위치 안내">
   <div class="in">
     <h3>🚻 화장실 가는 길</h3>
-        <svg id="wcMap" viewBox="0 0 340 300" role="img" aria-label="낯선에서 나와 건물 바깥 길을 따라 돌아 화장실로 가는 길">
-      <rect x="18" y="16" width="232" height="274" rx="6" fill="#1d1f24"></rect>
-      <rect x="58" y="42" width="244" height="182" rx="4" fill="#0f0b0c" stroke="#5a4440" stroke-width="2"></rect>
-      <path d="M250 16 H18 V290 H240" fill="none" stroke="#ffb27a" stroke-width="2.5" stroke-linejoin="round"></path>
-      <path d="M302 78 H336 M302 224 H336" stroke="#5a4440" stroke-width="2" stroke-dasharray="4 4"></path>
-      <text x="140" y="25" fill="#9aa3b2" font-size="8" text-anchor="middle">바깥 길</text><text x="150" y="286" fill="#9aa3b2" font-size="8" text-anchor="middle">바깥 길</text>
-      <rect x="198" y="46" width="100" height="36" rx="4" fill="#3a2418" stroke="#ffd36a" stroke-width="2"></rect>
-      <text x="248" y="69" fill="#ffd36a" font-size="15" text-anchor="middle" font-family="Do Hyeon, sans-serif">낯선 ◢</text>
-      <text x="180" y="138" fill="#5a4440" font-size="12" text-anchor="middle">건물</text>
-      <rect id="wcR1" x="90" y="222" width="42" height="32" rx="3" fill="#1a1516" stroke="#5a4440" stroke-width="1.5"></rect>
-      <text x="111" y="236" fill="#8a7a72" font-size="8" text-anchor="middle">다른</text><text x="111" y="246" fill="#8a7a72" font-size="8" text-anchor="middle">화장실</text>
-      <rect id="wcR2" x="184" y="222" width="58" height="30" rx="3" fill="#132a1c" stroke="#7ee08a" stroke-width="2.5"></rect>
-      <text x="213" y="241" fill="#e8ffe8" font-size="10" text-anchor="middle">낯선 화장실</text>
+        <svg id="wcMap" viewBox="0 0 312 312" role="img" aria-label="낯선에서 나와 건물 바깥 길을 왼쪽으로 돌아 다마·장효를 지나 두 번째 문인 낯선 화장실로 가는 길">
+      <path d="M4 10 H264 V50 H304 V298 H4 Z" fill="#1d1f24"></path>
+      <path d="M264 10 H4 V304 H196" fill="none" stroke="#ffb27a" stroke-width="2.5" stroke-linejoin="round"></path>
+      <path d="M36 50 H300 V286 H238 V243 H36 Z" fill="#0f0b0c" stroke="#5a4440" stroke-width="2"></path>
+      <text x="140" y="23" fill="#9aa3b2" font-size="8" text-anchor="middle">바깥 길</text><text x="80" y="300" fill="#9aa3b2" font-size="8" text-anchor="middle">바깥 길</text>
+      <g font-family="Do Hyeon, sans-serif" text-anchor="middle">
+        <rect x="38" y="52" width="94" height="84" fill="#1a1516" stroke="#3a2a2b"></rect><line x1="92" y1="52" x2="92" y2="136" stroke="#3a2a2b"></line><text x="85" y="100" fill="#8a7a72" font-size="15">다마</text>
+        <rect x="38" y="138" width="84" height="103" fill="#1a1516" stroke="#3a2a2b"></rect><text x="80" y="195" fill="#8a7a72" font-size="15">장효</text>
+        <line x1="122" y1="241" x2="122" y2="270" stroke="#5a4440" stroke-width="2"></line>
+        <rect x="168" y="176" width="66" height="62" fill="#1a1516" stroke="#3a2a2b"></rect><text x="201" y="212" fill="#8a7a72" font-size="15">향연</text>
+        <rect x="240" y="170" width="58" height="114" fill="#1a1516" stroke="#3a2a2b"></rect><text x="269" y="232" fill="#8a7a72" font-size="15">기주</text>
+        <rect x="226" y="52" width="72" height="48" rx="3" fill="#3a2418" stroke="#ffd36a" stroke-width="2"></rect><text x="262" y="81" fill="#ffd36a" font-size="15">낯선</text>
+        <rect id="wcR1" x="68" y="245" width="38" height="32" rx="3" fill="#1a1516" stroke="#5a4440" stroke-width="1.5"></rect><text x="87" y="259" fill="#8a7a72" font-size="8">① 다른</text><text x="87" y="270" fill="#8a7a72" font-size="8">화장실</text>
+        <rect id="wcR2" x="156" y="245" width="48" height="40" rx="3" fill="#132a1c" stroke="#7ee08a" stroke-width="2.5"></rect><text x="180" y="262" fill="#e8ffe8" font-size="10">② 낯선</text><text x="180" y="275" fill="#e8ffe8" font-size="10">화장실</text>
+      </g>
       <path id="wcBg" fill="none" stroke="#7ee08a" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1 7" opacity=".45"></path><path id="wcTrail" fill="none" stroke="#7ee08a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"></path>
       <circle id="wcGoal" r="10" fill="none" stroke="#7ee08a" stroke-width="2" opacity="0"></circle>
       <g id="wcMe"><circle r="7" fill="#ffd36a" stroke="#1a0f10" stroke-width="2"></circle><text y="20" fill="#fff4d8" font-size="9" text-anchor="middle">나</text></g>
@@ -1072,8 +1087,9 @@ $('cartOpen').onclick = () => { const me = loadMe(); $('cartNickWrap').hidden = 
 $('cartClose').onclick = () => { $('cartSheet').hidden = true; };
 // 화장실 가는 길: 낯선 → 위쪽 복도 → 왼쪽 복도 → 아래 복도 → 화장실
 var wcRaf = 0;
-const WC_PATH = { 1: 'M248 64 L234 33 L36 33 L36 270 L111 270 L111 258', 2: 'M248 64 L234 33 L36 33 L36 270 L213 270 L213 256' };
-const WC_STEP = { 1: ['낯선 문을 나와 복도로', '복도를 따라 왼쪽으로 쭉', '끝에서 아래로 내려간 뒤 오른쪽', '첫 번째 문이 화장실 1'], 2: ['낯선 문을 나와 건물 밖으로', '건물을 끼고 왼쪽 길로 쭉', '모퉁이를 돌아 아래로, 다시 오른쪽으로', '첫 번째 문은 지나치고 끝 문으로'] };
+// 2026-11-08 사장님 그림: 낯선(오른쪽 위) → 위쪽 바깥 길 왼쪽으로 → 다마·장효 옆으로 내려감 → 아래에서 오른쪽 → ①은 지나치고 ② 낯선 화장실
+const WC_PATH = { 1: 'M258 70 L258 30 L20 30 L20 290 L87 290 L87 280', 2: 'M258 70 L258 30 L20 30 L20 290 L180 290 L180 288' };
+const WC_STEP = { 1: ['낯선 문을 나와 바깥 길로', '왼쪽으로 쭉 가서 모퉁이에서 아래로', '다마 · 장효 옆을 지나 끝에서 오른쪽', '첫 번째 문이 ① 화장실'], 2: ['낯선 문을 나와 바깥 길로', '왼쪽으로 쭉 가서 모퉁이에서 아래로', '다마 · 장효 옆을 지나 끝에서 오른쪽', '① 문은 지나치고 ② 문이 낯선 화장실'] };
 function wcGo(n){ cancelAnimationFrame(wcRaf);
   $('wcSteps').innerHTML = WC_STEP[n].map(t => `<li>${t}</li>`).join('');
   const tr = $('wcTrail'), me = $('wcMe'), goal = $('wcGoal'); tr.setAttribute('d', WC_PATH[n]); $('wcBg').setAttribute('d', WC_PATH[n]);
@@ -1153,6 +1169,85 @@ $('winOk').onclick = () => { $('winPop').hidden = true; scrollTo(0, 0); };
 randomize();
 // QR로 다시 들어오면: 오늘 캐릭터가 있으면 '내 자리' 화면 (주문 · 한 줄 · 설정)
 if (loadMe()) showEdit(); else { offerLast(); const lv = loadLast(); if (lv) { applyLast(lv); check(); } }
+</script>
+<script>
+// ---------- 혼자서도 놀거리: 오늘의 한 잔 · 고양이 찾기 · 한 줄 이어쓰기 (2026-11-08) ----------
+// 새 저장 공간 없이 '내 한 줄(말풍선)'만 씀 → 파이어베이스 규칙 변경 없음
+(function(){
+  const CAT = N.CAT_HIDE;   // common.js 공용 (스크린과 같은 시간표)
+  const sp = $('soloPanel'), sb = $('soloBody'), dim = $('soloDim');
+  const open = () => { sp.hidden = false; dim.hidden = false; }, close = () => { sp.hidden = true; dim.hidden = true; clearInterval(open.t); };
+  $('soloClose').onclick = close; dim.onclick = close;
+  const hhmm = ms => { const d = new Date(ms); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+  // 한 줄 띄우기 (기존 '한 줄 바꾸기'와 같은 10초 제한 공유)
+  async function putMsg(m){ const me = loadMe(); if (!me) { restart(); return 'gone'; }
+    const wait = Math.ceil((lastSave + 10500 - Date.now()) / 1000); if (wait > 0) return wait;
+    try { await N.updateMsg(me.day, me.id, m); lastSave = Date.now(); saveMe({ ...me, msg: m }); $('hubMsg').textContent = `지금 한 줄: "${m}"`; return 0; }
+    catch (e) { const gone = e && (e.code === 'not-found' || e.message === 'gone'); if (gone) saveMe(null); return gone ? 'gone' : 'err'; } }
+  const putErr = r => r === 'gone' ? '오늘 캐릭터가 화면에서 내려갔어요. 새로 만들어주세요.' : r === 'err' ? '띄우지 못했어요. 잠시 뒤 다시 눌러주세요.' : `${r}초 뒤에 다시 눌러주세요.`;
+  async function putBtn(btn, m, okTxt){ btn.disabled = true; const r = await putMsg(m); btn.disabled = false;
+    if (r === 0) { btn.textContent = okTxt; toast(okTxt); return true; } toast(putErr(r)); return false; }
+
+  // ① 오늘의 한 잔
+  const QS = [
+    { q: '오늘 밤 기분은?', o: [['calm', '조용히 생각 정리'], ['up', '살짝 들뜬 기분'], ['rest', '아무 생각 없이 쉬고 싶음'], ['party', '축하할 일 있음']] },
+    { q: '오늘은 얼마나 세게?', o: [['mild', '순하게'], ['mid', '적당히'], ['strong', '세게']] },
+    { q: '끌리는 맛은?', o: [['sweet', '달콤'], ['fresh', '상큼'], ['bitter', '쌉싸름 · 깊은 맛']] }];
+  const MOOD = { calm: '생각 정리하는 밤엔 천천히 한 모금씩', up: '들뜬 밤엔 기분 좋게 한 잔', rest: '오늘은 아무 생각 말고 이 한 잔', party: '축하할 일엔 반짝이는 한 잔' };
+  function pickDrink(ans){
+    const pool = []; menuCats.forEach(c => { if (c.icon === 'food') return; c.items.forEach(it => { if (it.soldout || !it.price) return; pool.push({ it, c }); }); });
+    const score = ({ it, c }) => { let s = 0; const a = abvNum(it);
+      if (a !== null) { if (ans[1] === 'mild' && a <= 10) s += 3; if (ans[1] === 'mid' && a > 8 && a < 20) s += 3; if (ans[1] === 'strong' && a >= 18) s += 3; }
+      if (tasteOk(it, c, ans[2])) s += 3; if (ans[0] === 'party' && /샴페인|스파클링/.test(c.name + it.name)) s += 2; if (it.rec) s += 1; if (it.whisky && ans[1] !== 'strong') s -= 2; return s; };
+    if (!pool.length) return null; const best = Math.max(...pool.map(score)), top = pool.filter(x => score(x) === best);
+    const seed = [...((loadMe() || {}).nick || '') + N.bizDate() + ans.join('')].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) % 9973, 7);
+    return top[seed % top.length]; }
+  function drinkGame(){ const ans = []; let step = 0;
+    const draw = () => {
+      if (step < QS.length) { const Q = QS[step];
+        sb.innerHTML = `<span class="sstep">질문 ${step + 1} / ${QS.length}</span><h3>${Q.q}</h3><div class="gopts">${Q.o.map(([k, t]) => `<button type="button" class="gopt" data-k="${k}">${t}</button>`).join('')}</div>`;
+        sb.querySelectorAll('[data-k]').forEach(b => b.onclick = () => { ans[step] = b.dataset.k; step++; draw(); }); return; }
+      const r = pickDrink(ans); if (!r) { sb.innerHTML = '<h3>메뉴판을 불러오는 중이에요</h3><p>잠시 뒤 다시 해 주세요.</p>'; return; }
+      const { it, c } = r, line = `🍸 오늘의 한 잔: ${it.name}`.slice(0, 24);
+      sb.innerHTML = `<span class="sstep">오늘의 한 잔</span><div class="sres"><small>${escH(MOOD[ans[0]])}</small><b>${escH(it.name)}</b><span>${it.abv ? escH(it.abv) + ' · ' : ''}${it.price.toLocaleString()}원${it.desc ? '<br>' + escH(it.desc) : ''}</span></div>
+        <button class="btn primary" type="button" id="sdAdd">🍸 이걸로 담기</button><button class="btn" type="button" id="sdShow">💬 스크린 말풍선에 띄우기</button><button class="btn ghost" type="button" id="sdAgain">다시 해보기</button>`;
+      $('sdAdd').onclick = () => { if (it.whisky) addCart(it.id + '잔', it.name + ' (잔)', it.price, 'whisky'); else addCart(it.id, it.name, it.price, c.icon); close(); showMenu('edit', `🍸 ${it.name}을(를) 담았어요. 아래 주문 버튼을 눌러주세요.`); };
+      $('sdShow').onclick = () => putBtn($('sdShow'), line, '✅ 스크린에 떴어요');
+      $('sdAgain').onclick = () => { ans.length = 0; step = 0; draw(); }; };
+    draw(); open(); }
+
+  // ② 고양이 찾기 (30분마다 3분, 스크린과 같은 시간표)
+  const catKey = r => 'notsun-cat-' + r.start;
+  const catGot = () => { try { return JSON.parse(localStorage.getItem('notsun-cat-found') || '{}')[N.bizDate()] || 0; } catch (e) { return 0; } };
+  const catAdd = () => { try { const v = JSON.parse(localStorage.getItem('notsun-cat-found') || '{}'), d = N.bizDate(); localStorage.setItem('notsun-cat-found', JSON.stringify({ [d]: (v[d] || 0) + 1 })); } catch (e) {} };
+  function catGame(){
+    const draw = () => { const r = CAT.now(Date.now()), done = r.on ? (() => { try { return localStorage.getItem(catKey(r)); } catch (e) { return null; } })() : null;
+      if (!r.on) { sb.innerHTML = `<span class="sstep">숨바꼭질</span><h3>🐱 다음 숨바꼭질은 ${hhmm(r.next)}</h3><p>30분마다 록이나 말숙이가 스크린 어딘가에 3분 동안 숨어요.<br>그때 스크린을 보고 맞혀 주세요.</p>${catGot() ? `<div class="sres"><small>오늘 찾은 횟수</small><b>🐾 ${catGot()}번</b></div>` : ''}`; return; }
+      const left = Math.max(0, Math.ceil((r.end - Date.now()) / 1000));
+      if (done) { sb.innerHTML = `<span class="sstep">숨바꼭질</span>${done === 'ok' ? `<div class="sres"><small>정답!</small><b>🐱 ${r.name} 찾았다</b><span>스크린에 찾은 손님으로 이름이 떠요</span></div>` : `<h3>아쉬워요!</h3><p>${r.name}는 다른 곳에 있었어요. 다음 숨바꼭질은 ${hhmm(r.next)}</p>`}`; return; }
+      sb.innerHTML = `<span class="sstep">숨바꼭질 · ${left}초 남음</span><h3>${r.name}가 스크린 어딘가에 숨었어요!</h3><p>스크린을 보고 골라 주세요 · 한 번만 고를 수 있어요</p><div class="gopts">${CAT.order(r).map(i => `<button type="button" class="gopt" data-i="${i}">${CAT.SPOTS[i].label}</button>`).join('')}</div>`;
+      sb.querySelectorAll('[data-i]').forEach(b => b.onclick = async () => { const ok = +b.dataset.i === r.spot; try { localStorage.setItem(catKey(r), ok ? 'ok' : 'no'); } catch (e) {}
+        if (ok) { catAdd(); const t0 = Date.now(); let res = await putMsg(`🐱 ${r.name} 찾았다!`); while (typeof res === 'number' && res > 0 && Date.now() - t0 < 12000) { await new Promise(z => setTimeout(z, res * 1000)); res = await putMsg(`🐱 ${r.name} 찾았다!`); } }
+        draw(); }); };
+    draw(); open(); clearInterval(open.t); open.t = setInterval(() => { if (sp.hidden) return; const r = CAT.now(Date.now()); if (!sb.querySelector('[data-i]') || !r.on) draw(); else { const s = sb.querySelector('.sstep'); if (s) s.textContent = `숨바꼭질 · ${Math.max(0, Math.ceil((r.end - Date.now()) / 1000))}초 남음`; } }, 1000); }
+  // 놀거리 칸 버튼: 숨바꼭질 중이면 반짝
+  setInterval(() => { const r = CAT.now(Date.now()), b = document.querySelector('[data-solo="cat"]'); if (!b) return; b.classList.toggle('live', r.on); $('catWhen').textContent = r.on ? '지금 숨어 있어요!' : `다음 ${hhmm(r.next)}`; }, 1000);
+
+  // ③ 한 줄 이어쓰기 (오늘 손님들의 📖 한 줄을 시간순으로 이어 붙임)
+  const STORY_MARK = '📖 ', STORY_MAX = 24 - STORY_MARK.length;
+  const storyLines = () => (allGuests || []).filter(g => !g.left && typeof g.msg === 'string' && g.msg.startsWith(STORY_MARK)).sort((a, b) => (a.ms || 0) - (b.ms || 0));
+  function storyGame(){ const me = loadMe();
+    const draw = () => { const l = storyLines(), last = l.slice(-3);
+      sb.innerHTML = `<span class="sstep">이어쓰기 · 지금 ${l.length}줄</span><h3>📖 오늘 밤의 이야기</h3><p>앞 손님 문장에 한 줄 이어 주세요. 내 말풍선으로 스크린에 떠요.</p>
+        <div class="stl">${last.length ? last.map(g => `<div class="${me && g.id === me.id ? 'me' : ''}">${escH(g.msg.slice(STORY_MARK.length))}<small>${escH(g.nick)}</small></div>`).join('') : '<div>아직 첫 줄이 없어요. 오늘 이야기를 시작해 주세요!</div>'}</div>
+        <input type="text" id="stIn" maxlength="${STORY_MAX}" placeholder="${l.length ? '다음 줄을 이어 주세요' : '예: 비 오는 교동 골목에 누군가 들어왔다'}" aria-label="이어 쓸 한 줄"><p class="note" style="margin:0">${STORY_MAX}자까지 · 말풍선을 다른 말로 바꾸면 이야기에서 빠져요</p>
+        <button class="btn primary" type="button" id="stGo">한 줄 남기기</button>`;
+      $('stGo').onclick = async () => { const v = $('stIn').value.trim(); if (!v) { toast('이어 쓸 한 줄을 적어주세요.'); return; }
+        if (await putBtn($('stGo'), STORY_MARK + v.slice(0, STORY_MAX), '✅ 이야기에 이어졌어요')) setTimeout(draw, 800); }; };
+    draw(); open(); }
+
+  document.querySelectorAll('[data-solo]').forEach(b => b.onclick = () => { const k = b.dataset.solo; if (k === 'drink') drinkGame(); if (k === 'cat') catGame(); if (k === 'story') storyGame(); });
+})();
 </script>
 </body>
 </html>
