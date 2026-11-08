@@ -1097,7 +1097,7 @@
           else for (let i = 0; i < 5; i++) { px(x0 + 4 + i * 7, sy - 6, 4, 1, 'rgba(255,255,255,.8)'); px(x0 + 5 + i * 7, sy - 5, 2, 4, 'rgba(255,255,255,.35)'); }
         });
       }
-      px(290, 34, 172, 96, '#e6e2dc'); px(293, 37, 166, 90, '#141018');
+      px(290, 30, 172, 76, '#e6e2dc'); px(293, 33, 166, 70, '#141018');   // 2026-11-08 스크린 판 줄임 (밑에 DOGUE 포스터)
       px(200, 148, W - 200, 1, '#ff8a6a');
       px(0, 154, W, H - 154, '#0f0b10');
       for (let i = 0; i < 6; i++) px(30 + i * 80, 200 + (i % 3) * 18, 40, 1, 'rgba(255,255,255,.04)');
@@ -1269,6 +1269,112 @@
     function miniGhost(x, y) { px(x + 1, y, 7, 1, '#f6f6ff'); px(x, y + 1, 9, 8, '#f6f6ff'); px(x, y + 9, 2, 1, '#f6f6ff'); px(x + 4, y + 9, 2, 1, '#f6f6ff'); px(x + 7, y + 9, 2, 1, '#f6f6ff'); px(x + 2, y + 3, 2, 2, '#1a1010'); px(x + 5, y + 3, 2, 2, '#1a1010'); px(x + 3, y + 6, 3, 1, '#3a2a2a'); }
     function bow(x, y) { px(x, y, 3, 3, '#d6262e'); px(x + 4, y, 3, 3, '#d6262e'); px(x + 3, y + 1, 1, 2, '#a01a20'); px(x + 2, y + 3, 1, 3, '#d6262e'); px(x + 4, y + 3, 1, 3, '#d6262e'); }
     function stocking(x, y, c) { px(x, y, 6, 2, '#ffffff'); px(x, y + 2, 5, 7, c); px(x - 2, y + 7, 7, 3, c); px(x - 2, y + 9, 3, 1, shade(c, .8)); px(x + 1, y + 4, 1, 1, '#ffffff'); }
+    // ---- 크리스마스 꽉 찬 장식 (2026-11-08 사장님 요청: 양말 선물 · 루돌프 · 산타 · 대형 눈사람) ----
+    function disc(cx, cy, r, c) { for (let yy = -r; yy <= r; yy++) { const w = Math.round(Math.sqrt(r * r - yy * yy)); px(cx - w, cy + yy, w * 2 + 1, 1, c); } }
+    function gift(x, base, w, h, c1, c2) { px(x, base - h, w, h, c1); px(x, base - h, w, 1, shade(c1, 1.25)); px(x + Math.floor(w / 2), base - h, 1, h, c2); px(x, base - h + Math.floor(h / 2), w, 1, c2); px(x + Math.floor(w / 2) - 2, base - h - 2, 2, 2, c2); px(x + Math.floor(w / 2) + 1, base - h - 2, 2, 2, c2); }
+    function cane(x, y) { for (let k = 0; k < 7; k++) px(x, y + 2 + k, 1, 1, k % 2 ? '#ffffff' : '#e23b4a'); px(x + 1, y, 2, 1, '#e23b4a'); px(x + 3, y + 1, 1, 2, '#ffffff'); px(x, y + 1, 1, 1, '#ffffff'); }
+    function stockingGift(x, y, c, k) {   // 선물이 삐져나온 양말
+      if (k % 3 === 0) gift(x - 1, y + 1, 5, 4, '#ffd23a', '#d6262e'); else if (k % 3 === 1) { gift(x + 1, y + 1, 4, 5, '#3a7aff', '#ffffff'); cane(x - 1, y - 4); } else { cane(x + 3, y - 5); gift(x - 1, y + 1, 4, 3, '#4fd36a', '#d6262e'); }
+      px(x - 1, y, 8, 3, '#ffffff'); px(x, y + 3, 6, 9, c); px(x - 3, y + 9, 9, 4, c); px(x - 3, y + 12, 4, 1, shade(c, .75)); px(x + 2, y + 5, 2, 2, shade(c, 1.35)); px(x + 1, y + 8, 1, 1, '#ffffff'); px(x + 4, y + 6, 1, 1, '#ffffff'); }
+    function bigSnowman(x, base, t) {   // 높이 약 44 (모자 포함)
+      const W1 = '#f6f8fc', W2 = '#d6e2f2'; disc(x, base - 8, 8, W2); disc(x - 1, base - 9, 7, W1); disc(x, base - 22, 6, W2); disc(x - 1, base - 23, 5, W1); disc(x, base - 32, 5, W2); disc(x - 1, base - 33, 4, W1);
+      [-24, -21, -18].forEach(dy => px(x, base + dy, 1, 1, '#1a1214')); [-12, -8].forEach(dy => px(x, base + dy, 1, 1, '#1a1214'));
+      const bl = Math.floor(t / 160) % 25 === 0; px(x - 2, base - 34, 1, bl ? 1 : 2, '#1a1214'); px(x + 1, base - 34, 1, bl ? 1 : 2, '#1a1214'); px(x, base - 32, 4, 1, '#f08a1a'); px(x, base - 31, 2, 1, '#d8701a'); px(x - 2, base - 30, 4, 1, '#3a2a2a');
+      for (let k = 0; k < 11; k++) px(x - 5 + k, base - 28, 1, 2, k % 2 ? '#2a8a4a' : '#e23b4a'); px(x + 3, base - 27, 2, 6, '#e23b4a'); px(x + 3, base - 24, 2, 1, '#2a8a4a');
+      px(x - 5, base - 39, 9, 1, '#1a1214'); px(x - 3, base - 45, 6, 6, '#1a1214'); px(x - 3, base - 41, 6, 1, '#e23b4a'); px(x + 1, base - 42, 2, 2, '#4fd36a');
+      const wv = Math.floor(t / 500) % 2; px(x - 13, base - 24 - wv, 7, 1, '#6a4a2a'); px(x - 14, base - 25 - wv, 1, 2, '#6a4a2a'); px(x + 6, base - 24, 7, 1, '#6a4a2a'); px(x + 12, base - 26, 1, 2, '#6a4a2a'); }
+    function rudolph(x, base, t) {   // 서 있는 루돌프 (빨간 코 반짝)
+      const B = '#8a5a34', D = '#6a4224', L = '#c8946a'; px(x - 9, base - 15, 16, 7, B); px(x - 9, base - 15, 16, 1, '#a06a40'); px(x - 7, base - 10, 10, 2, L);
+      [-8, -4, 2, 5].forEach(lx => { px(x + lx, base - 8, 2, 8, D); px(x + lx, base - 1, 2, 1, '#2a1a10'); }); px(x - 11, base - 15, 2, 3, B);
+      px(x + 5, base - 21, 4, 7, B); px(x + 6, base - 25, 7, 6, B); px(x + 12, base - 23, 3, 3, L); px(x + 9, base - 24, 1, 1, '#1a1214');
+      px(x + 6, base - 32, 1, 7, '#c8a070'); px(x + 4, base - 30, 2, 1, '#c8a070'); px(x + 7, base - 29, 2, 1, '#c8a070'); px(x + 10, base - 31, 1, 6, '#c8a070'); px(x + 11, base - 29, 2, 1, '#c8a070');
+      px(x + 5, base - 19, 5, 2, '#d6262e'); px(x + 7, base - 17, 1, 2, '#ffd23a');
+      const on = Math.floor(t / 400) % 2; px(x + 14, base - 23, 3, 3, on ? '#ff2a2a' : '#c81a1a'); if (on) px(x + 15, base - 23, 1, 1, '#ffd0d0'); }
+    function santa(x, base, t) {   // 선물 자루 든 산타
+      const R = '#d6262e', R2 = '#a81a20', Wt = '#ffffff', S = '#f6d5bb';
+      px(x - 5, base - 4, 4, 4, '#1a1214'); px(x + 1, base - 4, 4, 4, '#1a1214'); px(x - 6, base - 18, 12, 14, R); px(x - 6, base - 18, 2, 14, R2); px(x - 1, base - 18, 2, 14, Wt);
+      px(x - 6, base - 11, 12, 2, '#1a1214'); px(x - 1, base - 11, 3, 2, '#ffd23a'); px(x - 6, base - 5, 12, 1, Wt);
+      const wv = Math.floor(t / 450) % 2; px(x + 6, base - 17 - wv * 3, 3, 7, R); px(x + 6, base - 18 - wv * 3, 3, 2, Wt); px(x + 6, base - 20 - wv * 3, 3, 2, S);
+      px(x - 4, base - 26, 8, 7, S); px(x - 5, base - 22, 10, 6, Wt); px(x - 3, base - 25, 1, 1, '#1a1214'); px(x + 2, base - 25, 1, 1, '#1a1214'); px(x - 1, base - 23, 2, 1, '#e8a0a0');
+      px(x - 5, base - 29, 10, 3, R); px(x - 5, base - 27, 10, 1, Wt); px(x + 3, base - 32, 4, 3, R); px(x + 6, base - 32, 3, 3, Wt);
+      px(x - 16, base - 16, 10, 14, '#8a6a3a'); px(x - 15, base - 18, 8, 2, '#6a4a2a'); px(x - 16, base - 16, 10, 1, '#a0804a'); gift(x - 14, base - 18, 3, 3, '#3a7aff', '#ffffff'); gift(x - 10, base - 18, 3, 4, '#4fd36a', '#d6262e'); }
+    // ---- 다른 테마도 꽉 차게 (2026-11-08 사장님: "다른 테마들도 화려하게") ----
+    function bigHeart(x, y, r, c) { for (let yy = -r; yy <= r * 1.6; yy++) for (let xx = -r * 2; xx <= r * 2; xx++) { const a = xx / r, b = -yy / r; if ((a * a + b * b - 1) ** 3 - a * a * b * b * b <= 0) px(x + xx, y + yy, 1, 1, c); } px(x - r, y - Math.round(r * .4), 2, 2, 'rgba(255,255,255,.6)'); }
+    function pumpkin(x, base, r, face, t) { disc(x, base - r, r, '#e8761a'); disc(x - Math.round(r * .5), base - r, Math.round(r * .7), '#f08a2a'); disc(x + Math.round(r * .5), base - r, Math.round(r * .7), '#d86a14'); px(x, base - r * 2 - 2, 2, 3, '#3a6a2a');
+      if (face) { const lit = (Math.floor(t / 90 + x) % 9) ? '#ffe070' : '#ffb22a'; px(x - Math.round(r * .5), base - r - 2, 2, 2, lit); px(x + Math.round(r * .3), base - r - 2, 2, 2, lit); for (let k = -Math.round(r * .5); k <= Math.round(r * .5); k++) px(x + k, base - r + 2 + (k % 2 ? 0 : 1), 1, 1, lit); } }
+    function cauldron(x, base, t) { px(x - 9, base - 9, 18, 9, '#2a2a30'); px(x - 10, base - 10, 20, 2, '#3a3a44'); for (let k = 0; k < 5; k++) { const b = Math.floor(t / 200 + k) % 4; px(x - 8 + k * 4, base - 12 - b, 3, 3, b === 3 ? 'rgba(123,224,106,.5)' : '#7be06a'); } px(x - 7, base, 2, 2, '#ff7a1a'); px(x + 5, base, 2, 2, '#ff7a1a'); }
+    function witchHat(x, base) { px(x - 9, base - 2, 18, 2, '#2a1a3a'); for (let r = 0; r < 14; r++) px(x - 5 + Math.floor(r / 3), base - 3 - r, Math.max(1, 10 - Math.floor(r / 3) * 2), 1, '#2a1a3a'); px(x - 5, base - 5, 10, 2, '#9a5ae0'); px(x - 1, base - 5, 2, 2, '#ffd23a'); }
+    function teddy(x, base, c) { disc(x, base - 7, 7, c); disc(x, base - 18, 6, c); disc(x - 5, base - 23, 2, c); disc(x + 5, base - 23, 2, c); disc(x, base - 16, 3, shade(c, 1.3)); px(x - 2, base - 20, 1, 1, '#1a1214'); px(x + 2, base - 20, 1, 1, '#1a1214'); px(x, base - 17, 1, 1, '#1a1214'); heart(x - 2, base - 10, '#ff4a7a'); disc(x - 7, base - 3, 2, c); disc(x + 7, base - 3, 2, c); }
+    function bigLolli(x, base, c1, c2) { px(x, base - 22, 2, 22, '#f2f2f2'); disc(x + 1, base - 28, 8, c1); for (let a = 0; a < 20; a++) { const r = a * .4, an = a * .7; px(Math.round(x + 1 + Math.cos(an) * r), Math.round(base - 28 + Math.sin(an) * r), 2, 2, c2); } px(x - 3, base - 23, 9, 2, '#ff8ac0'); }
+    function candyJar(x, base) { px(x - 8, base - 18, 16, 18, 'rgba(207,224,234,.45)'); px(x - 6, base - 21, 12, 3, '#e8b0c8'); for (let k = 0; k < 14; k++) px(x - 6 + (k * 5) % 12, base - 3 - Math.floor(k / 3) * 3, 3, 2, ['#ff8ac0', '#bfe6ff', '#ffe08a', '#9ad87a'][k % 4]); px(x - 7, base - 16, 1, 10, 'rgba(255,255,255,.6)'); }
+    function bouquet(x, base, cols) { px(x - 5, base - 10, 10, 10, '#f6e8d8'); px(x - 4, base - 10, 8, 1, '#d6262e'); for (let k = 0; k < 7; k++) { const fx = x - 7 + (k * 5) % 15, fy = base - 13 - (k % 3) * 4; px(fx + 1, fy + 2, 1, 4, '#3a8a3a'); disc(fx + 1, fy, 2, cols[k % cols.length]); px(fx + 1, fy, 1, 1, 'rgba(255,255,255,.5)'); } }
+    function peperoBig(x, base) { px(x - 7, base - 26, 14, 26, '#d6262e'); px(x - 7, base - 26, 14, 2, '#ff5a5a'); px(x - 5, base - 20, 10, 6, '#ffffff'); px(x - 4, base - 19, 8, 1, '#5a3020'); px(x - 4, base - 17, 6, 1, '#d6262e'); for (let k = 0; k < 5; k++) { px(x - 5 + k * 2, base - 40 + (k % 2) * 2, 1, 14, '#e8c070'); px(x - 5 + k * 2, base - 40 + (k % 2) * 2, 1, 7, k % 2 ? '#ff8ab0' : '#5a3020'); } }
+    function flowerPot(x, base, c) { px(x - 5, base - 7, 10, 7, '#b8643a'); px(x - 6, base - 8, 12, 2, '#d0784a'); for (let k = 0; k < 5; k++) { const fx = x - 6 + k * 3, fy = base - 13 - (k % 2) * 4; px(fx + 1, fy + 2, 1, 5, '#3a8a3a'); disc(fx + 1, fy, 2, k % 2 ? c : '#ffffff'); px(fx + 1, fy, 1, 1, '#f5c84a'); } }
+    function umbrella(x, base) { px(x, base - 30, 1, 30, '#e8e8e8'); for (let r = 0; r < 8; r++) for (let xx = -16 + r * 2; xx <= 16 - r * 2; xx++) px(x + xx, base - 30 - (7 - r), 1, 1, Math.floor((xx + 16) / 5) % 2 ? '#ff6a8a' : '#ffffff'); }
+    function beachBall(x, base) { disc(x, base - 5, 5, '#ffffff'); px(x - 5, base - 7, 4, 4, '#ff4a5a'); px(x + 1, base - 7, 4, 4, '#3a7aff'); px(x - 2, base - 10, 4, 3, '#ffd23a'); px(x - 1, base - 6, 2, 2, '#ffffff'); }
+    function flamingo(x, base) { px(x, base - 12, 1, 12, '#ff8ab0'); px(x + 2, base - 12, 1, 12, '#ff8ab0'); disc(x + 1, base - 16, 5, '#ff6aa0'); px(x + 5, base - 26, 2, 8, '#ff6aa0'); px(x + 5, base - 28, 4, 3, '#ff6aa0'); px(x + 8, base - 27, 2, 2, '#1a1214'); }
+    function chorong(x, y, t) { px(x + 3, y - 8, 1, 8, '#c8a050'); px(x, y, 8, 3, '#2a4ac8'); px(x - 1, y + 3, 10, 8, '#e23b4a'); px(x, y + 11, 8, 2, '#2a4ac8'); px(x + 3, y + 13, 2, 4, '#f6cc4a'); const g = .5 + .5 * Math.sin(t / 300 + x); px(x + 2, y + 5, 4, 4, g > .5 ? '#ffd86a' : '#ffb22a'); }
+    function bokju(x, y, c) { px(x + 2, y - 3, 3, 3, c); px(x + 1, y - 1, 5, 1, '#f6cc4a'); px(x - 1, y, 9, 9, c); px(x, y + 9, 7, 1, c); px(x + 1, y + 3, 5, 3, '#f6cc4a'); px(x + 3, y + 4, 1, 1, c); }
+    function themeExtra(th, t) {   // 스크린 아래쪽 벽(290~400) · 오른쪽 끝 큰 장식(470) · 전구 줄
+      // 술장 위 소품 줄 (크리스마스 양말 줄처럼) · 트리 자리(212~290) 큰 장식
+      const shelf = fn => { for (let k = 0; k < 8; k++) { const x = 18 + k * 22; px(x + 2, 63, 1, 3, '#2a2020'); fn(x, k); } };
+      const LEAF = '#3a8a3a';
+      if (th === 'halloween') { shelf((x, k) => { if (k % 2) pumpkin(x + 3, 75, 4, 1, t); else bat(x - 1, 70 + (Math.floor(t / 300 + k) % 2)); });
+        pumpkin(222, 152, 9, 1, t); pumpkin(246, 152, 7, 1, t); pumpkin(234, 134, 6, 1, t); cauldron(270, 152, t); candle(284, 152, t, 9); }
+      if (th === 'valentine') { shelf((x, k) => bigHeart(x + 3, 70, 3, k % 2 ? '#ffb0c8' : '#ff4a7a'));
+        bigHeart(246, 104, 9, '#ff4a7a'); teddy(226, 152, '#c8946a'); teddy(266, 152, '#f0d0d8'); gift(240, 152, 9, 7, '#ff4a7a', '#ffffff'); gift(280, 152, 7, 9, '#ffffff', '#ff4a7a'); }
+      if (th === 'white') { shelf((x, k) => { lolli(x + 1, 76); if (k % 2) lolli(x + 4, 77); });
+        candyJar(220, 152); bigLolli(238, 152, '#ff8ac0', '#ffffff'); candyJar(258, 152); bigLolli(276, 152, '#bfe6ff', '#ffffff'); balloon(226, 96, '#bfe6ff', t, 4); balloon(264, 92, '#ff8ac0', t, 5); }
+      if (th === 'rose') { shelf((x, k) => { rose(x + 1, 71); rose(x + 4, 73); });
+        bigHeart(246, 102, 9, '#d6202e'); bouquet(222, 152, ['#d6202e', '#ff5a6a']); vase(240, 152); bouquet(262, 152, ['#d6202e', '#ffffff']); vase(280, 152); }
+      if (th === 'pepero') { shelf((x, k) => peperoBox(x, 76));
+        peperoBig(222, 152); peperoBig(246, 152); peperoBig(270, 152); bigHeart(246, 100, 6, '#ff8ab0'); gift(232, 152, 6, 6, '#ff8ab0', '#ffffff'); gift(258, 152, 6, 8, '#c8945a', '#ffffff'); }
+      if (th === 'spring') { shelf((x, k) => { disc(x + 3, 69, 2, k % 2 ? '#ffb0cc' : '#ffffff'); px(x + 3, 69, 1, 1, '#f5c84a'); });
+        px(244, 106, 4, 46, '#5a3a2a'); px(236, 116, 8, 2, '#5a3a2a'); px(248, 112, 10, 2, '#5a3a2a'); for (let k = 0; k < 26; k++) disc(246 + Math.round(Math.cos(k * 2.4) * (6 + k % 5 * 4)), 100 + Math.round(Math.sin(k * 2.4) * (3 + k % 4 * 3)), 3, k % 3 ? '#ffb0cc' : '#ffffff');
+        flowerPot(222, 152, '#ff9ac0'); flowerPot(272, 152, '#ffe08a'); }
+      if (th === 'summer') { shelf((x, k) => { disc(x + 3, 70, 2, ['#ffd23a', '#ff8a2a', '#7be06a'][k % 3]); px(x + 3, 67, 2, 1, LEAF); });
+        umbrella(240, 152); flamingo(220, 152); beachBall(262, 152); px(270, 144, 16, 8, '#4ad0e0'); px(270, 144, 16, 2, '#ffffff'); px(276, 140, 4, 4, '#ffd23a'); }
+      if (th === 'seollal' || th === 'chuseok') { shelf((x, k) => bokju(x, 67, ['#e23b4a', '#ff7ab8', '#3a7ad0', '#f6cc4a'][k % 4]));
+        for (let k = 0; k < 5; k++) { const x = 214 + k * 15; px(x, 108, 14, 44, '#f4ecd8'); px(x, 108, 14, 2, '#8a2a20'); px(x, 150, 14, 2, '#8a2a20'); px(x, 108, 1, 44, '#c8a060'); }   // 병풍
+        for (let k = 0; k < 12; k++) px(222 + k * 5, 140 - Math.round(Math.sin(k) * 8 + k), 3, 2, '#5a3a2a');
+        if (th === 'seollal') for (let k = 0; k < 8; k++) disc(224 + k * 7, 128 - (k % 3) * 6, 2, '#e23b4a'); else disc(252, 122, 8, '#fff0b8'); }
+      const strip = cols => { for (let x = 300; x < 460; x += 4) { const on = (x / 4 + Math.floor(t / 300)) % 4 !== 0; px(x, 107 + (x % 8 ? 0 : 1), 2, 2, on ? cols[(x / 4) % cols.length] : '#3a2a2a'); } };
+      // 스크린 밑 가운데(352~428)는 DOGUE 포스터 자리 → 테마 장식은 그 왼쪽(292~346)과 오른쪽 끝(470)
+      if (th === 'halloween') { strip(['#ff8a1a', '#9a5ae0', '#7be06a']); pumpkin(298, 160, 7, 1, t); pumpkin(312, 160, 5, 1, t); pumpkin(304, 147, 4, 1, t); cauldron(332, 160, t); witchHat(346, 158);
+        pumpkin(470, 150, 8, 1, t); pumpkin(470, 134, 6, 1, t); pumpkin(470, 122, 4, 1, t); }
+      if (th === 'valentine') { strip(['#ff4a7a', '#ffffff', '#ffb0c8']); teddy(302, 160, '#c8946a'); gift(312, 160, 8, 7, '#ff4a7a', '#ffffff'); teddy(330, 160, '#f0d0d8'); bouquet(345, 160, ['#ff4a7a', '#d6202e', '#ffb0c8']);
+        bigHeart(470, 110, 6, '#ff4a7a'); balloon(462, 118, '#ff4a7a', t, 1); balloon(472, 124, '#ffb0c8', t, 2); balloon(466, 132, '#ffffff', t, 3); }
+      if (th === 'white') { strip(['#bfe6ff', '#ffffff', '#ff8ac0']); candyJar(302, 160); bigLolli(320, 160, '#ff8ac0', '#ffffff'); candyJar(338, 160);
+        bigLolli(468, 150, '#bfe6ff', '#ffffff'); balloon(458, 104, '#bfe6ff', t, 1); balloon(472, 98, '#ffffff', t, 2); }
+      if (th === 'rose') { strip(['#d6202e', '#ffffff', '#ff5a6a']); bouquet(302, 160, ['#d6202e', '#ff5a6a']); vase(318, 160); bouquet(338, 160, ['#d6202e', '#ffffff']);
+        bigHeart(470, 112, 6, '#d6202e'); bouquet(470, 150, ['#d6202e', '#ff5a6a', '#ffffff']); }
+      if (th === 'pepero') { strip(['#c8945a', '#ff8ab0', '#5a3020']); peperoBig(302, 160); gift(314, 160, 8, 7, '#ff8ab0', '#ffffff'); peperoBig(336, 160);
+        peperoBig(470, 150); bigHeart(470, 98, 4, '#ff8ab0'); }
+      if (th === 'spring') { strip(['#ff9ac0', '#ffffff', '#ffe08a']); flowerPot(300, 160, '#ff9ac0'); flowerPot(316, 160, '#ffe08a'); flowerPot(332, 160, '#ff7ab0'); flowerPot(346, 160, '#bfe6ff');
+        flowerPot(470, 150, '#ff9ac0'); for (let k = 0; k < 10; k++) disc(462 + (k * 7) % 18, 104 + (k * 5) % 20, 3, k % 2 ? '#ffb0cc' : '#ffffff'); px(469, 118, 2, 24, '#5a3a2a'); }
+      if (th === 'summer') { strip(['#ff6a8a', '#ffd23a', '#4ad0e0', '#7be06a']); umbrella(306, 160); beachBall(326, 160); flamingo(338, 160); }
+      if (th === 'seollal' || th === 'chuseok') { strip(['#e23b4a', '#f6cc4a', '#3a7ad0', '#ffffff']); for (let k = 0; k < 5; k++) chorong(298 + k * 36, 100, t + k * 200); bokju(302, 148, '#e23b4a'); bokju(318, 148, '#ff7ab8'); bokju(334, 148, '#3a7ad0');
+        chorong(466, 100, t); chorong(466, 124, t + 300); }
+    }
+    // 매장 벽 DOGUE 포스터 3종 (2026-11-08 사장님: 대형 스크린 밑에) · 모든 테마 공통 · 제목 글자는 render에서 선명하게 덧그림(dogueTitles)
+    const DOGUE_X = [340, 367, 394], DOGUE_Y = 111;
+    function doguePosters() {
+      px(336, DOGUE_Y + 23, 80, 2, '#3a1c16'); px(336, DOGUE_Y + 25, 80, 1, 'rgba(255,140,90,.55)');   // 선반 · 아래 조명
+      const bg = ['#e2dde6', '#f0d6dc', '#e8e4dc'];
+      DOGUE_X.forEach((x, k) => { const y = DOGUE_Y; px(x - 1, y - 1, 20, 24, '#1a1214'); px(x, y, 18, 22, bg[k]);
+        if (k === 0) {   // 닥스훈트 · 니트 후드
+          px(x + 4, y + 15, 11, 7, '#6a6a48'); for (let r = 0; r < 3; r++) px(x + 5, y + 16 + r * 2, 9, 1, '#5a5a3c');
+          px(x + 7, y + 7, 7, 9, '#6a6a48'); px(x + 8, y + 8, 5, 6, '#5a2a18'); px(x + 3, y + 11, 6, 3, '#6a3420'); px(x + 3, y + 11, 1, 1, '#1a1214'); px(x + 10, y + 10, 1, 1, '#1a1214'); px(x + 11, y + 9, 1, 1, 'rgba(255,255,255,.6)'); }
+        if (k === 1) {   // 푸들 · 하늘색 재킷 · 흰 꽃
+          px(x + 3, y + 15, 13, 7, '#a8c0e0'); px(x + 7, y + 15, 5, 7, '#c8a078'); px(x + 6, y + 15, 1, 6, '#88a0c8'); px(x + 12, y + 15, 1, 6, '#88a0c8'); px(x + 13, y + 16, 2, 2, '#ffffff');
+          disc(x + 9, y + 10, 4, '#d8b088'); disc(x + 5, y + 12, 2, '#c8a078'); disc(x + 13, y + 12, 2, '#c8a078'); px(x + 8, y + 10, 3, 4, '#e8cca8'); px(x + 8, y + 10, 1, 1, '#1a1214'); px(x + 10, y + 10, 1, 1, '#1a1214'); px(x + 9, y + 12, 1, 1, '#3a2a2a'); }
+        if (k === 2) {   // 도베르만 · 베레모 · 가죽 재킷
+          px(x + 2, y + 15, 15, 7, '#3a2a22'); px(x + 4, y + 15, 3, 4, '#5a4434'); px(x + 12, y + 15, 3, 4, '#5a4434'); px(x + 8, y + 15, 3, 2, '#a0603a');
+          px(x + 6, y + 9, 7, 6, '#1e1a18'); px(x + 5, y + 10, 1, 3, '#1e1a18'); px(x + 13, y + 10, 1, 3, '#1e1a18'); px(x + 7, y + 13, 5, 2, '#a0603a'); px(x + 9, y + 13, 1, 1, '#1a1214'); px(x + 7, y + 11, 1, 1, '#c88050'); px(x + 11, y + 11, 1, 1, '#c88050');
+          px(x + 5, y + 7, 10, 3, '#1a1a1e'); px(x + 7, y + 6, 6, 1, '#1a1a1e'); }
+      }); }
+    function dogueTitles(ctx, s) { ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = `bold ${4.6 * s}px "Times New Roman", Georgia, serif`;
+      DOGUE_X.forEach((x, k) => { ctx.fillStyle = k === 1 ? '#d8505a' : '#c8202e'; ctx.fillText('DOGUE', (x + 9) * s, (DOGUE_Y + 3.4) * s, 17 * s); }); ctx.restore(); }
     function bigTree(x, base, t) {
       px(x - 2, base - 6, 4, 6, '#5a3a1e');
       const tiers = [[0, 18], [12, 14], [23, 10], [32, 6]];
@@ -1283,7 +1389,7 @@
       px(x + 10, y + 12, 32, 24, '#140c0c');
       const f = t / 110; for (let k = 0; k < 9; k++) { const h2 = 6 + Math.round((Math.sin(f + k * 1.7) + 1) * 4); px(x + 13 + k * 3, y + 36 - h2, 3, h2, k % 2 ? '#ff7a1a' : '#ffb22a'); px(x + 14 + k * 3, y + 36 - Math.round(h2 * .5), 1, Math.round(h2 * .5), '#ffe070'); }
       px(x + 12, y + 33, 28, 3, '#5a3a1e'); px(x + 14, y + 31, 24, 2, '#6a4a2e');
-      [[x + 2, '#d6262e'], [x + 20, '#2a8a4a'], [x + 38, '#d6262e']].forEach(([sx, c]) => stocking(sx + 2, y + 1, c));
+      [[x + 2, '#d6262e'], [x + 20, '#2a8a4a'], [x + 38, '#d6262e']].forEach(([sx, c], k) => stockingGift(sx + 3, y + 1, c, k));
       for (let k = 0; k < 26; k++) px(x - 2 + k * 2, y - 4 + (k % 2), 2, 2, k % 5 ? '#1f6a3a' : '#e23b4a');
       candle(x + 1, y - 4, t, 1); candle(x + 49, y - 4, t, 2); }
     function snowman(x, base) { px(x - 6, base - 11, 13, 11, '#f6f8fc'); px(x - 5, base - 12, 11, 1, '#f6f8fc'); px(x - 4, base - 19, 9, 7, '#f6f8fc'); px(x - 3, base - 20, 7, 1, '#f6f8fc'); px(x - 2, base - 17, 1, 1, '#151515'); px(x + 2, base - 17, 1, 1, '#151515'); px(x, base - 15, 3, 1, '#f08a1a');
@@ -1310,11 +1416,17 @@
         for (let x = 14; x < 208; x += 40) bow(x, 26);
         lights(4, 208, 29, ['#e23b4a', '#ffd23a', '#3a7aff', '#4fd36a'], t, 7); lights(296, 460, 31, ['#e23b4a', '#ffd23a', '#3a7aff', '#4fd36a'], t, 7);
         bunting(200, 288, 34, ['#d6262e', '#2a8a4a', '#ffffff']);
-        px(290, 32, 172, 3, '#ffffff'); for (let x = 292; x < 460; x += 7) { px(x, 35, 2, 2 + (x % 3), '#dff2ff'); px(x + 3, 35, 1, 1, '#ffffff'); }
+        px(290, 28, 172, 3, '#ffffff'); for (let x = 292; x < 460; x += 7) { px(x, 31, 2, 2 + (x % 3), '#dff2ff'); px(x + 3, 31, 1, 1, '#ffffff'); }
         px(10, 61, 176, 2, '#ffffff'); for (let x = 12; x < 186; x += 9) px(x, 63, 1, 2 + (x % 2), '#dff2ff');
         for (let a = 0; a < 36; a++) { const ang = a / 36 * Math.PI * 2; px(Math.round(470 + Math.cos(ang) * 6), Math.round(70 + Math.sin(ang) * 6), 2, 2, a % 6 ? '#1f6a3a' : '#e23b4a'); } bow(467, 75);
         fireplace(234, 112, t);
         bigTree(212, 152, t);
+        // 꽉 찬 장식: 술장 위 선물 양말 줄 · 큰 눈사람 · 산타와 루돌프 · 선물 더미 · 오너바 위 선물
+        ['#d6262e', '#2a8a4a', '#e8e8f0', '#d6262e', '#2a8a4a', '#3a7aff', '#d6262e', '#2a8a4a'].forEach((c, k) => stockingGift(18 + k * 22, 63, c, k));
+        bigSnowman(470, 150, t);
+        gift(287, 152, 8, 7, '#d6262e', '#ffd23a'); gift(294, 152, 6, 10, '#3a7aff', '#ffffff'); gift(289, 145, 5, 5, '#4fd36a', '#d6262e');
+        rudolph(303, 158, t); santa(336, 160, t);
+        for (let x = 300; x < 460; x += 4) { const on = (x / 4 + Math.floor(t / 300)) % 4 !== 0; px(x, 107 + (x % 8 ? 0 : 1), 2, 2, on ? ['#e23b4a', '#ffd23a', '#3a7aff', '#4fd36a'][(x / 4) % 4] : '#3a2a2a'); }
       } else if (th === 'summer') {
         lights(4, 208, 27, ['#ff6a8a', '#ffd23a', '#4ad0e0', '#7be06a'], t, 8); lights(296, 460, 31, ['#ff6a8a', '#ffd23a', '#4ad0e0'], t, 8);
         palm(0, 30, 1); palm(479, 30, -1);
@@ -1332,19 +1444,22 @@
         for (let x = 2; x < 206; x += 6) { px(x, 27 + (x % 12 ? 1 : 0), 3, 3, x % 12 ? '#ff9ac0' : '#ffffff'); px(x + 1, 28 + (x % 12 ? 1 : 0), 1, 1, '#f5c84a'); }
         for (let k = 0; k < 18; k++) { px(476 - k * 2, 30 + k, 2, 1, '#5a3a2a'); if (k % 3 === 0) { px(470 - k * 2, 28 + k, 3, 3, '#ffb0cc'); px(471 - k * 2, 29 + k, 1, 1, '#ffffff'); } }
       }
+      themeExtra(th, t);
+      doguePosters();
     }
     let tNow = 0;
     function decorFront(th) {
-      if (th === 'valentine') { [[6, 146], [184, 146], [222, 168], [446, 168]].forEach(([x, y]) => { px(x, y - 5, 8, 5, '#7a2a3a'); heart(x + 1, y - 5, '#ff4a7a'); }); }
-      if (th === 'white') { [[8, 146], [186, 146], [224, 168], [448, 168], [244, 234]].forEach(([x, y]) => { lolli(x, y); lolli(x + 3, y + 1); }); }
-      if (th === 'rose') { vase(8, 146); vase(184, 146); vase(222, 168); vase(446, 168); vase(244, 234); }
-      if (th === 'pepero') { peperoBox(6, 146); peperoBox(184, 146); peperoBox(222, 168); peperoBox(444, 168); peperoBox(242, 234); }
-      if (th === 'halloween') { lantern(2, 146, tNow, 1); lantern(184, 146, tNow, 2); lantern(214, 168, tNow, 3); lantern(448, 168, tNow, 4); lantern(236, 234, tNow, 5); candle(300, 168, tNow, 6); candle(420, 168, tNow, 7); candle(360, 234, tNow, 8); }
+      // 테이블 위 소품 자리: 새 ㄴ(세로판 위 244,184 · 아랫판 300,230) · ㄱ(윗판 380/420,180 · 세로판 436,196)
+      if (th === 'valentine') { [[6, 146], [184, 146], [242, 184], [436, 196], [300, 230]].forEach(([x, y]) => { px(x, y - 5, 8, 5, '#7a2a3a'); heart(x + 1, y - 5, '#ff4a7a'); }); }
+      if (th === 'white') { [[8, 146], [186, 146], [244, 184], [438, 196], [300, 230]].forEach(([x, y]) => { lolli(x, y); lolli(x + 3, y + 1); }); }
+      if (th === 'rose') { vase(8, 146); vase(184, 146); vase(242, 184); vase(436, 196); vase(300, 230); }
+      if (th === 'pepero') { peperoBox(6, 146); peperoBox(184, 146); peperoBox(242, 184); peperoBox(436, 196); peperoBox(300, 230); }
+      if (th === 'halloween') { lantern(2, 146, tNow, 1); lantern(184, 146, tNow, 2); lantern(238, 184, tNow, 3); lantern(436, 198, tNow, 4); lantern(290, 230, tNow, 5); candle(380, 180, tNow, 6); candle(420, 180, tNow, 7); candle(322, 230, tNow, 8); }
       if (th === 'christmas') { [[6, 146], [186, 146]].forEach(([x, y]) => { px(x, y - 6, 6, 6, '#d6262e'); px(x + 2, y - 6, 1, 6, '#ffd23a'); px(x, y - 4, 6, 1, '#ffd23a'); });
-        [[300, 168], [420, 168], [360, 234]].forEach(([x, y], k) => { candle(x, y, tNow, k); px(x - 3, y, 8, 1, '#1f6a3a'); px(x - 2, y - 1, 2, 1, '#e23b4a'); px(x + 3, y - 1, 2, 1, '#e23b4a'); });
-        snowman(470, 266); }
-      if (th === 'seollal') { [[6, 146], [184, 146], [222, 168], [446, 168]].forEach(([x, y]) => { px(x, y - 4, 8, 4, '#f4f0e8'); px(x + 1, y - 5, 6, 1, '#ffffff'); px(x + 2, y - 4, 1, 1, '#f6cc4a'); px(x + 5, y - 4, 1, 1, '#3aa05a'); px(x, y - 1, 8, 1, '#c84a3a'); }); }   // 떡국
-      if (th === 'chuseok') { [[6, 146], [184, 146], [222, 168], [446, 168], [244, 234]].forEach(([x, y]) => { px(x - 1, y - 1, 10, 1, '#c8a060'); [[0, '#ffffff'], [3, '#ffb0c8'], [6, '#9ad87a']].forEach(([dx, c]) => { px(x + dx, y - 3, 3, 2, c); px(x + dx + 1, y - 4, 1, 1, c); }); }); }   // 송편
+        [[394, 178], [442, 214], [300, 230]].forEach(([x, y], k) => { candle(x, y, tNow, k); px(x - 3, y, 8, 1, '#1f6a3a'); px(x - 2, y - 1, 2, 1, '#e23b4a'); px(x + 3, y - 1, 2, 1, '#e23b4a'); });   // 새 ㄱ·ㄴ 테이블 위
+        gift(60, 146, 7, 6, '#3a7aff', '#ffffff'); gift(120, 146, 6, 7, '#ffd23a', '#d6262e'); cane(96, 139); cane(150, 139); }
+      if (th === 'seollal') { [[6, 146], [184, 146], [242, 184], [436, 196], [300, 230]].forEach(([x, y]) => { px(x, y - 4, 8, 4, '#f4f0e8'); px(x + 1, y - 5, 6, 1, '#ffffff'); px(x + 2, y - 4, 1, 1, '#f6cc4a'); px(x + 5, y - 4, 1, 1, '#3aa05a'); px(x, y - 1, 8, 1, '#c84a3a'); }); }   // 떡국
+      if (th === 'chuseok') { [[6, 146], [184, 146], [242, 184], [436, 196], [300, 230]].forEach(([x, y]) => { px(x - 1, y - 1, 10, 1, '#c8a060'); [[0, '#ffffff'], [3, '#ffb0c8'], [6, '#9ad87a']].forEach(([dx, c]) => { px(x + dx, y - 3, 3, 2, c); px(x + dx + 1, y - 4, 1, 1, c); }); }); }   // 송편
       if (th === 'summer') { px(200, 162, 10, 10, '#ffffff'); px(200, 162, 5, 5, '#ff4a5a'); px(205, 167, 5, 5, '#3a7aff'); px(205, 162, 5, 5, '#ffd23a'); px(186, 138, 7, 8, '#e8b030'); px(187, 134, 2, 4, '#3a9a3a'); px(190, 133, 2, 5, '#3a9a3a'); }
     }
     function particles(ctx, s, t, th) {
@@ -1359,10 +1474,18 @@
         const fg = .2 + .07 * Math.sin(t / 120) + .04 * Math.sin(t / 47); const g = ctx.createRadialGradient(260 * s, 138 * s, 0, 260 * s, 138 * s, 50 * s); g.addColorStop(0, `rgba(255,150,60,${fg})`); g.addColorStop(1, 'rgba(255,150,60,0)'); ctx.fillStyle = g; ctx.fillRect(200 * s, 80 * s, 120 * s, 120 * s);
         const g2 = ctx.createRadialGradient(212 * s, 98 * s, 0, 212 * s, 98 * s, 30 * s); g2.addColorStop(0, `rgba(255,220,120,${.18 + .08 * Math.sin(t / 300)})`); g2.addColorStop(1, 'rgba(255,220,120,0)'); ctx.fillStyle = g2; ctx.fillRect(180 * s, 66 * s, 64 * s, 64 * s);
         ctx.restore();
-        const sp2 = (t % 26000) / 9000; if (sp2 < 1) { const sx = (1 - sp2) * (W + 120) - 60, sy = 13 + Math.sin(sp2 * Math.PI * 3) * 3; ctx.fillStyle = '#1a1014';
-          for (let r = 0; r < 3; r++) { const rx = sx - 14 - r * 11; ctx.fillRect(rx * s, sy * s, 8 * s, 3 * s); ctx.fillRect((rx - 1) * s, (sy - 3) * s, 2 * s, 3 * s); ctx.fillRect((rx + 1) * s, (sy + 3) * s, 1 * s, 2 * s); ctx.fillRect((rx + 6) * s, (sy + 3) * s, 1 * s, 2 * s); if (r === 0) { ctx.fillStyle = '#ff3a3a'; ctx.fillRect((rx - 2) * s, (sy - 1) * s, 1.5 * s, 1.5 * s); ctx.fillStyle = '#1a1014'; } }
-          ctx.fillRect(sx * s, (sy - 1) * s, 12 * s, 5 * s); ctx.fillRect((sx + 9) * s, (sy - 4) * s, 4 * s, 3 * s); ctx.fillRect((sx - 1) * s, (sy + 4) * s, 15 * s, 1 * s); ctx.fillRect((sx - 4) * s, (sy + 1) * s, 4 * s, .6 * s);
-          for (let k = 0; k < 6; k++) { ctx.fillStyle = `rgba(255,230,140,${.8 - k * .12})`; ctx.fillRect((sx + 16 + k * 5) * s, (sy + 2 + Math.sin(t / 100 + k) * 1.5) * s, 1.4 * s, 1.4 * s); } }
+        // 산타 썰매와 루돌프: 20초마다 화면 위를 컬러로 가로질러 감 (빨간 코 반짝)
+        const sp2 = (t % 20000) / 8000; if (sp2 < 1) { const sx = (1 - sp2) * (W + 160) - 60, sy = 12 + Math.sin(sp2 * Math.PI * 3) * 3, P = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x * s, y * s, w * s, h * s); }, gal = Math.floor(t / 150) % 2;
+          for (let r = 0; r < 3; r++) { const rx = sx - 16 - r * 13, ry = sy + (r % 2 ? gal : -gal) * .6;
+            P(rx, ry, 9, 4, '#8a5a34'); P(rx + 1, ry + 2, 6, 1, '#c8946a'); P(rx - 3, ry - 3, 4, 4, '#8a5a34'); P(rx - 4, ry - 2, 1, 1, '#1a1214');
+            P(rx - 2, ry - 6, 1, 3, '#c8a070'); P(rx - 4, ry - 6, 2, 1, '#c8a070'); P(rx, ry - 6, 2, 1, '#c8a070');
+            P(rx + 1, ry + 4, 1, gal ? 3 : 2, '#6a4224'); P(rx + 7, ry + 4, 1, gal ? 2 : 3, '#6a4224'); P(rx + 1, ry - 1, 8, 1, '#d6262e'); P(rx + 3, ry - 1, 1, 1, '#ffd23a');
+            if (r === 0) { const on = Math.floor(t / 250) % 2; P(rx - 5, ry - 2, 2, 2, on ? '#ff2a2a' : '#c81a1a'); if (on) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; P(rx - 6, ry - 3, 4, 4, 'rgba(255,60,60,.35)'); ctx.restore(); } } }
+          P(sx - 6, sy + 1, 6, .6, '#c8a070');
+          P(sx, sy - 1, 14, 6, '#d6262e'); P(sx, sy - 1, 14, 1, '#ffd23a'); P(sx + 11, sy - 4, 4, 4, '#d6262e'); P(sx - 1, sy + 5, 17, 1, '#ffd23a'); P(sx - 2, sy + 4, 1, 1, '#ffd23a');
+          P(sx + 3, sy - 7, 6, 6, '#d6262e'); P(sx + 3, sy - 4, 6, 2, '#ffffff'); P(sx + 4, sy - 9, 4, 2, '#f6d5bb'); P(sx + 3, sy - 11, 6, 2, '#d6262e'); P(sx + 8, sy - 12, 2, 2, '#ffffff');
+          P(sx + 9, sy - 6, 5, 5, '#8a6a3a'); P(sx + 10, sy - 8, 2, 2, '#3a7aff'); P(sx + 12, sy - 9, 2, 3, '#4fd36a');
+          for (let k = 0; k < 8; k++) { ctx.fillStyle = `rgba(255,230,140,${.85 - k * .1})`; ctx.fillRect((sx + 18 + k * 5) * s, (sy + 2 + Math.sin(t / 100 + k) * 1.5) * s, 1.4 * s, 1.4 * s); } }
         for (let i = 0; i < 16; i++) { const x = ((i * 131) % W + Math.sin(t / 1800 + i) * 10), y = ((t / 1000 * (7 + i % 4)) + i * 61) % (H + 10) - 5, r = 2.2 * s; ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.fillRect(x * s - r, y * s, r * 3, r * .8); ctx.fillRect(x * s, y * s - r, r * .8, r * 3); }
         for (let i = 0; i < 70; i++) { const sp = 12 + (i * 7) % 11, x = ((i * 97) % W + Math.sin(t / 1400 + i) * 6), y = ((t / 1000 * sp) + i * 37) % (H + 10) - 5; ctx.fillStyle = 'rgba(255,255,255,.8)'; const r = (i % 3 ? 1 : 1.6) * s; ctx.fillRect(x * s, y * s, r, r); } }
       if (th === 'spring') { for (let i = 0; i < 26; i++) { const x = ((i * 131) % W + Math.sin(t / 900 + i) * 14 + t / 220) % W, y = ((t / 1000 * (10 + i % 6)) + i * 41) % (H + 10) - 5; ctx.fillStyle = i % 2 ? 'rgba(255,170,200,.9)' : 'rgba(255,220,235,.9)'; ctx.fillRect(x * s, y * s, 2.4 * s, 1.6 * s); } }
@@ -1373,7 +1496,7 @@
       if (th === 'halloween') {
         ctx.save(); ctx.globalCompositeOperation = 'lighter';
         for (let i = 0; i < 6; i++) { const fx = ((i * 97 + t / 60) % (W + 120)) - 60, fy = 236 + (i % 3) * 12; const g = ctx.createRadialGradient(fx * s, fy * s, 0, fx * s, fy * s, 60 * s); g.addColorStop(0, 'rgba(150,110,200,.13)'); g.addColorStop(1, 'rgba(150,110,200,0)'); ctx.fillStyle = g; ctx.fillRect((fx - 60) * s, (fy - 60) * s, 120 * s, 120 * s); }
-        [[2, 146], [184, 146], [214, 168], [448, 168], [236, 234]].forEach(([lx, ly], k) => { const fl = .14 + .06 * Math.sin(t / 90 + k * 2); const g = ctx.createRadialGradient((lx + 5) * s, (ly - 4) * s, 0, (lx + 5) * s, (ly - 4) * s, 22 * s); g.addColorStop(0, `rgba(255,170,60,${fl})`); g.addColorStop(1, 'rgba(255,170,60,0)'); ctx.fillStyle = g; ctx.fillRect((lx - 18) * s, (ly - 26) * s, 46 * s, 46 * s); });
+        [[2, 146], [184, 146], [238, 184], [436, 198], [290, 230]].forEach(([lx, ly], k) => { const fl = .14 + .06 * Math.sin(t / 90 + k * 2); const g = ctx.createRadialGradient((lx + 5) * s, (ly - 4) * s, 0, (lx + 5) * s, (ly - 4) * s, 22 * s); g.addColorStop(0, `rgba(255,170,60,${fl})`); g.addColorStop(1, 'rgba(255,170,60,0)'); ctx.fillStyle = g; ctx.fillRect((lx - 18) * s, (ly - 26) * s, 46 * s, 46 * s); });
         ctx.restore();
         for (let i = 0; i < 3; i++) { const p = ((t / 9000) + i / 3) % 1, x = p * (W + 40) - 20, y = 40 + i * 18 + Math.sin(t / 260 + i * 2) * 5, flap = Math.floor(t / 140 + i) % 2;
         ctx.fillStyle = '#140c10'; ctx.fillRect((x - 1) * s, y * s, 3 * s, 2 * s); ctx.fillRect((x - 6) * s, (y - (flap ? 2 : 0)) * s, 5 * s, 1.4 * s); ctx.fillRect((x + 2) * s, (y - (flap ? 2 : 0)) * s, 5 * s, 1.4 * s); } }
@@ -1529,6 +1652,7 @@
       if (hiFx.length) { hiFx.forEach(fn => fn(ctx, s)); hiFx.length = 0; }
       if (frontFx.length) { ctx.save(); const P2 = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x * s, y * s, w * s, h * s); }; frontFx.forEach(fn => fn(P2)); ctx.restore(); }   // 잔·반짝임은 고양이보다 앞에
       wallSign(ctx, s, t);
+      dogueTitles(ctx, s);
       cats.forEach((c, ci) => { if (c.st === 'jump' || c.lx === undefined || c._hid) return; ctx.save(); ctx.font = `${6.4 * s}px "Do Hyeon", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';   // 고양이 이름표 (머리 바로 위, 목걸이 색 테두리)
         const tw = ctx.measureText(c.name).width + 5 * s, th = 8.4 * s, cy = Math.max(th / 2 + s, (c.ly - 6.2) * s), cx = Math.max(tw / 2 + 2 * s, Math.min(W * s - tw / 2 - 2 * s, c.lx * s)), kc = CAT_PAL[ci].K;
         ctx.fillStyle = 'rgba(20,12,14,.78)'; ctx.beginPath(); ctx.roundRect(cx - tw / 2, cy - th / 2, tw, th, 4 * s); ctx.fill(); ctx.strokeStyle = kc; ctx.lineWidth = .8 * s; ctx.stroke();
@@ -1569,12 +1693,12 @@
       const lx = opts.qr ? 343 : 376;
       const label = { halloween: ['HAPPY HALLOWEEN', '#ff8a1a'], christmas: ['MERRY CHRISTMAS', '#ff5a5a'], summer: ['SUMMER VACANCE', '#4ad0e0'], spring: ['SPRING NIGHT', '#ff9ac0'],
         seollal: ['HAPPY NEW YEAR', '#ff6a6a'], chuseok: ['HAPPY CHUSEOK', '#ffd36a'], valentine: ['HAPPY VALENTINE', '#ff6a8a'], white: ['HAPPY WHITE DAY', '#bfe6ff'], rose: ['HAPPY ROSE DAY', '#ff5a6a'], pepero: ['HAPPY PEPERO DAY', '#e8a060'] }[th];
-      if (label) { ctx.fillStyle = label[1]; ctx.font = `${6 * s}px "DotGothic16", monospace`; ctx.fillText(label[0], lx * s, 47 * s); }
-      ctx.fillStyle = '#f6eee6'; ctx.font = `${9 * s}px "Do Hyeon", sans-serif`; ctx.fillText(opts.screenTitle || '오늘의 낯선 손님들', lx * s, 60 * s);
-      ctx.fillStyle = '#ffb27a'; ctx.font = `${30 * s}px "DotGothic16", monospace`; ctx.fillText(String(opts.count).padStart(2, '0'), lx * s, 96 * s);
-      ctx.fillStyle = '#b9a59c'; ctx.font = `${5.6 * s}px "DotGothic16", monospace`; ctx.fillText(`${opts.day.replaceAll('-', '.')}  notsun`, lx * s, 114 * s);
+      if (label) { ctx.fillStyle = label[1]; ctx.font = `${5.6 * s}px "DotGothic16", monospace`; ctx.fillText(label[0], lx * s, 41 * s); }
+      ctx.fillStyle = '#f6eee6'; ctx.font = `${8.4 * s}px "Do Hyeon", sans-serif`; ctx.fillText(opts.screenTitle || '오늘의 낯선 손님들', lx * s, 52 * s);
+      ctx.fillStyle = '#ffb27a'; ctx.font = `${24 * s}px "DotGothic16", monospace`; ctx.fillText(String(opts.count).padStart(2, '0'), lx * s, 80 * s);
+      ctx.fillStyle = '#b9a59c'; ctx.font = `${5.2 * s}px "DotGothic16", monospace`; ctx.fillText(`${opts.day.replaceAll('-', '.')}  notsun`, lx * s, 93 * s);
       // 대화 아이콘 설명 (스크린 아래쪽)
-      { const ly = 124, lc = 376; ctx.save(); ctx.font = `${5.4 * s}px "Do Hyeon", sans-serif`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      { const ly = 100.5, lc = 376; ctx.save(); ctx.font = `${5.4 * s}px "Do Hyeon", sans-serif`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
         const parts = [['말 걸어도 돼요', 1], ['오늘은 조용히', 2]], gap = 9 * s, iw = 10 * s;
         const widths = parts.map(([tx, k]) => ctx.measureText(tx).width + (k ? iw : 0)), total = widths.reduce((a, b2) => a + b2, 0) + gap * (parts.length - 1);
         let x = lc * s - total / 2;
@@ -1582,10 +1706,10 @@
           ctx.fillStyle = k ? '#d9c8bd' : '#9a857c'; ctx.fillText(tx, x, ly * s); x += ctx.measureText(tx).width + gap; });
         ctx.restore(); }
       if (opts.qr) {
-        const q = 62 * s, qx = 392 * s, qy = 44 * s;
+        const q = 52 * s, qx = 398 * s, qy = 37 * s;
         ctx.fillStyle = '#ffffff'; ctx.fillRect(qx - 2 * s, qy - 2 * s, q + 4 * s, q + 4 * s);
         ctx.imageSmoothingEnabled = false; ctx.drawImage(opts.qr, qx, qy, q, q);
-        ctx.fillStyle = '#ffb27a'; ctx.font = `${6 * s}px "Do Hyeon", sans-serif`; ctx.fillText('QR 찍고 바에 앉기', qx + q / 2, 118 * s);
+        ctx.fillStyle = '#ffb27a'; ctx.font = `${5.6 * s}px "Do Hyeon", sans-serif`; ctx.fillText('QR 찍고 바에 앉기', qx + q / 2, 96 * s);
       }
       // 이름표
       const many = placed.length > 18;
