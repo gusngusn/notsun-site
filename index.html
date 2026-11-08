@@ -467,7 +467,7 @@ function refreshCos(){ const me = loadMe(), b = $('cosBtn'), d = $('cosDice'); i
   if (d && me) d.hidden = !me.cos || me.cos === true && !!rawCos(me.look.style).k;
   if (me && !$('edit').hidden) N.drawPreview($('meEdit'), me.look, me.drink, myCos(me.look.style).k); }
 function askGacha(){ const box = document.createElement('div'); box.className = 'gacha ask'; box.setAttribute('role', 'dialog');
-  box.innerHTML = `<div class="gask"><div class="gback mini">?</div><b>오늘의 레전드 뽑을래요?</b><div class="gprize"><b style="font-size:17px">🎟 레전드 = 칵테일 1잔 무료!</b><b style="font-size:14px">🍢 시크릿 = 서비스 안주!</b><small class="gpst">📸 뽑은 카드를 스토리에 올리면 서비스도 드려요</small></div><p>레전드 1%</p><button type="button" class="btn primary" data-go>🎁 뽑기</button><button type="button" class="btn" data-no>안 뽑고 내 모습으로</button></div>`;
+  box.innerHTML = `<div class="gask"><div class="gback mini">?</div><b>오늘의 레전드 뽑을래요?</b><div class="gprize"><b style="font-size:17px">🎟 레전드 = 칵테일 1잔 무료!</b><b style="font-size:14px">🍢 시크릿 = 서비스 안주!</b></div><p>레전드 1%</p><button type="button" class="btn primary" data-go>🎁 뽑기</button><button type="button" class="btn" data-no>안 뽑고 내 모습으로</button></div>`;
   document.body.appendChild(box);
   box.querySelector('[data-no]').onclick = () => { box.remove(); refreshCos(); };
   box.querySelector('[data-go]').onclick = async () => { box.remove(); const me = loadMe(); if (me) saveMe({ ...me, cosDrawn: true }); await setCos(!!rawCos().k); showGacha(); }; }
