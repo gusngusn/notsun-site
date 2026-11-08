@@ -40,8 +40,13 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
 .row span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .row small{color:var(--muted)}
 .ok{color:#9fe0a5;margin:0}.err{color:#ff8f8f;margin:0}
-.mapwrap{overflow-x:auto;margin:0 -4px;padding:4px}
-.map{position:relative;min-width:640px;aspect-ratio:480/150;background:#2a0f11;border-radius:8px;border:1px solid var(--line);overflow:hidden}
+.mapwrap{margin:0 -4px;padding:4px}
+.map{position:relative;width:100%;max-width:520px;margin:0 auto;aspect-ratio:100/118;background:#2a0f11;border-radius:10px;border:1px solid var(--line);overflow:hidden}
+.map .zone.lbl{background:none;font-size:12px;color:#c9a08a;place-items:start;padding:2px 6px}
+.map .zone.tbl{display:grid;place-items:center;font-size:11px;color:#d8b9a5;border-radius:3px}
+.map .seat{width:9%;height:auto;aspect-ratio:1;font-size:12px;line-height:1}
+.map .seat.empty{color:#6b4a44;font-size:10px}
+.map .sep{position:absolute;left:4%;right:4%;border-top:1px dashed #4a3436}
 .zone{position:absolute;border-radius:4px;display:grid;place-items:center;font:13px "Do Hyeon",sans-serif;color:#d8b9a5}
 .zone.bar{background:#5a3a22;box-shadow:0 0 0 2px #ffb27a55 inset}.zone.tbl{background:#4a2f20}.zone.stand{background:none;border:1px dashed #6b4a44;color:#8f7268}
 .seat{position:absolute;transform:translate(-50%,-50%);width:24px;height:24px;border-radius:50%;border:1px solid #6b4a44;background:#140e0f;color:var(--ink);font:12px "Do Hyeon",sans-serif;padding:0;cursor:pointer;display:grid;place-items:center;overflow:hidden;white-space:nowrap}
@@ -231,7 +236,7 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
       <h2>손님 자리 배치</h2>
       <p class="sub" id="seatHelp">캐릭터를 누른 다음 옮길 자리를 누르세요. 다른 손님 자리를 누르면 서로 바뀌어요.</p>
       <div class="mapwrap"><div class="map" id="map"></div></div>
-      <p class="sub" style="font-size:13px">지도가 잘리면 옆으로 밀어서 보세요. 한 번 옮기면 지금 앉은 손님들 자리는 그대로 고정되고, 새 손님은 빈자리에 앉아요.</p>
+      <p class="sub" style="font-size:13px">동그라미 안 글자는 손님 닉네임 앞 두 글자, 빈자리는 자리 번호예요. 한 번 옮기면 지금 앉은 손님들 자리는 그대로 고정되고, 새 손님은 빈자리에 앉아요.</p>
       <div class="chips"><button class="chip" id="seatReset" type="button">처음 배치로 되돌리기</button></div>
     </section>
 
@@ -308,13 +313,25 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
 <script>
 const N = window.Notsun, $ = id => document.getElementById(id);
 let seats = {}, guestsNow = [], selId = null, ev = { lucky: null, best: null, vip: [], bdays: [] }, ownerSt = null;
+// 자리 배치도 (2026-11-08): 위에서 내려다본 배치 · 휴대폰 폭에 맞춤 (가로 100 · 세로 118 단위)
+// 위: 왼쪽 ㄴ 테이블 10석 + 오른쪽 ㄱ 테이블 10석 (사장님 그림) / 가운데: 오너바 7석 / 아래: 스탠딩 13 (사장님 요청 순서)
+const MAP_H = 118;
 const ZONES = [
-  { cls: 'bar', x: 0, y: 150, w: 196, h: 40, label: '메인바' },
-  { cls: 'tbl', x: 214, y: 168, w: 246, h: 16 }, { cls: 'tbl', x: 440, y: 168, w: 20, h: 64, label: '' },
-  { cls: 'tbl', x: 214, y: 190, w: 20, h: 60 }, { cls: 'tbl', x: 234, y: 234, w: 200, h: 16 },
-  { cls: 'stand', x: 0, y: 238, w: 200, h: 32, label: '' }, { cls: 'stand', x: 228, y: 128, w: 240, h: 34, label: '' }
+  { cls: 'lbl', x: 2, y: 1, w: 30, h: 5, label: 'ㄱㄴ 테이블' },
+  { cls: 'tbl', x: 12, y: 17, w: 6, h: 38, label: '' }, { cls: 'tbl', x: 12, y: 49, w: 34, h: 6, label: 'ㄴ 테이블' },
+  { cls: 'tbl', x: 54, y: 15, w: 34, h: 6, label: 'ㄱ 테이블' }, { cls: 'tbl', x: 82, y: 21, w: 6, h: 34, label: '' },
+  { cls: 'bar', x: 6, y: 82.5, w: 88, h: 6, label: '오너바' },
+  { cls: 'lbl', x: 2, y: 92, w: 30, h: 5, label: '스탠딩' }
 ];
-const ZONE_NAMES = [['ㄱ테이블', 300, 200], ['ㄴ테이블', 300, 226], ['스탠딩', 100, 230], ['스탠딩', 470 - 40, 126]];
+const MAP_SEPS = [69.5, 91];
+// 자리 번호 → 배치도 위치 (common.js SLOTS 순서와 같음)
+const SEAT_POS = {
+  b1: [12, 76], b2: [24.7, 76], b3: [37.3, 76], b4: [50, 76], b5: [62.7, 76], b6: [75.3, 76], b7: [88, 76],
+  g1: [61, 8], g2: [71, 8], g3: [81, 8], g4: [48, 18], g5: [61, 30], g6: [73, 30], g7: [73, 43], g8: [95, 28], g9: [95, 38], g10: [95, 48],
+  n1: [18, 63], n2: [29, 63], n3: [40, 63], n4: [15, 11.5], n5: [5, 24], n6: [5, 34], n7: [5, 44], n8: [26, 24], n9: [26, 40], n10: [37, 40],
+  s1: [10, 110], s2: [23.3, 110], s3: [36.7, 110], s4: [50, 110], s5: [63.3, 110], s6: [76.7, 110], s7: [90, 110],
+  s8: [28, 99], s9: [41, 99], s10: [54, 99], s11: [67, 99], s12: [80, 99], s13: [93, 99]
+};
 let owners = N.DEFAULT_OWNERS.map(o => ({ ...o, lines: [...o.lines] })), who = 0, started = false, dirty = false, theme = 'auto';
 $('email').value = N.OWNER_EMAIL;
 $('mode').textContent = N.LIVE ? '' : '데모 모드 (config.js 설정 전 · 이 기기 안에서만 동작)';
@@ -481,17 +498,18 @@ function renderGuests(list){
 // 자리 배치 지도 (스크린과 같은 좌표 480x270)
 function renderMap(){
   const el = $('map'); if (!el) return; el.innerHTML = '';
-  const pct = (v, total) => (v / total * 100) + '%', py = v => ((v - 120) / 150 * 100) + '%';
+  const px = v => v + '%', py = v => (v / MAP_H * 100) + '%';
   ZONES.forEach(z => { const d = document.createElement('div'); d.className = 'zone ' + z.cls;
-    Object.assign(d.style, { left: pct(z.x, 480), top: py(z.y), width: pct(z.w, 480), height: pct(z.h, 150) }); if (z.label) d.textContent = z.label; el.appendChild(d); });
-  ZONE_NAMES.forEach(([t, x, y]) => { const d = document.createElement('div'); d.className = 'zone'; d.textContent = t;
-    Object.assign(d.style, { left: pct(x - 40, 480), top: py(y - 7), width: pct(80, 480), height: pct(14, 150), fontSize: '11px', color: '#8f7268' }); el.appendChild(d); });
+    Object.assign(d.style, { left: px(z.x), top: py(z.y), width: px(z.w), height: py(z.h) }); if (z.label) d.textContent = z.label; el.appendChild(d); });
+  MAP_SEPS.forEach(y => { const d = document.createElement('div'); d.className = 'sep'; d.style.top = py(y); el.appendChild(d); });
   const placed = N.placeGuests(N.onScreen(guestsNow, true), seats), at = {};
   placed.forEach(p => { if (p.slot) at[p.slot.code] = p.g; });
   N.SEATS.forEach(sl => {
+    const pos = SEAT_POS[sl.code]; if (!pos) return;
     const g = at[sl.code], b = document.createElement('button'); b.type = 'button'; b.className = 'seat';
-    b.style.left = pct(sl.x, 480); b.style.top = py(sl.foot - (sl.sit ? 10 : 14));
-    if (g) { b.classList.add('on'); b.textContent = [...g.nick][0]; b.title = g.nick; if (g.id === selId) b.classList.add('sel'); }
+    b.style.left = px(pos[0]); b.style.top = py(pos[1]);
+    if (g) { b.classList.add('on'); b.textContent = [...g.nick].slice(0, 2).join(''); b.title = g.nick; if (seats[g.id]) b.classList.add('pin'); if (g.id === selId) b.classList.add('sel'); }
+    else { b.classList.add('empty'); b.textContent = sl.code.slice(1); }
     b.setAttribute('aria-label', (g ? g.nick + ' · ' : '빈자리 · ') + seatName(sl.code));
     b.onclick = () => tapSeat(sl.code, g); el.appendChild(b);
   });
