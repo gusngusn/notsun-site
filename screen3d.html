@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>낯선 방명록 스크린 (3D)</title>
+<title>낯선 방명록 스크린</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Do+Hyeon&display=swap">
 <style>
 :root{--line:#3a2a2b;--ink:#f6eee6;--muted:#b9a59c;--glow:#ffb27a}
@@ -14,7 +14,31 @@ html,body{margin:0;height:100%;cursor:none;background:#0d090a;color:var(--ink);f
 .btn.primary{background:var(--glow);color:#1b0d0d;border-color:var(--glow)}
 .toast{position:fixed;left:50%;top:80px;transform:translateX(-50%);background:#2a1d1f;border:1px solid var(--glow);color:#ffe2c4;border-radius:14px;padding:10px 16px;font-size:15px;display:none;text-align:center;max-width:90vw}
 .hint{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:#140c0dd9;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:14px;color:var(--muted);white-space:nowrap}
+
+#hint{z-index:6;position:fixed;left:50%;top:16px;transform:translateX(-50%);font:16px "Do Hyeon",sans-serif;color:#f6eee6;background:#1a1214;border:1px solid #ffb27a;padding:8px 14px;border-radius:5px}
+#snd{z-index:6;position:fixed;left:12px;bottom:10px;font:14px "Do Hyeon",sans-serif;color:#b9a59c;background:rgba(26,18,20,.8);border:1px solid #3a2a2b;padding:6px 10px;border-radius:6px}
+[hidden]{display:none!important}
+#hostLogin{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:rgba(13,9,10,.92);cursor:auto}
+#hostLogin .hl{background:#1a1214;border:1px solid #ffb27a;border-radius:12px;padding:22px;display:grid;gap:10px;width:min(380px,90vw);font:16px "Do Hyeon",sans-serif;color:#f6eee6}#hostLogin .hl>div,#hostLogin form{display:grid;gap:10px}#hostLogin button.sub{background:#3a2a2b;color:#f6eee6}#hostLogin .close a{color:#ffb27a}
+#hostLogin form{background:#1a1214;border:1px solid #ffb27a;border-radius:12px;padding:22px;display:grid;gap:10px;width:min(360px,90vw);font:16px "Do Hyeon",sans-serif;color:#f6eee6}
+#hostLogin input{font:16px sans-serif;padding:10px;border-radius:8px;border:1px solid #3a2a2b;background:#0d090a;color:#f6eee6}
+#hostLogin button{font:17px "Do Hyeon",sans-serif;padding:11px;border-radius:8px;border:0;background:#ffb27a;color:#1a0d0d;cursor:pointer}
+#hostLogin small{color:#b9a59c;line-height:1.4}#hostLogin .err{color:#ff8a7a}
+#hostBadge{position:fixed;right:12px;bottom:10px;font:14px "Do Hyeon",sans-serif;color:#b8f08a;background:rgba(26,18,20,.85);border:1px solid #3a5a2b;padding:6px 10px;border-radius:6px}
+.grecaptcha-badge{visibility:hidden}
+.top,.qr{z-index:2}
+#full2d{position:fixed;inset:0;z-index:4;display:none;background:#0d090a}#full2d canvas{width:100%;height:100%;image-rendering:pixelated}
 </style></head><body>
+<div id="hint" hidden></div>
+<div id="snd" hidden>🔈 화면을 한 번 누르면 효과음이 켜져요</div>
+<div id="hostLogin" hidden><div class="hl">
+  <form id="hostForm" hidden><b>🎮 게임 진행용 사장님 로그인</b><small>로그인하면 이 기기가 '게임 진행 스크린'이 돼요. 리모컨에서 게임을 시작하면 이 스크린이 진행해서, 리모컨 화면이 꺼져도 게임이 멈추지 않아요. 로그인은 계속 유지돼요.</small><input id="hostPw" type="password" autocomplete="current-password" placeholder="사장님 비밀번호"><button type="submit">로그인</button><small class="err" id="hostErr"></small></form>
+  <div id="hostAsk" hidden><b>🎮 이 기기를 게임 진행 스크린으로 지정할까요?</b><small>사장님 계정으로 이미 로그인돼 있어요. 매장 프로젝터처럼 항상 켜져 있는 기기만 지정해 주세요. 휴대폰이나 노트북을 지정하면 화면이 꺼질 때 게임이 잠깐 멈출 수 있어요.</small><button type="button" id="hostYes">이 기기로 지정하기</button></div>
+  <div id="hostOn" hidden><b>✅ 이 기기는 게임 진행 스크린이에요</b><small>리모컨에서 게임을 시작하면 이 스크린이 진행해요. (이 창은 리모컨 확인 버튼을 빠르게 5번 누르면 다시 열려요)</small><button type="button" id="hostOk">확인</button><button type="button" id="hostOff" class="sub">지정 해제</button></div>
+  <small class="close"><a href="#" id="hostSkip">닫기</a></small>
+</div></div>
+<div id="hostBadge" hidden>🎮 이 스크린이 게임을 진행해요</div>
+<div id="full2d"><canvas id="full2dc"></canvas></div>
 <canvas id="c"></canvas>
 <style>
 .top .badge span{font-size:2.2vw}.top .badge b{font-size:1.1vw}
@@ -24,7 +48,7 @@ html,body{margin:0;height:100%;cursor:none;background:#0d090a;color:var(--ink);f
 </style>
 <div class="top">
  <div class="badge"><b>NOTSUN · 낯선 교동점</b><span id="day">오늘도 혼술 한 잔</span></div>
- <div class="badge" style="text-align:right"><span style="color:#7ee08a">● 지금 매장 손님 <span id="cnt">8</span>명</span><br><span class="trial" style="font-size:1.2vw;color:var(--muted);display:none">시안 · 손님은 예시</span></div>
+ <div class="badge" style="text-align:right;display:none"><span style="color:#7ee08a">● 지금 매장 손님 <span id="cnt">8</span>명</span><br><span class="trial" style="font-size:1.2vw;color:var(--muted);display:none">시안 · 손님은 예시</span></div>
 </div>
 <div class="qr"><i></i>큐알을 찍으면<br>내 캐릭터가 자리에 앉아요</div>
 <div class="hint" id="hint" style="display:none"></div>
@@ -34,7 +58,7 @@ html,body{margin:0;height:100%;cursor:none;background:#0d090a;color:var(--ink);f
  <button class="btn primary" id="goBtn">🧭 실제로 가는 길</button>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>try { const t = document.createElement('canvas'); if (!(t.getContext('webgl') || t.getContext('experimental-webgl'))) location.replace('screen.html'); } catch (e) { location.replace('screen.html'); }</script>
+<script>try { const t = document.createElement('canvas'); if (!(t.getContext('webgl') || t.getContext('experimental-webgl'))) location.replace('screen2d.html'); } catch (e) { location.replace('screen2d.html'); }</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -42,6 +66,7 @@ html,body{margin:0;height:100%;cursor:none;background:#0d090a;color:var(--ink);f
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="config.js"></script>
 <script src="common.js"></script>
+<script src="host.js"></script>
 <script>
 const N = window.Notsun;
 const cv = document.getElementById('c');
@@ -284,9 +309,13 @@ function refreshMarkers(){ return; markers.forEach(m => scene.remove(m)); marker
   ALLSEATS.forEach((s, i) => { if (seatTaken.has(i)) return; const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: RING, transparent: true, depthTest: false, sizeAttenuation: false })); m.scale.set(.065, .065, 1); m.position.set(s.x, s.y + .25, s.z); m.userData.seat = i; scene.add(m); markers.push(m); }); }
 // 손님 말풍선
 const LINES = ['옆자리 반가워요', '하이볼 맛있다', '오늘 분위기 좋네', '고양이 어디 갔지?', '혼술 처음이에요', '한 잔 더?'];
-function say(c, txt){ if (c.bubble) c.grp.remove(c.bubble); const cc = document.createElement('canvas'); cc.width = 320; cc.height = 72; const g = cc.getContext('2d'); g.font = '30px "Do Hyeon", sans-serif'; const w = Math.min(310, g.measureText(txt).width + 30);
-  g.fillStyle = '#fff8ec'; g.beginPath(); g.roundRect((320 - w) / 2, 4, w, 48, 14); g.fill(); g.beginPath(); g.moveTo(150, 52); g.lineTo(170, 52); g.lineTo(160, 66); g.fill(); g.fillStyle = '#2a1012'; g.textAlign = 'center'; g.fillText(txt, 160, 38);
-  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cc), transparent: true, depthTest: false })); s.scale.set(1.4, .32, 1); s.position.y = c.n.h * PXM + .5; c.grp.add(s); c.bubble = s; c.sayAt = performance.now(); }
+function say(c, txt, o){ o = o || {}; if (!c || !c.grp) return; if (c.bubble) c.grp.remove(c.bubble); txt = String(txt || '').slice(0, 30); if (!txt) return;
+  const cc = document.createElement('canvas'), g = cc.getContext('2d'); g.font = '30px "Do Hyeon", sans-serif';
+  const words = [...txt], lines = []; let cur = ''; words.forEach(ch => { if (g.measureText(cur + ch).width > 330 && cur) { lines.push(cur); cur = ch; } else cur += ch; }); if (cur) lines.push(cur); if (lines.length > 2) { lines.length = 2; lines[1] = lines[1].slice(0, -1) + '…'; }
+  const w = Math.max(...lines.map(l => g.measureText(l).width)) + 34, h = 20 + lines.length * 36; cc.width = 400; cc.height = h + 18; g.font = '30px "Do Hyeon", sans-serif';
+  const edge = { live: '#ffd36a', order: '#7ee08a', owner: '#ffb27a' }[o.kind] || null; g.fillStyle = '#fff8ec'; g.beginPath(); g.roundRect((400 - w) / 2, 2, w, h, 16); g.fill(); if (edge) { g.lineWidth = 5; g.strokeStyle = edge; g.stroke(); }
+  g.fillStyle = '#fff8ec'; g.beginPath(); g.moveTo(190, h + 1); g.lineTo(210, h + 1); g.lineTo(200, h + 16); g.fill(); g.fillStyle = '#2a1012'; g.textAlign = 'center'; lines.forEach((l, i) => g.fillText(l, 200, 36 + i * 36));
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cc), transparent: true, depthTest: false })); s.scale.set(1.6, 1.6 * cc.height / 400, 1); s.center.set(.5, 0); s.position.y = c.n.h * PXM + .3; s.renderOrder = 10; c.grp.add(s); c.bubble = s; c.sayAt = performance.now(); c.sayDur = o.dur || 4500; }
 // ---------- 입력 ----------
 const ray = new THREE.Raycaster(), v2 = new THREE.Vector2();
 const toast = (m, ms) => { const el = document.getElementById('toast'); el.innerHTML = m; el.style.display = 'block'; clearTimeout(toast.h); toast.h = setTimeout(() => el.style.display = 'none', ms || 3800); };
@@ -316,8 +345,8 @@ function loop(t){ const dt = Math.min(.05, (t - last) / 1000); last = t;
   [...guests, ...(me ? [me] : [])].forEach((c, i) => { const bl = Math.floor((t + i * 777) / 160) % 23 === 0; if (c.blinkMesh) c.blinkMesh.visible = bl;
     // 카메라 쪽을 바라보며 살짝 몸을 흔듦(싸이월드 미니미처럼)
     const p = c.grp.position; c.grp.rotation.y = Math.atan2(camera.position.x - p.x, camera.position.z - p.z) * .85;
-    if (!c.walking) { c.body.position.y = Math.abs(Math.sin(t / 520 + c.ph)) * .012; c.body.rotation.z = Math.sin(t / 900 + c.ph) * .025; } if (c.bubble && t - c.sayAt > 4200) { c.grp.remove(c.bubble); c.bubble = null; } });
-  if (Math.random() < .006) { const c = guests[Math.floor(Math.random() * guests.length)]; if (!c.bubble) say(c, LINES[Math.floor(Math.random() * LINES.length)]); }
+    if (!c.walking) { c.body.position.y = Math.abs(Math.sin(t / 520 + c.ph)) * .012; c.body.rotation.z = Math.sin(t / 900 + c.ph) * .025; } if (c.bubble && t - c.sayAt > (c.sayDur || 4500)) { c.grp.remove(c.bubble); c.bubble = null; } });
+  /* 실제 손님에게 지어낸 말풍선은 띄우지 않음(손님 한 줄·사장 멘트만) */
   // 대형 스크린: 방명록 화면 그대로 (0.1초마다)
   if (!view && t - scrAt > 500) { scrAt = t; const g = scrCv.getContext('2d'); const gr = g.createLinearGradient(0, 0, 960, 540); gr.addColorStop(0, '#2a0c10'); gr.addColorStop(1, '#5a1a1c'); g.fillStyle = gr; g.fillRect(0, 0, 960, 540);
     g.textAlign = 'center'; g.shadowColor = '#ff4a3a'; g.shadowBlur = 30; g.fillStyle = '#ffd0c0'; g.font = '150px "Do Hyeon", sans-serif'; g.fillText('낯선', 480, 230); g.shadowBlur = 0;
@@ -857,11 +886,230 @@ function syncOwners(){ const list = (ownerState.owners && ownerState.owners.leng
   if (key !== ownersKey) { ownersKey = key; OWNERS3D.splice(0).forEach(c => { scene.remove(c.grp); const k = guests.indexOf(c); if (k >= 0) guests.splice(k, 1); });
     list.forEach((o, i) => { const c = makeChar(o.nick, o, 'cocktail', false); if (c) { c.grp.position.set(-2.62, .3, -1.7 + i * 2.1); c.owner = i; c.tz = c.grp.position.z; c.next = performance.now() + 3000 + i * 2500; guests.push(c); OWNERS3D.push(c); } }); }
   setOff3D(list.map((o, i) => o.off ? i : -1).filter(i => i >= 0)); }
-N.watchOwner(st => { ownerState = st; syncOwners(); const th = N.resolveTheme(st.theme || 'auto'); if (th !== THEME) setTheme(th); syncGuests(); });
+N.watchOwner(st => { ownerState = st; if (typeof gameHost !== 'undefined' && gameHost) gameHost.feed(st.game); syncOwners(); const th = N.resolveTheme(st.theme || 'auto'); if (th !== THEME) setTheme(th); syncGuests(); });
 function subG(){ stopG && stopG(); stopG = N.watchGuests(day, list => { if (list) liveGuests = list; syncGuests(); }); }
 subG(); syncGuests();
 setInterval(() => { if (N.bizDate() !== day) { day = N.bizDate(); liveGuests = []; subG(); } }, 60000);
 try { N.watchMenu(cats => { recName = cats.flatMap(c => c.items).filter(it => it.rec && !it.soldout).map(it => it.name).slice(0, 2).join(', '); }); } catch (e) {}
+// ---------- 사장앱 연동(11월 12일): 사장님 고정 멘트·지금 말하기·오늘의 질문·주문 알림을 3D 화면에 직접 ----------
+const qBox = document.createElement('div'); qBox.style.cssText = 'position:fixed;left:50%;top:1.2vw;transform:translateX(-50%);max-width:52vw;background:#140c0de6;border:1px solid #ffb27a;border-radius:1vw;padding:.6vw 1.4vw;font:1.7vw "Do Hyeon",sans-serif;color:#ffe2c4;text-align:center;display:none;z-index:3'; document.body.appendChild(qBox);
+const talkSeen = {}; let talkTick = 0, talkAt = 0;
+const ownerChar = i => { const cs = OWNERS3D.filter(c => c.grp.visible); return cs.find(c => c.owner === i) || cs[0] || null; };
+const guestChar = id => guests.find(c => c.live && !c.leaving && c.key === id);
+function talkDirector(){ const now = Date.now(), st = ownerState || {};
+  // 오늘의 질문(화면 위쪽에 계속)
+  const q = typeof st.q === 'string' ? st.q.trim() : ''; qBox.style.display = q ? 'block' : 'none'; if (q) qBox.textContent = '💬 오늘의 질문 · ' + q;
+  // 지금 말하기(15초 동안 사장님 머리 위 ★)
+  const lv = st.live; if (lv && lv.msg && now - lv.ms < 15000 && !talkSeen['l' + lv.ms]) { talkSeen['l' + lv.ms] = 1; const c = ownerChar(lv.who === 1 ? 1 : 0); if (c) say(c, '★ ' + lv.msg, { dur: 15000 - (now - lv.ms), kind: 'live' }); talkAt = now; return; }
+  // 주문 들어감 · 한 잔 완성
+  const od = st.order; if (od && od.ms && now - od.ms < 9000 && !talkSeen['o' + od.ms]) { talkSeen['o' + od.ms] = 1; const g = od.gid && guestChar(od.gid); if (g) say(g, '주문 들어갔어요!', { kind: 'order' }); const o = ownerChar(0); if (o) say(o, `${od.nick || '손님'}님 주문 들어갔어요!`, { kind: 'order' }); talkAt = now; return; }
+  const sv = st.served; if (sv && sv.ms && now - sv.ms < 6000 && !talkSeen['s' + sv.ms]) { talkSeen['s' + sv.ms] = 1; const o = ownerChar(0); if (o) say(o, '한 잔 완성! 🍸', { kind: 'live' }); const g = sv.gid && guestChar(sv.gid); if (g) setTimeout(() => say(g, '한 잔 나왔어요! 🍸', { kind: 'order' }), 1900); talkAt = now; return; }
+  // 평소: 손님 한 줄 ↔ 사장님 고정 멘트(오늘의 추천·오늘의 질문 포함)를 번갈아
+  if (now - talkAt < 5500) return; talkAt = now; talkTick++;
+  const real = guests.filter(c => c.live && !c.leaving && c.lastMsg);
+  if (talkTick % 3 !== 0 && real.length) { const c = real[talkTick % real.length]; say(c, c.lastMsg); return; }
+  const ows = (st.owners && st.owners.length ? st.owners : N.DEFAULT_OWNERS).slice(0, 2), oi = Math.floor(talkTick / 3) % 2, o = ownerChar(oi); if (!o) return;
+  const lines = ((ows[o.owner] || {}).lines || []).filter(Boolean).concat(recName ? [`오늘의 추천은 ${recName}! 한 잔 어때요?`] : []).concat(q ? [`오늘의 질문: ${q}`] : []);
+  if (lines.length) say(o, lines[Math.floor(talkTick / 6) % lines.length], { kind: 'owner' }); }
+setInterval(talkDirector, 700);
+
+var wxReady = false;
+// ---------- 매장 밖 밤 + 대구 실제 날씨 연동(11월 12일): 지금 2D 스크린과 같은 무료 날씨 정보, 10분마다 · 주소에 ?wx=rain|snow|storm|cloud|fog|clear 로 시험 ----------
+const WXS = { kind: 'clear', amt: 0, day: 0 };
+function fetchWx(){ try { const q = (location.search.match(/[?&]wx=(\w+)/) || [])[1]; if (q) { WXS.kind = q; WXS.amt = q === 'clear' ? 0 : 2; return; } } catch (e) {}
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=35.8714&longitude=128.6014&current=weather_code,is_day&timezone=Asia%2FSeoul', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => { if (!j || !j.current) return; const c = j.current.weather_code | 0;
+    let k = 'clear', a = 0; if (c >= 95) { k = 'storm'; a = 3; } else if ((c >= 71 && c <= 77) || c === 85 || c === 86) { k = 'snow'; a = c === 75 || c === 86 ? 3 : c === 73 ? 2 : 1; } else if ((c >= 51 && c <= 67) || (c >= 80 && c <= 82)) { k = 'rain'; a = [65, 67, 82].includes(c) ? 3 : [53, 63, 81].includes(c) ? 2 : 1; } else if (c === 45 || c === 48) { k = 'fog'; a = 1; } else if (c === 2 || c === 3) { k = 'cloud'; a = c === 3 ? 2 : 1; }
+    WXS.kind = k; WXS.amt = a; WXS.day = j.current.is_day | 0; }).catch(() => {}); }
+fetchWx(); setInterval(fetchWx, 10 * 60 * 1000);
+// 밤 분위기: 푸른 달빛
+const moonLight = new THREE.DirectionalLight('#8aa0ff', .35); moonLight.position.set(-8, 14, 10); scene.add(moonLight);
+// 비(가게 안에는 안 들어옴)
+const OUTSIDE = (x, z) => !(Math.abs(x) < RW / 2 + .3 && Math.abs(z) < RD / 2 + .3);
+const RAIN_N = 1400, rainPos = new Float32Array(RAIN_N * 6), rainSeed = [];
+for (let i = 0; i < RAIN_N; i++) { let x, z; do { x = (Math.random() - .5) * 30; z = -14 + Math.random() * 22; } while (!OUTSIDE(x, z)); rainSeed.push({ x, z, y: Math.random() * 10, s: 9 + Math.random() * 5 }); }
+const rainGeo = new THREE.BufferGeometry(); rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPos, 3));
+const RAIN = new THREE.LineSegments(rainGeo, new THREE.LineBasicMaterial({ color: '#a8c0ff', transparent: true, opacity: .5 })); RAIN.frustumCulled = false; scene.add(RAIN);
+// 눈
+const SNOW_N = 900, snowPos = new Float32Array(SNOW_N * 3), snowSeed = [];
+for (let i = 0; i < SNOW_N; i++) { let x, z; do { x = (Math.random() - .5) * 30; z = -14 + Math.random() * 22; } while (!OUTSIDE(x, z)); snowSeed.push({ x, z, y: Math.random() * 10, s: .5 + Math.random() * .6, p: Math.random() * 6 }); }
+const snowGeo = new THREE.BufferGeometry(); snowGeo.setAttribute('position', new THREE.BufferAttribute(snowPos, 3));
+const SNOW = new THREE.Points(snowGeo, new THREE.PointsMaterial({ color: '#ffffff', size: .09, transparent: true, opacity: .9 })); SNOW.frustumCulled = false; scene.add(SNOW);
+// 젖은 바닥 물웅덩이(비 올 때 가로등 빛이 번들거림)
+const PUDDLES = new THREE.Group(); scene.add(PUDDLES);
+for (let i = 0; i < 26; i++) { let x, z; do { x = (Math.random() - .5) * 18; z = -9 + Math.random() * 14; } while (!OUTSIDE(x, z)); const m = new THREE.Mesh(new THREE.CircleGeometry(.4 + Math.random() * .8, 18), new THREE.MeshBasicMaterial({ color: '#9ab0e8', transparent: true, opacity: .16, blending: THREE.AdditiveBlending, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.scale.y = .6; m.position.set(x, -.13, z); PUDDLES.add(m); }
+let snowCover = 0, flashAt = 0, nextFlash = 0, wxLast = performance.now();
+const baseGround = new THREE.Color(); let baseGroundKey = '';
+function animWx(t){ const dt = Math.min(.1, (t - wxLast) / 1000); wxLast = t; const k = WXS.kind, a = WXS.amt || 1;
+  const raining = k === 'rain' || k === 'storm', snowing = k === 'snow';
+  RAIN.visible = raining; SNOW.visible = snowing; PUDDLES.visible = raining;
+  if (raining) { const n = Math.floor(RAIN_N * Math.min(1, .35 + a * .22)); for (let i = 0; i < RAIN_N; i++) { const r = rainSeed[i]; r.y -= r.s * dt; if (r.y < 0) r.y += 10; const j = i * 6, on = i < n;
+      rainPos[j] = r.x; rainPos[j + 1] = on ? r.y : -50; rainPos[j + 2] = r.z; rainPos[j + 3] = r.x + .04; rainPos[j + 4] = on ? r.y + .35 : -50; rainPos[j + 5] = r.z + .02; } rainGeo.attributes.position.needsUpdate = true; }
+  if (snowing) { const n = Math.floor(SNOW_N * Math.min(1, .35 + a * .22)); for (let i = 0; i < SNOW_N; i++) { const s = snowSeed[i]; s.y -= s.s * dt; if (s.y < 0) s.y += 10; const j = i * 3; snowPos[j] = s.x + Math.sin(t / 900 + s.p) * .25; snowPos[j + 1] = i < n ? s.y : -50; snowPos[j + 2] = s.z; } snowGeo.attributes.position.needsUpdate = true; }
+  // 바닥: 눈은 점점 하얗게, 비는 젖어서 어둡게
+  snowCover += ((snowing ? Math.min(1, .35 + a * .2) : 0) - snowCover) * dt * .05;
+  const gk = THEME + '|' + (GROUND[THEME] || ''); if (gk !== baseGroundKey) { baseGroundKey = gk; baseGround.set(GROUND[THEME] || GROUND.default).multiplyScalar(.8); }
+  ground.material.color.copy(baseGround).multiplyScalar(raining ? .62 : 1).lerp(new THREE.Color('#eef2fa'), snowCover);
+  // 안개 · 흐림
+  const fogNear = k === 'fog' ? 5 : raining ? 9 : 11, fogFar = k === 'fog' ? 18 : raining ? 24 : 30; scene.fog.near += (fogNear - scene.fog.near) * dt; scene.fog.far += (fogFar - scene.fog.far) * dt;
+  scene.fog.color.set(k === 'fog' ? '#3a3c50' : raining ? '#1a1c30' : '#1e1c40');
+  // 번개(천둥번개)
+  if (k === 'storm') { if (t > nextFlash) { flashAt = t; nextFlash = t + 6000 + Math.random() * 9000; } }
+  const fl = t - flashAt < 160 || (t - flashAt > 260 && t - flashAt < 360); moonLight.intensity = fl ? 1.6 : .35; }
+// 하늘: 맑으면 별·은하수·달, 흐리면 구름, 비·눈이면 낮은 먹구름, 해 지기 전이면 노을빛
+function drawSky(t){ if (!wxReady) return; const g = BG.getContext('2d'), W = 1600, H = 900, k = WXS.kind, a = WXS.amt || 1, day = WXS.day, fl = t - flashAt < 160 || (t - flashAt > 260 && t - flashAt < 360);
+  const gr = g.createLinearGradient(0, 0, 0, H * .55);
+  if (day) { gr.addColorStop(0, '#2a2a5a'); gr.addColorStop(.6, '#8a4a6a'); gr.addColorStop(1, '#ff9a6a'); } else if (k === 'clear' || k === 'cloud') { gr.addColorStop(0, '#050818'); gr.addColorStop(.7, '#0e1438'); gr.addColorStop(1, '#2a2450'); } else { gr.addColorStop(0, '#0a0c16'); gr.addColorStop(.7, '#181c2c'); gr.addColorStop(1, '#2a2c3c'); }
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  const clearish = k === 'clear' || (k === 'cloud' && a < 2);
+  if (clearish && !day) { const mw = g.createLinearGradient(200, 0, 1300, 420); mw.addColorStop(0, 'rgba(160,150,255,0)'); mw.addColorStop(.5, 'rgba(170,160,255,.10)'); mw.addColorStop(1, 'rgba(160,150,255,0)'); g.fillStyle = mw; g.beginPath(); g.moveTo(0, 360); g.quadraticCurveTo(800, 60, 1600, 120); g.lineTo(1600, 220); g.quadraticCurveTo(800, 170, 0, 460); g.fill();
+    BGP.forEach(p => { g.fillStyle = `rgba(255,255,240,${.3 + .6 * Math.abs(Math.sin(t / 900 + p.p))})`; const sz = p.s > .85 ? 3 : 2; g.fillRect(p.x, (p.y * .42) | 0, sz, sz); }); }
+  if (k !== 'rain' && k !== 'storm' && k !== 'fog') { g.save(); g.shadowColor = '#fff2c0'; g.shadowBlur = 60; g.fillStyle = k === 'snow' ? 'rgba(255,246,220,.5)' : '#fff6dc'; g.beginPath(); g.arc(1330, 110, 48, 0, 7); g.fill(); g.restore(); }
+  // 구름
+  const clouds = k === 'clear' ? 0 : k === 'cloud' ? 4 + a * 3 : 12;
+  for (let i = 0; i < clouds; i++) { const x = ((i * 260 + t / (raining3(k) ? 30 : 60)) % 2000) - 200, y = 40 + (i % 4) * 55, s = 1 + (i % 3) * .4, al = k === 'cloud' ? .18 : .35, col = raining3(k) ? '40,44,60' : '120,120,150';
+    g.fillStyle = `rgba(${col},${al})`; [[0, 0, 1], [.8, -.25, .8], [1.6, 0, .95], [.8, .2, .9]].forEach(([dx, dy, r]) => { g.beginPath(); g.arc(x + dx * 60 * s, y + dy * 60 * s, 55 * s * r, 0, 7); g.fill(); }); }
+  if (fl) { g.fillStyle = 'rgba(220,230,255,.55)'; g.fillRect(0, 0, W, H); }
+  const q = (t % 9000) / 9000; if (clearish && !day && q < .12) { const x = 250 + q * 5000, y = 40 + q * 700; const lg = g.createLinearGradient(x, y, x - 140, y - 46); lg.addColorStop(0, 'rgba(255,255,255,.9)'); lg.addColorStop(1, 'rgba(255,255,255,0)'); g.strokeStyle = lg; g.lineWidth = 3; g.beginPath(); g.moveTo(x, y); g.lineTo(x - 140, y - 46); g.stroke(); }
+  bgT.needsUpdate = true; }
+function raining3(k){ return k === 'rain' || k === 'storm' || k === 'snow'; }
+(function wxLoop(t){ animWx(t || performance.now()); requestAnimationFrame(wxLoop); })();
+
+wxReady = true;
+// ---------- 지금 스크린(screen.html)의 게임 진행·로그인·자동 게임·게임 신청·새 버전 새로고침 그대로 ----------
+// 게임 진행자: 사장님 계정으로 로그인된 스크린이면 리모컨 대신 게임을 진행 (리모컨 화면이 꺼져도 계속)
+var gameHost = null;
+// 게임 진행 스크린: '사장님 계정으로 로그인' + '이 기기를 진행 스크린으로 지정'한 기기만 게임을 진행 (다른 기기에서 우연히 열린 스크린은 진행 안 함)
+const GS_KEY = 'notsun-game-screen';
+const isOwnerUser = () => { try { const u = firebase.auth().currentUser; return !!(u && u.email === N.OWNER_EMAIL); } catch (e) { return false; } };
+const isDesignated = () => { try { return localStorage.getItem(GS_KEY) !== '0'; } catch (e) { return false; } };
+const setDesignated = on => { try { localStorage.setItem(GS_KEY, on ? '1' : '0'); } catch (e) {} };
+function startHost(){ if (gameHost) return; gameHost = createGameHost(N, { id: (() => { try { let v = sessionStorage.getItem('notsun-screen-id'); if (!v) { v = 'screen-' + Math.random().toString(36).slice(2, 8); sessionStorage.setItem('notsun-screen-id', v); } return v; } catch (e) { return 'screen-' + Math.random().toString(36).slice(2, 8); } })(), canHost: () => !N.LIVE || (isOwnerUser() && isDesignated()) }); if (ownerState) gameHost.feed(ownerState.game);
+  const b = document.getElementById('hostBadge'); b.hidden = false; setTimeout(() => b.hidden = true, 8000); }
+function stopHost(){ if (!gameHost) return; gameHost.stopTimer(); gameHost = null; }
+const $h = id => document.getElementById(id);
+let forceLogin = false;
+const wantLogin = () => forceLogin || /(^|[#&?-])login\b/.test(location.hash + location.search);
+function showPanel(which){ if (!which) forceLogin = false; ['hostForm', 'hostAsk', 'hostOn'].forEach(id => $h(id).hidden = id !== which); $h('hostLogin').hidden = !which; if (which) setTimeout(() => { const f = which === 'hostForm' ? $h('hostPw') : which === 'hostAsk' ? $h('hostYes') : $h('hostOk'); f && f.focus(); }, 50); }
+function cleanUrl(){ try { history.replaceState(null, '', location.pathname); } catch (e) {} }
+function hostRefresh(){
+  if (!N.LIVE) { if (/(^|[#&?-])host\b/.test(location.hash + location.search)) startHost(); return; }   // 데모 시험용
+  const owner = isOwnerUser();
+  if (owner && isDesignated()) startHost(); else stopHost();
+  if (!wantLogin()) return;
+  showPanel(!owner ? 'hostForm' : isDesignated() ? 'hostOn' : 'hostAsk');
+}
+if (N.LIVE && firebase.auth) firebase.auth().onAuthStateChanged(() => hostRefresh()); else hostRefresh();
+addEventListener('hashchange', hostRefresh);   // 이미 열린 화면에서 주소 끝만 #login으로 바꿔도 창이 뜨게
+$h('hostForm').onsubmit = async e => { e.preventDefault(); $h('hostErr').textContent = '';
+  try { await firebase.auth().signInWithEmailAndPassword(N.OWNER_EMAIL, $h('hostPw').value); $h('hostPw').value = ''; setDesignated(true); cleanUrl(); showPanel(''); hostRefresh(); }
+  catch (err) { $h('hostErr').textContent = '로그인하지 못했어요. 비밀번호를 확인해 주세요.'; } };
+$h('hostYes').onclick = () => { setDesignated(true); cleanUrl(); showPanel(''); hostRefresh(); };
+$h('hostOk').onclick = () => { cleanUrl(); showPanel(''); };
+$h('hostOff').onclick = () => { setDesignated(false); cleanUrl(); showPanel(''); hostRefresh(); };
+(function(){ let downAt = 0, fired = false;
+  const isOk = e => ['Enter', 'NumpadEnter'].includes(e.key) || e.keyCode === 13 || e.keyCode === 23;
+  const open = () => { fired = true; forceLogin = true; if (N.LIVE) hostRefresh(); else showPanel('hostForm'); };
+  addEventListener('keydown', e => { if (isOk(e) && fired && downAt) { e.preventDefault(); e.stopPropagation(); return; } }, true);   // 꾹 누르는 중 반복 입력이 창의 버튼을 눌러버리지 않게
+  addEventListener('keydown', e => { if (!isOk(e) || !$h('hostLogin').hidden) return; if (!downAt) { downAt = Date.now(); fired = false; } else if (!fired && Date.now() - downAt > 1800) open(); });
+  addEventListener('keyup', e => { if (!isOk(e)) return; if (downAt && !fired && $h('hostLogin').hidden && Date.now() - downAt > 1800) open(); downAt = 0; });
+  // 꾹 누르기가 안 되는 리모컨: 확인 버튼(또는 클릭) 3초 안에 5번 → 로그인 창
+  let taps = [];
+  const tap = () => { if (!$h('hostLogin').hidden) return; const t = Date.now(); taps = taps.filter(x => t - x < 3000); taps.push(t); if (taps.length >= 5) { taps = []; open(); } };
+  addEventListener('keydown', e => { if (isOk(e) && !e.repeat) tap(); });
+  addEventListener('pointerdown', e => { if (!$h('hostLogin').contains(e.target)) tap(); });
+  // 키 반복이 안 오는 리모컨 대비: 누르고 있는 동안 시간 확인
+  setInterval(() => { if (downAt && !fired && $h('hostLogin').hidden && Date.now() - downAt > 1800) open(); }, 200);
+})();
+$h('hostSkip').onclick = e => { e.preventDefault(); cleanUrl(); showPanel(''); };
+// 새 버전이 올라오면 스크린이 스스로 새로고침 (10분마다 확인 · 게임 중에는 안 함)
+var verSig = null;
+var verNew = null;   // 세 파일이 모두 정상으로 받아졌을 때만 비교 · 같은 새 버전이 두 번 연속 보이면 새로고침
+async function verCheck(){ try { const rs = await Promise.all(['screen.html', 'common.js', 'host.js'].map(f => fetch(f + '?v=' + Date.now(), { cache: 'no-store' }).then(async r => r.ok ? await r.text() : null)));
+  if (rs.some(x => !x) || !/createScene/.test(rs[1])) return; const t = rs.join('|');
+  let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0; const sig = t.length + ':' + h;
+  if (verSig === null) { verSig = sig; return; } if (sig === verSig) { verNew = null; return; }
+  if (verNew !== sig) { verNew = sig; setTimeout(verCheck, 60000); return; }
+  if (!(ownerState && ownerState.game) && $h('hostLogin').hidden) N.safeReload('screen.html'); } catch (e) {} }
+setTimeout(verCheck, 5000); setInterval(verCheck, 10 * 60 * 1000);
+// 익명 건배 · 오늘의 추천 메뉴
+var cheerList = [], cheerSeen = null, gameActs = [], gameN = 0, gameOff = null;
+setInterval(() => { const g = ownerState.game; const n = g ? g.n : 0; if (n !== gameN) { gameN = n; gameOff && gameOff(); gameActs = []; if (n) { const seen = {}; gameOff = N.watchGameActs(n, l => { const now = Date.now(); l.forEach(a => { seen[a.id] = seen[a.id] || a.ms || now; a.ms = seen[a.id]; }); gameActs = l; }); } } }, 300);
+N.watchCheers(list => { const now = Date.now(); if (cheerSeen) list.filter(c => !cheerSeen.has(c.id)).forEach(c => cheerList.push({ id: c.id, to: c.to, ms: now }));
+  cheerSeen = new Set(list.map(c => c.id)); cheerList = cheerList.filter(c => now - c.ms < 6000); });
+
+// 셋탑 하루 종일 켜두기: 영업일이 바뀌면(새벽 6시) 새로고침, 인터넷이 끊겼다 돌아오면 새로고침
+// (인터넷이 돌아오면 실시간 연결은 스스로 다시 붙음 → 새로고침하지 않음)
+// 매시 정각 자동 게임: 이 스크린이 진행 담당일 때만 · 10분 전 사장님 폰 알림 · 손님 2명 이상일 때 시작
+const canRunAuto = () => !!gameHost && (!N.LIVE || (isOwnerUser() && isDesignated()));
+let autoPrev = null, reqActs = [], reqDay = '', reqOff = null;
+const reqSub = () => { if (reqDay === N.bizDate()) return; reqDay = N.bizDate(); reqOff && reqOff(); reqOff = N.watchGameActs(0, l => { reqActs = l; }); }; reqSub();
+const reqList = () => ownerState ? N.reqTally(reqActs, ownerState.rqdone) : []; const autoMem = {};   // 저장소가 막히거나 꽉 차도 같은 알림·게임이 두 번 나가지 않게 메모리에도 기록
+const autoDone = k => { if (autoMem[k]) return true; try { const v = JSON.parse(localStorage.getItem('notsun-auto-done') || '{}'); return !!v[k]; } catch (e) { return false; } };
+const autoMark = k => { autoMem[k] = 1; try { const v = JSON.parse(localStorage.getItem('notsun-auto-done') || '{}'); v[k] = 1; const ms = x => +(x.match(/\d+$/) || [0])[0]; Object.keys(v).sort((a, b) => ms(a) - ms(b)).slice(0, -30).forEach(x => delete v[x]); localStorage.setItem('notsun-auto-done', JSON.stringify(v)); } catch (e) {} };
+setInterval(async () => { if (!ownerState || !canRunAuto()) { autoPrev = null; return; } const now = Date.now(), a = N.autoInfo(ownerState.auto, now);
+  const real = liveGuests.filter(g => !g.left && !g.npc).length;
+  if (a && a.left <= 600000 && !autoDone('n' + a.at) && real >= 1) { autoMark('n' + a.at); N.notifyOwner(`⏰ ${String(a.hr).padStart(2, '0')}:00 정각 게임`, `${a.label} 예정이에요. 다른 게임으로 바꾸려면 리모컨 → 게임 → '다음 정각 게임'에서 골라주세요.`); }
+  if (autoPrev && now >= autoPrev.at && now - autoPrev.at < 90000 && !autoDone('s' + autoPrev.at)) { autoMark('s' + autoPrev.at);
+    if (!ownerState.game && real >= 2) { const sp = N.autoSpec(autoPrev.type); try { await gameHost.start(autoPrev.type, { ...sp[0], auto: 1 }, sp[1], sp[2]); } catch (e) {} } }
+  autoPrev = a;
+  reqSub(); const rq = reqList()[0];   // 손님 신청 3명 → 자동 시작 (정각 게임 5분 전에는 정각 게임으로 넘김)
+  if (rq && rq.n >= N.REQ_NEED && !ownerState.game && (ownerState.auto || {}).req !== false && !(a && a.left < 300000) && !autoDone('r' + rq.type + rq.at)) { autoMark('r' + rq.type + rq.at);
+    const sp = N.autoSpec(rq.type); try { if (await gameHost.start(rq.type, { ...sp[0], req: 1 }, sp[1], sp[2])) await N.markReqDone(rq.type, ownerState.rqdone, rq.last); } catch (e) {} } }, 1000);
+const bootDay = N.bizDate(); setInterval(() => { if (N.bizDate() !== bootDay && !(ownerState && ownerState.game)) N.safeReload('screen.html'); }, 60000);
+// ---------- 게임·럭키 추첨·생일 축하 중에는 화면 전체를 2D로(지금 스크린과 똑같이, 잘 보이게) ----------
+const full2d = document.getElementById('full2d'), fc = document.getElementById('full2dc'), fctx = fc.getContext('2d'), view2 = N.createScene();
+// ---------- 혼자서도 놀거리 (2026-11-08): 고양이 숨바꼭질 · 한 줄 이어쓰기 ----------
+const SOLO = { catWas: null, storySeen: null, storyShow: 0, storyNew: '' };
+function soloBox(s, x, y, w, h, stroke){ fctx.fillStyle = 'rgba(20,12,13,.92)'; fctx.beginPath(); fctx.roundRect(x, y, w, h, 5 * s); fctx.fill(); fctx.strokeStyle = stroke; fctx.lineWidth = 1 * s; fctx.stroke(); }
+function soloFx(list, t){
+  const s = fc.width / 480, now = Date.now(), busy = !!ownerState.game, real = list.filter(g => !g.demo && !g.left && !g.npc);
+  // 고양이 숨바꼭질: 손님이 있을 때만, 게임 중엔 쉼
+  const r = N.CAT_HIDE.now(now), cats = window.__notsunCats, hide = r.on && !busy && real.length > 0;
+  if (cats) cats.forEach((c, ci) => {
+    if (hide && ci === r.cat) { if (!c._hid) { c._hid = { p: c.p, x: c.x }; c.visit = null; } c.p = 0; c.x = -400; c.st = 'sit'; c.until = now + 60000; c.jp = null; }
+    else if (c._hid) { c.p = 2; c.x = 96; c.st = 'sit'; c.until = now + 4000; c._hid = null; } });
+  if (hide) { const sp = N.CAT_HIDE.SPOTS[r.spot], pal = r.cat ? ['#3a2a20', '#f6ead2', '#4e3628', '#4a9eef', '#e8a8b8'] : ['#323a4a', '#8a9ab2', '#6c7c96', '#5cc87c', '#e8a8b8'];
+    const u = 1.1 * s, bx = sp.x * s, by = sp.y * s + (Math.sin(t / 700) > 0.6 ? -u : 0), px = (x, y, w, h, col) => { fctx.fillStyle = col; fctx.fillRect(bx + x * u, by + y * u, w * u, h * u); };
+    // 귀와 눈만 빼꼼 (가끔 깜빡)
+    px(-7, -6, 4, 2, pal[0]); px(-6, -8, 2, 2, pal[0]); px(3, -6, 4, 2, pal[0]); px(4, -8, 2, 2, pal[0]); px(-6, -6, 2, 2, pal[4]); px(4, -6, 2, 2, pal[4]);
+    px(-8, -4, 16, 7, pal[0]); px(-7, -4, 14, 6, pal[2]); px(-5, -3, 10, 5, pal[1]);
+    const blink = Math.floor(t / 160) % 25 === 0; if (blink) { px(-4, -1, 3, 1, '#1a1214'); px(1, -1, 3, 1, '#1a1214'); } else { px(-4, -2, 2, 2, pal[3]); px(2, -2, 2, 2, pal[3]); px(-4, -2, 1, 1, '#fff'); px(2, -2, 1, 1, '#fff'); }
+    // 아래 안내
+    const left = Math.max(0, Math.ceil((r.end - now) / 1000)), found = real.filter(g => typeof g.msg === 'string' && g.msg.startsWith('🐱') && (g.ms || 0) >= r.start).map(g => g.nick);
+    fctx.save(); fctx.textAlign = 'center'; fctx.textBaseline = 'middle';
+    const l1 = `🐱 ${r.name}가 스크린 어딘가에 숨었다! · ${left}초`, l2 = found.length ? `찾은 손님: ${found.slice(-4).join(', ')}${found.length > 4 ? ` 외 ${found.length - 4}명` : ''}` : '폰 → 내 자리 → 🎲 고양이 찾기에서 맞혀 보세요';
+    fctx.font = `${6.4 * s}px "Do Hyeon", sans-serif`; const w = Math.max(fctx.measureText(l1).width, fctx.measureText(l2).width * .85) + 18 * s, h = 20 * s, x = 240 * s - w / 2, y = 245 * s;
+    soloBox(s, x, y, w, h, `rgba(255,211,106,${.55 + Math.sin(t / 260) * .4})`);
+    fctx.fillStyle = '#fff3e0'; fctx.fillText(l1, 240 * s, y + 6.5 * s); fctx.font = `${5.2 * s}px "Do Hyeon", sans-serif`; fctx.fillStyle = found.length ? '#ffd36a' : '#e8cfa8'; fctx.fillText(l2, 240 * s, y + 14.2 * s); fctx.restore();
+    return; }
+  // 한 줄 이어쓰기: 새 줄이 붙으면 10초, 2줄 이상이면 20분마다 15초
+  const lines = real.filter(g => typeof g.msg === 'string' && g.msg.startsWith('📖 ')).sort((a, b) => (a.ms || 0) - (b.ms || 0));
+  const sig = lines.map(g => g.id + ':' + (g.ms || 0)).join('|');
+  if (SOLO.storySeen === null) SOLO.storySeen = sig;
+  else if (sig !== SOLO.storySeen) { const was = SOLO.storySeen; SOLO.storySeen = sig; const add = lines.filter(g => !was.includes(g.id + ':' + (g.ms || 0))); if (add.length) { SOLO.storyShow = now + 10000; SOLO.storyNew = add[add.length - 1].id; } }
+  const cyc = now % 1200000, show = !busy && lines.length && (now < SOLO.storyShow || (lines.length >= 2 && cyc > 300000 && cyc < 315000));
+  if (!show) return;
+  const L = lines.slice(-4), fs = 6.2, lh = 9.5;
+  fctx.save(); fctx.textBaseline = 'middle'; fctx.textAlign = 'left'; fctx.font = `${fs * s}px "Do Hyeon", sans-serif`;
+  const tw = Math.max(...L.map(g => fctx.measureText(g.msg.slice(3)).width)) + 50 * s, w = Math.min(330 * s, Math.max(170 * s, tw)), h = (16 + L.length * lh) * s, x = 240 * s - w / 2, y = 262 * s - h;
+  soloBox(s, x, y, w, h, 'rgba(255,128,104,.6)');
+  fctx.textAlign = 'center'; fctx.fillStyle = '#ffd36a'; fctx.font = `${6.6 * s}px "Do Hyeon", sans-serif`; fctx.fillText(`📖 오늘 밤의 이야기 · ${lines.length}줄째`, 240 * s, y + 7.5 * s);
+  L.forEach((g, i) => { const yy = y + (16 + lh * i + lh / 2) * s; fctx.textAlign = 'left'; fctx.font = `${fs * s}px "Do Hyeon", sans-serif`; fctx.fillStyle = g.id === SOLO.storyNew && now < SOLO.storyShow ? '#fff3e0' : '#f3d6c8'; fctx.fillText(g.msg.slice(3), x + 8 * s, yy);
+    fctx.textAlign = 'right'; fctx.font = `${4.6 * s}px "Do Hyeon", sans-serif`; fctx.fillStyle = '#ff9f86'; fctx.fillText('— ' + g.nick, x + w - 6 * s, yy); });
+  fctx.restore();
+}
+// 고양이 숨바꼭질·한 줄 이어쓰기가 화면에 나올 때인지(나올 때는 화면 전체 2D)
+function soloState(list){ const now = Date.now(), busy = !!(ownerState && ownerState.game), real = list.filter(g => !g.demo && !g.left && !g.npc);
+  try { const r = N.CAT_HIDE.now(now); if (r.on && !busy && real.length > 0) return 'cat'; } catch (e) {}
+  const lines = real.filter(g => typeof g.msg === 'string' && g.msg.startsWith('📖 ')).sort((a, b) => (a.ms || 0) - (b.ms || 0)), sig = lines.map(g => g.id + ':' + (g.ms || 0)).join('|');
+  if (SOLO.storySeen === null) SOLO.storySeen = sig; else if (sig !== SOLO.storySeen) { const was = SOLO.storySeen; SOLO.storySeen = sig; const add = lines.filter(g => !was.includes(g.id + ':' + (g.ms || 0))); if (add.length) { SOLO.storyShow = now + 10000; SOLO.storyNew = add[add.length - 1].id; } }
+  const cyc = now % 1200000; return !busy && lines.length && (now < SOLO.storyShow || (lines.length >= 2 && cyc > 300000 && cyc < 315000)) ? 'story' : ''; }
+function fullOn(){ const st = ownerState || {}, now = Date.now(); if (soloState(isDemo() ? DEMO : liveGuests)) return true; return !!st.game || (st.lucky && st.lucky.ms && now - st.lucky.ms < 26000) || (st.bday && st.bday.ms && now - st.bday.ms < 22000); }
+(function full2dLoop(t){ const on = fullOn(); full2d.style.display = on ? 'block' : 'none';
+  if (on) { const k = Math.min(innerWidth / 16, innerHeight / 9), dpr = Math.min(2, devicePixelRatio || 1), W = Math.round(k * 16 * dpr), H = Math.round(k * 9 * dpr); if (fc.width !== W) { fc.width = W; fc.height = H; }
+    const dm = isDemo(), list = dm ? DEMO : liveGuests;
+    try { view2.render(fctx, fc.width, fc.height, list, t, { storyTip: 1, catHost: false, catPets: [], day: N.bizDate(), count: dm ? 0 : presentN, qr: QRC, owners: ownerState.owners, live: ownerState.live, seats: ownerState.seats, order: ownerState.order, served: ownerState.served, auto: canRunAuto() ? N.autoInfo(ownerState.auto) : null, reqs: reqList(), bday: ownerState.bday, bdays: ownerState.bdays, lucky: ownerState.lucky, best: ownerState.best, vip: ownerState.vip, q: ownerState.q, rec: recName, cheers: cheerList, game: ownerState.game, gameActs, theme: THEME, footer: '' }); } catch (e) {} try { soloFx(list, t); } catch (e) {} }
+  requestAnimationFrame(full2dLoop); })(performance.now());
 // 큐알: 지금 스크린과 같은 손님용 주소(index.html)
 let QRC = null;
 try { const url = new URL('index.html', location.href).href, q = qrcode(0, 'M'); q.addData(url); q.make(); const n = q.getModuleCount(), c = document.createElement('canvas'); c.width = c.height = n + 2;
@@ -869,7 +1117,7 @@ try { const url = new URL('index.html', location.href).href, q = qrcode(0, 'M');
   const big = document.createElement('canvas'); big.width = big.height = (n + 2) * 8; const bg = big.getContext('2d'); bg.imageSmoothingEnabled = false; bg.drawImage(c, 0, 0, big.width, big.height);
   const img = new Image(); img.src = big.toDataURL(); img.style.cssText = 'display:block;width:9vw;height:9vw;margin:0 auto .6vw;image-rendering:pixelated;border-radius:.4vw'; const holder = document.querySelector('.qr i'); if (holder) holder.replaceWith(img); } catch (e) {}
 // 3D가 버벅이면(처음 20초 평균 초당 10장 미만) 지금 2D 스크린으로 자동으로 돌아감 · 주소 끝 #keep3d 면 그대로 둠
-{ let n = 0; const t0 = performance.now(); (function fpsCheck(){ n++; const el = performance.now() - t0; if (el < 20000) return requestAnimationFrame(fpsCheck); if (n / (el / 1000) < 10 && !/keep3d/.test(location.hash)) location.replace('screen.html'); })(); }
+{ let n = 0; const t0 = performance.now(); (function fpsCheck(){ n++; const el = performance.now() - t0; if (el < 20000) return requestAnimationFrame(fpsCheck); if (n / (el / 1000) < 10 && !/keep3d/.test(location.hash) && !(ownerState && ownerState.game)) location.replace('screen2d.html' + location.hash); })(); }
 try { navigator.wakeLock && navigator.wakeLock.request('screen').catch(() => {}); } catch (e) {}
 function unlock3d(){ const d = document.documentElement; d.requestFullscreen && d.requestFullscreen().catch(() => {}); try { N.enableSound && N.enableSound(); } catch (e) {} }
 addEventListener('click', unlock3d); addEventListener('keydown', e => { if (['Enter', ' ', 'NumpadEnter'].includes(e.key) || e.keyCode === 23) unlock3d(); });
