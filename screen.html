@@ -70,8 +70,11 @@ html,body{margin:0;height:100%;cursor:none;background:#0d090a;color:var(--ink);f
 <script>
 const N = window.Notsun;
 const cv = document.getElementById('c');
-const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true });
-renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1));
+/* 가벼운 모드(11월 12일): 0 고화질 ~ 3 가장 가벼움. 버벅이면 저절로 한 단계씩 내려가고 기기에 기억. 주소 ?q=0~3 으로 고정 */
+var LQ = 0, QFIX = false; try { const m = location.search.match(/[?&]q=(\d)/); QFIX = !!m; LQ = m ? +m[1] : +(localStorage.getItem('notsun3dQ') || 0); } catch (e) {} LQ = Math.max(0, Math.min(3, LQ | 0));
+const PR = [Math.min(2, devicePixelRatio || 1), 1, .75, .55];
+const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: LQ === 0, powerPreference: 'high-performance' });
+renderer.setPixelRatio(PR[LQ]);
 const scene = new THREE.Scene(); scene.background = new THREE.Color('#0d090a'); scene.fog = new THREE.Fog('#0d090a', 14, 26);
 const camera = new THREE.PerspectiveCamera(60, 1, .1, 80);
 function fit(){ renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.fov = camera.aspect < .8 ? 78 : 58; camera.updateProjectionMatrix(); }
@@ -140,7 +143,7 @@ const ALLSEATS = STOOLS.concat(SEATS);
 [[.52, -.6], [1.3, -1.97], [2.27, .3], [1.5, 1.67]].forEach(([x, z]) => { box(.04, .3, .04, x, .65, z, M('#c9b48a')); box(.2, .03, .2, x, .95, z, ME('#fff2c0', '#ffd890')); const L = new THREE.PointLight('#ffc070', .5, 2.4); L.position.set(x, .99, z); scene.add(L); });
 // ---------- 대형 스크린 (뒤벽, 실제 방명록 화면을 그대로 그림) ----------
 var FOCUS = 0;
-const scrCv = document.createElement('canvas'); scrCv.width = 1280; scrCv.height = 720;
+const scrCv = document.createElement('canvas'); scrCv.width = LQ >= 2 ? 960 : 1280; scrCv.height = LQ >= 2 ? 540 : 720;
 const scrTex = new THREE.CanvasTexture(scrCv); scrTex.magFilter = THREE.NearestFilter;
 // 실제 매장 비율: 벽 위쪽에 걸린 스크린(손님 머리와 안 겹치게 높이)
 box(3.1, 1.78, .04, .25, 1.27, -3.22, M('#d8d4cc'));
@@ -354,7 +357,7 @@ function loop(t){ const dt = Math.min(.05, (t - last) / 1000); last = t;
     g.fillStyle = '#ffb27a'; g.font = '44px "Do Hyeon", sans-serif'; g.fillText('혼자 와도 낯설지 않은 밤', 480, 310);
     g.fillStyle = '#e8d8cc'; g.font = '38px "Do Hyeon", sans-serif'; g.fillText(`지금 ${guests.filter(c => c.sit).length}명이 함께 마시는 중`, 480, 400);
     const blink = Math.floor(t / 500) % 2; g.fillStyle = blink ? '#ffd36a' : '#ff9a7a'; g.fillText('✦ 큐알을 찍고 자리에 앉아 보세요 ✦', 480, 470); scrTex.needsUpdate = true; }
-  if (view && t - scrAt > (FOCUS > .05 ? 30 : 100)) { scrAt = t; try { const dm = isDemo(), list = dm ? DEMO : liveGuests; view.render(scrCv.getContext('2d'), scrCv.width, scrCv.height, list, t, { storyTip: 1, catHost: false, catPets: [], day: N.bizDate(), count: dm ? 0 : presentN, qr: QRC, owners: ownerState.owners, live: ownerState.live, seats: ownerState.seats, order: ownerState.order, served: ownerState.served, auto: (typeof canRunAuto === 'function' && canRunAuto()) ? N.autoInfo(ownerState.auto) : null, reqs: typeof reqList === 'function' ? reqList() : [], bday: ownerState.bday, bdays: ownerState.bdays, lucky: ownerState.lucky, best: ownerState.best, vip: ownerState.vip, q: ownerState.q, rec: recName, cheers: typeof cheerList !== 'undefined' ? cheerList : [], game: ownerState.game, gameActs: typeof gameActs !== 'undefined' ? gameActs : [], theme: THEME, footer: dm ? '첫 번째 낯선 손님이 되어주세요' : '' }); try { soloFx(list, t); } catch (e) {} scrTex.needsUpdate = true; } catch (e) {} }
+  if (view && t - scrAt > (FOCUS > .05 ? [30, 50, 70, 100][LQ] : [100, 200, 350, 600][LQ])) { scrAt = t; try { const dm = isDemo(), list = dm ? DEMO : liveGuests; view.render(scrCv.getContext('2d'), scrCv.width, scrCv.height, list, t, { storyTip: 1, catHost: false, catPets: [], day: N.bizDate(), count: dm ? 0 : presentN, qr: QRC, owners: ownerState.owners, live: ownerState.live, seats: ownerState.seats, order: ownerState.order, served: ownerState.served, auto: (typeof canRunAuto === 'function' && canRunAuto()) ? N.autoInfo(ownerState.auto) : null, reqs: typeof reqList === 'function' ? reqList() : [], bday: ownerState.bday, bdays: ownerState.bdays, lucky: ownerState.lucky, best: ownerState.best, vip: ownerState.vip, q: ownerState.q, rec: recName, cheers: typeof cheerList !== 'undefined' ? cheerList : [], game: ownerState.game, gameActs: typeof gameActs !== 'undefined' ? gameActs : [], theme: THEME, footer: dm ? '첫 번째 낯선 손님이 되어주세요' : '' }); try { soloFx(list, t); } catch (e) {} scrTex.needsUpdate = true; } catch (e) {} }
   if (window.__neon) window.__neon.material.opacity = (Math.floor(t / 120) % 29) ? 1 : .35;
   // 카메라: 바깥에서 문이 열리고 → 문 안쪽 한 걸음에 멈춰 서서 매장 전체를 봄(걷지 않음)
   if (intro < 1) { intro = Math.min(1, intro + dt / 3.2); }
@@ -367,7 +370,8 @@ function loop(t){ const dt = Math.min(.05, (t - last) / 1000); last = t;
   camera.fov = 50; camera.updateProjectionMatrix();
   { const F = FOCUS * FOCUS * (3 - 2 * FOCUS), Lp = (a, b) => a + (b - a) * F; camera.position.set(Lp(.3, .25), Lp(5.0, 2.25), Lp(6.2, -.8)); camera.lookAt(Lp(.12, .25), Lp(.9, 2.14), Lp(-1.0, -3.2)); } /* 매장을 더 크게: 화면 폭을 거의 채우고 앞쪽 끝은 아래 끝선(11월 11일 사장님) */   // 화면 아래 끝선에 매장 앞쪽 끝이 딱 붙게(11월 11일)
   if (window.__cam) { camera.position.set(...window.__cam[0]); camera.lookAt(...window.__cam[1]); }   // 확인용 가까이 보기
-  renderer.render(scene, camera); requestAnimationFrame(loop); }
+  if (t - rAt >= [0, 28, 28, 38][LQ]) { rAt = t; renderer.render(scene, camera); } requestAnimationFrame(loop); }
+var rAt = 0;
 let intro = 1;
 // =====================================================================
 // 매장 디테일 소품 (항상)
@@ -655,7 +659,7 @@ const curb = new THREE.Mesh(new THREE.BoxGeometry(RW + .5, .16, RD + .5), new TH
 const walk = []; for (let i = -6; i <= 6; i++) { const m = new THREE.Mesh(new THREE.PlaneGeometry(.9, .9), new THREE.MeshLambertMaterial({ color: '#000', transparent: true, opacity: .12 })); m.rotation.x = -Math.PI / 2; m.position.set(i * 1.0, -.155, RD / 2 + 1.0); scene.add(m); walk.push(m); }   // 가게 앞 보도블록
 scene.fog = new THREE.Fog('#2a1430', 11, 30);
 let groundTheme = '';
-var outReady = false; let bgAt = 0; (function bgLoop(){ if (outReady && groundTheme !== THEME) { groundTheme = THEME; ground.material.color.set(GROUND[THEME] || GROUND.default).multiplyScalar(.8); scene.fog.color.set('#1e1c40'); buildOutside(THEME); buildExtra(THEME); } const t = performance.now(); if (t - bgAt > 70) { bgAt = t; drawSky(t); } if (outReady) { animOutside(t); animExtra(t); } requestAnimationFrame(bgLoop); })();
+var outReady = false; let bgAt = 0; (function bgLoop(){ if (outReady && groundTheme !== THEME) { groundTheme = THEME; ground.material.color.set(GROUND[THEME] || GROUND.default).multiplyScalar(.8); scene.fog.color.set('#1e1c40'); buildOutside(THEME); buildExtra(THEME); } const t = performance.now(); if (t - bgAt > [70, 250, 900, 2500][LQ]) { bgAt = t; drawSky(t); } if (outReady) { animOutside(t); animExtra(t); } requestAnimationFrame(bgLoop); })();
 // =====================================================================
 // 매장 바깥 3D 거리(매장과 같은 각도): 뒤·양옆 건물(창문 불빛·간판) + 테마 장식 + 눈·꽃잎 (11월 11일 사장님)
 // =====================================================================
@@ -1115,7 +1119,31 @@ try { const url = new URL('index.html', location.href).href, q = qrcode(0, 'M');
   const big = document.createElement('canvas'); big.width = big.height = (n + 2) * 8; const bg = big.getContext('2d'); bg.imageSmoothingEnabled = false; bg.drawImage(c, 0, 0, big.width, big.height);
   const img = new Image(); img.src = big.toDataURL(); img.style.cssText = 'display:block;width:9vw;height:9vw;margin:0 auto .6vw;image-rendering:pixelated;border-radius:.4vw'; const holder = document.querySelector('.qr i'); if (holder) holder.replaceWith(img); } catch (e) {}
 // 3D가 버벅이면(처음 20초 평균 초당 10장 미만) 지금 2D 스크린으로 자동으로 돌아감 · 주소 끝 #keep3d 면 그대로 둠
-{ let n = 0; const t0 = performance.now(); (function fpsCheck(){ n++; const el = performance.now() - t0; if (el < 20000) return requestAnimationFrame(fpsCheck); if (n / (el / 1000) < 10 && !/keep3d/.test(location.hash) && !(ownerState && ownerState.game)) location.replace('screen2d.html' + location.hash); })(); }
+/* 물건 묶기(11월 12일): 매장·바깥 물건 840개를 따로 그리면 약한 기기가 버벅임 → 5초 동안 안 움직이고 모양이 같은 물건끼리 한 덩어리로 합침.
+   고양이·손님·사장·전구·깜빡이·떨어지는 장식은 빼고, 테마가 바뀌어 새로 생긴 물건도 20초마다 다시 묶음 */
+(function(){ const matKey = m => [m.type, m.color && m.color.getHex(), m.emissive && m.emissive.getHex(), m.emissiveIntensity, m.transparent, m.opacity, m.map && m.map.uuid, m.side, m.depthWrite, m.depthTest, m.blending, m.fog, m.wireframe].join('|');
+  function skipSet(){ const s = new Set(); try { CATS.forEach(c => s.add(c)); } catch (e) {} try { guests.forEach(c => c.grp && s.add(c.grp)); } catch (e) {} try { if (me && me.grp) s.add(me.grp); } catch (e) {} try { OWNERS3D.forEach(c => c.grp && s.add(c.grp)); } catch (e) {} return s; }
+  function cands(){ const skip = skipSet(), out = [], dyn = new Set([].concat(typeof BULBS !== 'undefined' ? BULBS : [], typeof FALL !== 'undefined' ? FALL : [], typeof OFALL !== 'undefined' ? OFALL : [], typeof EXA !== 'undefined' ? EXA : [], typeof ground !== 'undefined' ? [ground] : [], window.__neon ? [window.__neon] : []));
+    (function walk(o){ if (skip.has(o)) return; o.children.forEach(c => { if (c.isMesh && !c.isInstancedMesh && !c.isSkinnedMesh && !c.children.length && c.visible && !Array.isArray(c.material) && c.geometry && c.geometry.attributes && c.geometry.attributes.position && !c.material.vertexColors && !Object.keys(c.userData).length && !dyn.has(c)) out.push(c); else if (c.children && c.children.length) walk(c); }); })(scene);
+    return out; }
+  const sig = o => { o.updateMatrix(); return o.parent.uuid + '#' + o.matrix.elements.map(v => v.toFixed(4)).join(',') + '#' + matKey(o.material); };
+  function bake(snap){ const by = new Map(); cands().forEach(o => { if (snap.get(o) !== sig(o)) return; const k = o.parent.uuid + '|' + matKey(o.material); (by.get(k) || by.set(k, []).get(k)).push(o); });
+    let n0 = 0, n1 = 0; by.forEach(list => { if (list.length < 2) return; let n = 0; const parts = list.map(o => { const g = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone(); g.applyMatrix4(o.matrix); n += g.attributes.position.count; return g; });
+      const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), uv = new Float32Array(n * 2); let k = 0;
+      parts.forEach(g => { const c = g.attributes.position.count; pos.set(g.attributes.position.array, k * 3); if (g.attributes.normal) nor.set(g.attributes.normal.array, k * 3); if (g.attributes.uv) uv.set(g.attributes.uv.array, k * 2); k += c; g.dispose(); });
+      const G = new THREE.BufferGeometry(); G.setAttribute('position', new THREE.BufferAttribute(pos, 3)); G.setAttribute('normal', new THREE.BufferAttribute(nor, 3)); G.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); G.computeBoundingSphere();
+      const par = list[0].parent, M = new THREE.Mesh(G, list[0].material); M.userData.baked = 1; M.renderOrder = list[0].renderOrder; M.matrixAutoUpdate = false; M.updateMatrix(); par.add(M); n1++;
+      list.forEach(o => { par.remove(o); n0++; }); });
+    window.__baked = (window.__baked || 0) + n0 - n1; }
+  function round(){ try { const snap = new Map(); cands().forEach(o => snap.set(o, sig(o))); setTimeout(() => { try { bake(snap); } catch (e) {} }, 5000); } catch (e) {} }
+  if (!/[?&]nobake/.test(location.search)) { setTimeout(round, 2500); setInterval(round, 20000); } })();
+/* 버벅임 자동 조절: 4초마다 초당 장수를 재서 22장 미만이면 한 단계 가볍게. 가장 가벼운 단계에서도 초당 8장 미만이 20초 이어지면 그때만 2D로 */
+{ let n = 0, t0 = performance.now() + 3000, low = 0; (function fq(){ const now = performance.now(); if (now < t0) { n = 0; return requestAnimationFrame(fq); } n++; const el = now - t0;
+  if (el >= 4000) { const fps = n / (el / 1000); n = 0; t0 = now; window.__fps = Math.round(fps);
+    if (fps < 22 && LQ < 3 && !QFIX) { LQ++; renderer.setPixelRatio(PR[LQ]); fit(); try { localStorage.setItem('notsun3dQ', LQ); } catch (e) {} }
+    low = (fps < 8 && LQ >= 3) ? low + 1 : 0;
+    if (low >= 5 && !/keep3d/.test(location.hash) && !(ownerState && ownerState.game)) { location.replace('screen2d.html' + location.hash); return; } }
+  requestAnimationFrame(fq); })(); }
 try { navigator.wakeLock && navigator.wakeLock.request('screen').catch(() => {}); } catch (e) {}
 function unlock3d(){ const d = document.documentElement; d.requestFullscreen && d.requestFullscreen().catch(() => {}); try { N.enableSound && N.enableSound(); } catch (e) {} }
 addEventListener('click', unlock3d); addEventListener('keydown', e => { if (['Enter', ' ', 'NumpadEnter'].includes(e.key) || e.keyCode === 23) unlock3d(); });
