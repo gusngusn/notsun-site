@@ -27,7 +27,7 @@ html,body{margin:0;height:100%;cursor:none;background:#0d090a;color:var(--ink);f
 #hostBadge{position:fixed;right:12px;bottom:10px;font:14px "Do Hyeon",sans-serif;color:#b8f08a;background:rgba(26,18,20,.85);border:1px solid #3a5a2b;padding:6px 10px;border-radius:6px}
 .grecaptcha-badge{visibility:hidden}
 .top,.qr{z-index:2}
-#full2d{position:fixed;inset:0;z-index:4;display:none;background:#0d090a}#full2d canvas{width:100%;height:100%;image-rendering:pixelated}
+
 </style></head><body>
 <div id="hint" hidden></div>
 <div id="snd" hidden>🔈 화면을 한 번 누르면 효과음이 켜져요</div>
@@ -38,7 +38,7 @@ html,body{margin:0;height:100%;cursor:none;background:#0d090a;color:var(--ink);f
   <small class="close"><a href="#" id="hostSkip">닫기</a></small>
 </div></div>
 <div id="hostBadge" hidden>🎮 이 스크린이 게임을 진행해요</div>
-<div id="full2d"><canvas id="full2dc"></canvas></div>
+
 <canvas id="c"></canvas>
 <style>
 .top .badge span{font-size:2.2vw}.top .badge b{font-size:1.1vw}
@@ -139,7 +139,8 @@ const ALLSEATS = STOOLS.concat(SEATS);
 // 테이블 무선 조명(사진 속 버섯 모양 등)
 [[.52, -.6], [1.3, -1.97], [2.27, .3], [1.5, 1.67]].forEach(([x, z]) => { box(.04, .3, .04, x, .65, z, M('#c9b48a')); box(.2, .03, .2, x, .95, z, ME('#fff2c0', '#ffd890')); const L = new THREE.PointLight('#ffc070', .5, 2.4); L.position.set(x, .99, z); scene.add(L); });
 // ---------- 대형 스크린 (뒤벽, 실제 방명록 화면을 그대로 그림) ----------
-const scrCv = document.createElement('canvas'); scrCv.width = 960; scrCv.height = 540;
+var FOCUS = 0;
+const scrCv = document.createElement('canvas'); scrCv.width = 1280; scrCv.height = 720;
 const scrTex = new THREE.CanvasTexture(scrCv); scrTex.magFilter = THREE.NearestFilter;
 // 실제 매장 비율: 벽 위쪽에 걸린 스크린(손님 머리와 안 겹치게 높이)
 box(3.1, 1.78, .04, .25, 1.27, -3.22, M('#d8d4cc'));
@@ -353,7 +354,7 @@ function loop(t){ const dt = Math.min(.05, (t - last) / 1000); last = t;
     g.fillStyle = '#ffb27a'; g.font = '44px "Do Hyeon", sans-serif'; g.fillText('혼자 와도 낯설지 않은 밤', 480, 310);
     g.fillStyle = '#e8d8cc'; g.font = '38px "Do Hyeon", sans-serif'; g.fillText(`지금 ${guests.filter(c => c.sit).length}명이 함께 마시는 중`, 480, 400);
     const blink = Math.floor(t / 500) % 2; g.fillStyle = blink ? '#ffd36a' : '#ff9a7a'; g.fillText('✦ 큐알을 찍고 자리에 앉아 보세요 ✦', 480, 470); scrTex.needsUpdate = true; }
-  if (view && t - scrAt > 100) { scrAt = t; try { const dm = isDemo(), list = dm ? DEMO : liveGuests; view.render(scrCv.getContext('2d'), 960, 540, list, t, { day: N.bizDate(), count: dm ? 0 : presentN, qr: QRC, owners: ownerState.owners, live: ownerState.live, seats: ownerState.seats, order: ownerState.order, served: ownerState.served, bday: ownerState.bday, bdays: ownerState.bdays, lucky: ownerState.lucky, best: ownerState.best, vip: ownerState.vip, q: ownerState.q, rec: recName, theme: THEME, footer: dm ? '첫 번째 낯선 손님이 되어주세요' : '' }); scrTex.needsUpdate = true; } catch (e) {} }
+  if (view && t - scrAt > (FOCUS > .05 ? 30 : 100)) { scrAt = t; try { const dm = isDemo(), list = dm ? DEMO : liveGuests; view.render(scrCv.getContext('2d'), scrCv.width, scrCv.height, list, t, { storyTip: 1, catHost: false, catPets: [], day: N.bizDate(), count: dm ? 0 : presentN, qr: QRC, owners: ownerState.owners, live: ownerState.live, seats: ownerState.seats, order: ownerState.order, served: ownerState.served, auto: (typeof canRunAuto === 'function' && canRunAuto()) ? N.autoInfo(ownerState.auto) : null, reqs: typeof reqList === 'function' ? reqList() : [], bday: ownerState.bday, bdays: ownerState.bdays, lucky: ownerState.lucky, best: ownerState.best, vip: ownerState.vip, q: ownerState.q, rec: recName, cheers: typeof cheerList !== 'undefined' ? cheerList : [], game: ownerState.game, gameActs: typeof gameActs !== 'undefined' ? gameActs : [], theme: THEME, footer: dm ? '첫 번째 낯선 손님이 되어주세요' : '' }); try { soloFx(list, t); } catch (e) {} scrTex.needsUpdate = true; } catch (e) {} }
   if (window.__neon) window.__neon.material.opacity = (Math.floor(t / 120) % 29) ? 1 : .35;
   // 카메라: 바깥에서 문이 열리고 → 문 안쪽 한 걸음에 멈춰 서서 매장 전체를 봄(걷지 않음)
   if (intro < 1) { intro = Math.min(1, intro + dt / 3.2); }
@@ -364,7 +365,7 @@ function loop(t){ const dt = Math.min(.05, (t - last) / 1000); last = t;
   const tx = .15 + Math.sin(yaw) * 4, tz = -1.6 + (1 - Math.cos(yaw)) * 2.5, ty = 1.0 + ease(walk) * .1 - pitch * 4;
   // 고정 화면: 입구 쪽 위에서 매장 전체를 내려다봄
   camera.fov = 50; camera.updateProjectionMatrix();
-  camera.position.set(.3, 5.0, 6.2); camera.lookAt(.12, .9, -1.0); /* 매장을 더 크게: 화면 폭을 거의 채우고 앞쪽 끝은 아래 끝선(11월 11일 사장님) */   // 화면 아래 끝선에 매장 앞쪽 끝이 딱 붙게(11월 11일)
+  { const F = FOCUS * FOCUS * (3 - 2 * FOCUS), Lp = (a, b) => a + (b - a) * F; camera.position.set(Lp(.3, .25), Lp(5.0, 2.25), Lp(6.2, -.8)); camera.lookAt(Lp(.12, .25), Lp(.9, 2.14), Lp(-1.0, -3.2)); } /* 매장을 더 크게: 화면 폭을 거의 채우고 앞쪽 끝은 아래 끝선(11월 11일 사장님) */   // 화면 아래 끝선에 매장 앞쪽 끝이 딱 붙게(11월 11일)
   if (window.__cam) { camera.position.set(...window.__cam[0]); camera.lookAt(...window.__cam[1]); }   // 확인용 가까이 보기
   renderer.render(scene, camera); requestAnimationFrame(loop); }
 let intro = 1;
@@ -1057,7 +1058,7 @@ setInterval(async () => { if (!ownerState || !canRunAuto()) { autoPrev = null; r
     const sp = N.autoSpec(rq.type); try { if (await gameHost.start(rq.type, { ...sp[0], req: 1 }, sp[1], sp[2])) await N.markReqDone(rq.type, ownerState.rqdone, rq.last); } catch (e) {} } }, 1000);
 const bootDay = N.bizDate(); setInterval(() => { if (N.bizDate() !== bootDay && !(ownerState && ownerState.game)) N.safeReload('screen.html'); }, 60000);
 // ---------- 게임·럭키 추첨·생일 축하 중에는 화면 전체를 2D로(지금 스크린과 똑같이, 잘 보이게) ----------
-const full2d = document.getElementById('full2d'), fc = document.getElementById('full2dc'), fctx = fc.getContext('2d'), view2 = N.createScene();
+const fc = scrCv, fctx = scrCv.getContext('2d');   /* 고양이 숨바꼭질·한 줄 이어쓰기는 뒷벽 스크린 위에 그림 */
 // ---------- 혼자서도 놀거리 (2026-11-08): 고양이 숨바꼭질 · 한 줄 이어쓰기 ----------
 const SOLO = { catWas: null, storySeen: null, storyShow: 0, storyNew: '' };
 function soloBox(s, x, y, w, h, stroke){ fctx.fillStyle = 'rgba(20,12,13,.92)'; fctx.beginPath(); fctx.roundRect(x, y, w, h, 5 * s); fctx.fill(); fctx.strokeStyle = stroke; fctx.lineWidth = 1 * s; fctx.stroke(); }
@@ -1105,11 +1106,8 @@ function soloState(list){ const now = Date.now(), busy = !!(ownerState && ownerS
   if (SOLO.storySeen === null) SOLO.storySeen = sig; else if (sig !== SOLO.storySeen) { const was = SOLO.storySeen; SOLO.storySeen = sig; const add = lines.filter(g => !was.includes(g.id + ':' + (g.ms || 0))); if (add.length) { SOLO.storyShow = now + 10000; SOLO.storyNew = add[add.length - 1].id; } }
   const cyc = now % 1200000; return !busy && lines.length && (now < SOLO.storyShow || (lines.length >= 2 && cyc > 300000 && cyc < 315000)) ? 'story' : ''; }
 function fullOn(){ const st = ownerState || {}, now = Date.now(); if (soloState(isDemo() ? DEMO : liveGuests)) return true; return !!st.game || (st.lucky && st.lucky.ms && now - st.lucky.ms < 26000) || (st.bday && st.bday.ms && now - st.bday.ms < 22000); }
-(function full2dLoop(t){ const on = fullOn(); full2d.style.display = on ? 'block' : 'none';
-  if (on) { const k = Math.min(innerWidth / 16, innerHeight / 9), dpr = Math.min(2, devicePixelRatio || 1), W = Math.round(k * 16 * dpr), H = Math.round(k * 9 * dpr); if (fc.width !== W) { fc.width = W; fc.height = H; }
-    const dm = isDemo(), list = dm ? DEMO : liveGuests;
-    try { view2.render(fctx, fc.width, fc.height, list, t, { storyTip: 1, catHost: false, catPets: [], day: N.bizDate(), count: dm ? 0 : presentN, qr: QRC, owners: ownerState.owners, live: ownerState.live, seats: ownerState.seats, order: ownerState.order, served: ownerState.served, auto: canRunAuto() ? N.autoInfo(ownerState.auto) : null, reqs: reqList(), bday: ownerState.bday, bdays: ownerState.bdays, lucky: ownerState.lucky, best: ownerState.best, vip: ownerState.vip, q: ownerState.q, rec: recName, cheers: cheerList, game: ownerState.game, gameActs, theme: THEME, footer: '' }); } catch (e) {} try { soloFx(list, t); } catch (e) {} }
-  requestAnimationFrame(full2dLoop); })(performance.now());
+// 게임·추첨·생일·숨바꼭질·이어쓰기: 2D로 바꾸지 않고 카메라가 3D 매장 뒷벽 스크린으로 부드럽게 다가감(11월 12일 사장님)
+(function focusLoop(){ FOCUS += ((fullOn() ? 1 : 0) - FOCUS) * .035; requestAnimationFrame(focusLoop); })();
 // 큐알: 지금 스크린과 같은 손님용 주소(index.html)
 let QRC = null;
 try { const url = new URL('index.html', location.href).href, q = qrcode(0, 'M'); q.addData(url); q.make(); const n = q.getModuleCount(), c = document.createElement('canvas'); c.width = c.height = n + 2;

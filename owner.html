@@ -128,6 +128,12 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
     </section>
 
     <section>
+      <h2>오늘 휴무</h2>
+      <p class="sub">휴무를 누르면 그 사장님 캐릭터가 오늘 스크린에서 사라져요. 다음 영업일에는 자동으로 다시 출근해요.</p>
+      <div class="chips" id="offRow"></div>
+    </section>
+
+    <section>
       <h2>지금 스크린에 말하기</h2>
       <p class="sub">보내면 15초 동안 사장님 머리 위에 ★말풍선으로 떠요.</p>
       <div class="chips" id="who"></div>
@@ -339,7 +345,7 @@ $('mode').textContent = N.LIVE ? '' : '데모 모드 (config.js 설정 전 · �
 function start(){
   if (started) return; started = true;
   $('login').hidden = true; $('app').hidden = false; $('logout').hidden = !N.LIVE;
-  N.watchOwner(st => { ownerSt = st; if (typeof reqUi === 'function') setTimeout(reqUi, 0); if (typeof host !== 'undefined' && host) host.feed(st.game); theme = st.theme || 'auto'; seats = st.seats || {}; ev = { lucky: st.lucky, best: st.best, vip: st.vip || [], bdays: st.bdays || [] }; if (st.ntfy && !$('ntfyTopic').value) $('ntfyTopic').value = st.ntfy; if (st.wifi && !wifiTouched) { $('wifiS').value = st.wifi.s; $('wifiP').value = st.wifi.p; } renderThemes(); renderMap(); renderGuests(guestsNow); renderLucky(); renderQNow(); if (!dirty) { owners = st.owners.map(o => ({ ...o, lines: [...o.lines] })); renderOwners(); renderWho(); } });
+  N.watchOwner(st => { ownerSt = st; offNow = (st.owners || []).map((o, i) => o.off ? i : -1).filter(i => i >= 0); renderOff(); if (typeof reqUi === 'function') setTimeout(reqUi, 0); if (typeof host !== 'undefined' && host) host.feed(st.game); theme = st.theme || 'auto'; seats = st.seats || {}; ev = { lucky: st.lucky, best: st.best, vip: st.vip || [], bdays: st.bdays || [] }; if (st.ntfy && !$('ntfyTopic').value) $('ntfyTopic').value = st.ntfy; if (st.wifi && !wifiTouched) { $('wifiS').value = st.wifi.s; $('wifiP').value = st.wifi.p; } renderThemes(); renderMap(); renderGuests(guestsNow); renderLucky(); renderQNow(); if (!dirty) { owners = st.owners.map(o => ({ ...o, lines: [...o.lines] })); renderOwners(); renderWho(); } });
   // 촬영용 가상 손님
   const npcNow = () => (ownerSt && ownerSt.npcs) || [];
   let npcMsg = 0;
@@ -387,6 +393,16 @@ function renderThemes(){
     b.onclick = async () => { theme = tm.k; renderThemes(); try { await N.saveTheme(tm.k); } catch (e) {} }; el.appendChild(b); });
   const now = N.THEMES.find(x => x.k === N.resolveTheme(theme));
   $('themeNow').textContent = `지금 스크린: ${now ? now.name : '기본'}`;
+}
+// 오늘 휴무 (누르면 출근 ↔ 휴무)
+var offNow = [];   // 맨 처음 화면을 그릴 때도 쓰므로 var
+function renderOff(){
+  const el = $('offRow'); if (!el) return; el.innerHTML = '';
+  (ownerSt && ownerSt.owners ? ownerSt.owners : owners).forEach((o, i) => { const off = offNow.includes(i), b = document.createElement('button'); b.type = 'button'; b.className = 'chip';
+    b.textContent = (off ? '😴 ' : '🍸 ') + o.nick + (off ? ' · 오늘 휴무' : ' · 출근'); b.setAttribute('aria-pressed', String(off));
+    b.onclick = async () => { const before = offNow; offNow = off ? offNow.filter(n => n !== i) : offNow.concat(i); renderOff();
+      try { await N.saveOff(offNow); } catch (e) { offNow = before; renderOff(); alert('저장하지 못했어요. 로그인 상태와 인터넷을 확인해 주세요.'); } };
+    el.appendChild(b); });
 }
 // 지금 말하기
 function renderWho(){

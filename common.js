@@ -1542,6 +1542,7 @@
     }
     function render(ctx, cw, ch, guests, t, opts) {
       const owners = opts.owners || DEFAULT_OWNERS;
+      const onI = owners.map((o, i) => o.off ? -1 : i).filter(i => i >= 0), O0 = onI.length ? onI[0] : 0, allOff = !onI.length;   // 휴무 사장 제외
       const th = opts.theme || 'default';
       room();
       decorWall(th, t);
@@ -1601,7 +1602,8 @@
       if (orderOn && !clapOn && t - (GS.iceT || 0) > 115) { const e0 = nowMs - opts.order.ms; if (e0 < 4100) { GS.iceT = t; sfxIce(); } else if (e0 > 5700 && GS.tingK !== opts.order.ms) { GS.tingK = opts.order.ms; sfxTing(); } }
       const sv = opts.served, svE = sv && sv.ms ? nowMs - sv.ms : 1e9, svT = svE < 3400 && sv.gid ? placed.find(p => p.g.id === sv.gid) : null;
       owners.forEach((o, i) => {
-        const lift = i === 0 && svE < 1100 && !clapOn, st = clapOn || lift ? null : styleOf(i), yawn = late && (t + i * 17000) % 38000 < 2600;
+        if (o.off) { o._x = OWNER_X[i]; return; }
+        const lift = i === O0 && svE < 1100 && !clapOn, st = clapOn || lift ? null : styleOf(i), yawn = late && (t + i * 17000) % 38000 < 2600;
         let wobble = 0, jx = 0, fr;
         if (clapOn) fr = Math.floor(t / 170) % 2 ? 'c' : 'C';
         else if (lift) fr = 's';
@@ -1626,7 +1628,7 @@
             if (tilt >= 1 && fill < 1) { for (let yy = my + 1; yy < 136 + 4 - fill * 4; yy++) px(mx + ((yy + Math.floor(t / 60)) % 3 === 0 ? 1 : 0), yy, 1, 1, col); }
             const gX = Math.max(gx, mx), tw2 = fill >= 1 && Math.floor(t / 110) % 2; frontFx.push(P2 => { martini(gX, fill, col, fill >= 1, P2); if (tw2) sparkle(gX + 6, 133, .9, P2); }); } }
       });
-      if (svE >= 1100 && svE < 2900 && svT) { const col = drinkColor(sv.dr), sx = owners[0]._x + 8, sy = 160 - 28 - 10, tx = svT.x + 6, ty = svT.foot - (svT.sit ? 41 : 45) + 6;
+      if (svE >= 1100 && svE < 2900 && svT) { const col = drinkColor(sv.dr), sx = owners[O0]._x + 8, sy = 160 - 28 - 10, tx = svT.x + 6, ty = svT.foot - (svT.sit ? 41 : 45) + 6;
         if (svE < 2000) { const q = (svE - 1100) / 900, e2 = q * q * (3 - 2 * q), x = Math.round(sx + (tx - sx) * e2), y = Math.round(sy + (ty - sy) * e2 - Math.sin(q * Math.PI) * 34);
           frontFx.push(P2 => { martini(x, 1, col, true, P2, y); P2(x - 1 - Math.round(q * 4), y + 4, 1, 1, 'rgba(255,250,200,.6)'); }); }
         else { const k = 1 - (svE - 2000) / 900; frontFx.push(P2 => { martini(tx, 1, col, true, P2, ty); for (let a = 0; a < 6; a++) { const r = 6 + (1 - k) * 8, an = a * Math.PI / 3 + svE / 400; sparkle(Math.round(tx + Math.cos(an) * r), Math.round(ty + 4 + Math.sin(an) * r), k, P2); } }); }
@@ -1732,7 +1734,7 @@
         if (o.tier && o.tier.k === 'regular') { const tw2 = Math.sin(performance.now() / 300) > 0.3; if (tw2) { ctx.fillStyle = '#fff6c0'; const sx3 = lx0 + w0 - 2 * s, sy3 = y0 - .5 * s; ctx.fillRect(sx3, sy3 - 1.5 * s, .8 * s, 3.8 * s); ctx.fillRect(sx3 - 1.5 * s, sy3, 3.8 * s, .8 * s); } }
         if (sub) { ctx.font = `${5.2 * s}px "Do Hyeon", sans-serif`; ctx.fillStyle = o.vip ? '#ffd36a' : '#ffc9a0'; ctx.fillText(sub, x * s, (y + 6.5) * s); }
       };
-      owners.forEach((o, i) => tag(o.nick, o._x ?? OWNER_X[i], 111, '#ffe2c8'));
+      owners.forEach((o, i) => { if (!o.off) tag(o.nick, o._x ?? OWNER_X[i], 111, '#ffe2c8'); });
       // 이름표: 캐릭터 가슴 높이 (40명이 앉아도 덜 겹치게, 줄마다 살짝 엇갈림)
       placed.forEach((p, k) => { if (p.layer === 'standBack' && many) return;
         const top = p.foot - (p.sit ? 41 : 45);
@@ -1752,13 +1754,13 @@
       const od = opts.order, odOn = od && Date.now() - od.ms < 9000;
       if (od && od.ms && sfxOrderKey !== od.ms) { sfxOrderKey = od.ms; if (odOn) sfxDing(); }
       const bye = leaving.filter(lv => Date.now() - lv.ms < 4000).pop();
-      if (live && live.msg && Date.now() - live.ms < 15000) { const oi = live.who === 1 ? 1 : 0; pick = { key: 'live' + live.ms, x: owners[oi]._x ?? OWNER_X[oi], y: 103, text: live.msg, kind: 'live' }; }
-      else if (bye) pick = { key: 'bye' + bye.id + bye.ms, x: owners[0]._x ?? OWNER_X[0], y: 103, text: `${bye.nick}님, 안녕히 가세요!`, kind: 'live' };
+      if (!allOff && live && live.msg && Date.now() - live.ms < 15000) { const oi0 = live.who === 1 ? 1 : 0, oi = owners[oi0] && !owners[oi0].off ? oi0 : O0; pick = { key: 'live' + live.ms, x: owners[oi]._x ?? OWNER_X[oi], y: 103, text: live.msg, kind: 'live' }; }
+      else if (bye && !allOff) pick = { key: 'bye' + bye.id + bye.ms, x: owners[O0]._x ?? OWNER_X[O0], y: 103, text: `${bye.nick}님, 안녕히 가세요!`, kind: 'live' };
       else if (opts.served && Date.now() - opts.served.ms > 1900 && Date.now() - opts.served.ms < 5500 && opts.served.gid && placed.find(p => p.g.id === opts.served.gid)) { const sp = placed.find(p => p.g.id === opts.served.gid); pick = { key: 'sv' + opts.served.ms, x: sp.x, y: headY(sp), text: '한 잔 나왔어요! 🍸', kind: 'order' }; }
-      else if (opts.served && Date.now() - opts.served.ms < 3000) pick = { key: 'sv' + opts.served.ms, x: owners[0]._x ?? OWNER_X[0], y: 103, text: '한 잔 완성! 🍸', kind: 'live' };
+      else if (opts.served && !allOff && Date.now() - opts.served.ms < 3000) pick = { key: 'sv' + opts.served.ms, x: owners[O0]._x ?? OWNER_X[O0], y: 103, text: '한 잔 완성! 🍸', kind: 'live' };
       else if (odOn) { const op = od.gid && placed.find(p => p.g.id === od.gid);
         pick = op ? { key: 'od' + od.ms, x: op.x, y: headY(op), text: '주문 들어갔어요!', kind: 'order' }
-                  : { key: 'od' + od.ms, x: owners[0]._x ?? OWNER_X[0], y: 103, text: `${od.nick || '손님'}님 주문 들어갔어요!`, kind: 'order' }; }
+                  : { key: 'od' + od.ms, x: owners[O0]._x ?? OWNER_X[O0], y: 103, text: `${od.nick || '손님'}님 주문 들어갔어요!`, kind: 'order' }; }
       else {
         const fresh = talkers.find(p => p.g.ms && Date.now() - p.g.ms < 8000 && !p.g.demo);
         const bestP = bestId ? talkers.find(p => p.g.id === bestId) : null;
@@ -1766,7 +1768,7 @@
         else if (tick % 4 === 2 && placed.some(p => p.g.last && !p.g.nolast)) { const ds = placed.filter(p => p.g.last && !p.g.nolast), dp = ds[Math.floor(tick / 4) % ds.length]; pick = { key: 'd' + tick, x: dp.x, y: headY(dp), text: `${dp.g.last} 마시는 중`, kind: 'drink' }; }
         else if (bestP && tick % 4 === 1) pick = { key: 'b' + tick, x: bestP.x, y: headY(bestP), text: bestP.g.msg, kind: 'best' };
         else if (talkers.length && tick % 4 !== 3) { const p = talkers[tick % talkers.length]; pick = { key: 't' + tick, x: p.x, y: headY(p), text: p.g.msg, kind: 'guest' }; }
-        else { const oi = Math.floor(tick / 4) % 2, o = owners[oi], lines = (o.lines || []).filter(Boolean).concat(opts.rec ? [`오늘의 추천은 ${opts.rec}! 한 잔 어때요?`] : []).concat(opts.q ? [`오늘의 질문: ${opts.q}`] : []); if (lines.length) pick = { key: 'o' + tick, x: o._x ?? OWNER_X[oi], y: 103, text: lines[Math.floor(tick / 8) % lines.length], kind: 'owner' }; }
+        else if (!allOff) { const oi = onI[Math.floor(tick / 4) % onI.length], o = owners[oi], lines = (o.lines || []).filter(Boolean).concat(opts.rec ? [`오늘의 추천은 ${opts.rec}! 한 잔 어때요?`] : []).concat(opts.q ? [`오늘의 질문: ${opts.q}`] : []); if (lines.length) pick = { key: 'o' + tick, x: o._x ?? OWNER_X[oi], y: 103, text: lines[Math.floor(tick / 8) % lines.length], kind: 'owner' }; }
       }
       // 대화 아이콘: 기본은 머리 위. 말풍선과 겹치면 비켜서 그림
       { let br = null;
@@ -2396,12 +2398,20 @@
   function watchOwner(cb) {
     let state = { owners: normOwners(null), live: null, theme: 'auto', seats: {}, lucky: null, best: null, vip: [] };
     if (LIVE) {
-      const u1 = relisten((err, ok) => fs.collection('owner').doc('settings').onSnapshot(d => { ok(); const v = d.exists ? d.data() : {}; state = { ...state, owners: normOwners(v.owners || null), theme: v.theme || 'auto', seats: cleanSeats(v.seats), ...cleanEvents(v) }; cb(state); }, err));
+      const u1 = relisten((err, ok) => fs.collection('owner').doc('settings').onSnapshot(d => { ok(); const v = d.exists ? d.data() : {}; state = { ...state, owners: withOff(normOwners(v.owners || null), cleanOff(v.off)), theme: v.theme || 'auto', seats: cleanSeats(v.seats), ...cleanEvents(v) }; cb(state); }, err));
       const u2 = relisten((err, ok) => fs.collection('owner').doc('live').onSnapshot(d => { ok(); const v = d.exists ? d.data() : null; state = { ...state, live: v && v.ts ? { msg: String(v.msg || '').slice(0, 30), who: v.who, ms: v.ts.toMillis() } : null }; cb(state); }, err));
       cb(state); return () => { u1(); u2(); };
     }
-    const read = () => { state = { owners: normOwners(lsGet('notsun-owner-settings', null)), live: lsGet('notsun-owner-live', null), theme: lsGet('notsun-owner-theme', 'auto'), seats: cleanSeats(lsGet('notsun-owner-seats', null)), ...cleanEvents(lsGet('notsun-owner-events', {})) }; cb(state); };
+    const read = () => { state = { owners: withOff(normOwners(lsGet('notsun-owner-settings', null)), cleanOff(lsGet('notsun-owner-off', null))), live: lsGet('notsun-owner-live', null), theme: lsGet('notsun-owner-theme', 'auto'), seats: cleanSeats(lsGet('notsun-owner-seats', null)), ...cleanEvents(lsGet('notsun-owner-events', {})) }; cb(state); };
     read(); listeners.push(read); return () => {};
+  }
+  // 사장 휴무: 그날 영업일에만 유효 (다음 날 자동으로 풀림)
+  function cleanOff(v) { return v && v.day === bizDate() && Array.isArray(v.list) ? v.list.filter(n => n === 0 || n === 1) : []; }
+  const withOff = (owners, off) => owners.map((o, i) => ({ ...o, off: off.includes(i) }));
+  async function saveOff(list) {
+    const v = { day: bizDate(), list: cleanOff({ day: bizDate(), list }) };
+    if (LIVE) { await fs.collection('owner').doc('settings').set({ off: v }, { mergeFields: ['off'] }); return; }
+    lsSet('notsun-owner-off', v); ping();
   }
   async function saveOwners(owners) {
     const clean2 = normOwners(owners);
@@ -3038,5 +3048,5 @@
   }
 
   global.Notsun = { setGuestLeft, findMyGuest, resetDay, watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, horseSprite, raceProg, raceInfo, RACE_T0, BAL_QS, OX_QS, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, LOOK_THEMES, FITS, COS_DESC, issueLegendCoupon, BOTTOMS, ACCS, HAIR_X, TOPS, EYES, ACC_X, SHOES, PANTS_COLORS, EX_RE, setGuestCos, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
-    CAT_HIDE, shopOpen, STORY, balSet, muteSfx: v => { SFX.mute = !!v; }, BAL_SEC, setCatVisit, watchCatVisit, petCat, safeReload, netErr, newOrderId: () => LIVE ? fs.collection('orders').doc().id : 'o' + Date.now(), watchCatPets, THEMES, resolveTheme, costumeFor, drawCostume, cosSeed, seasonCostume, rollSeason, cosOf, OWNER_COS, ownerCostume, cardAura, AURA_FX, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, clearUsedCoupons, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, announceServed, drinkColor, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, saveGameEnd, REQ_NEED, reqTally, requestGame, markReqDone, AUTO_ORDER, AUTO_LABEL, autoInfo, autoSpec, saveAuto, notifyOwner, updateLook, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
+    CAT_HIDE, shopOpen, STORY, balSet, muteSfx: v => { SFX.mute = !!v; }, BAL_SEC, setCatVisit, watchCatVisit, petCat, safeReload, netErr, newOrderId: () => LIVE ? fs.collection('orders').doc().id : 'o' + Date.now(), watchCatPets, THEMES, resolveTheme, costumeFor, drawCostume, cosSeed, seasonCostume, rollSeason, cosOf, OWNER_COS, ownerCostume, cardAura, AURA_FX, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, saveOff, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, clearUsedCoupons, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, announceServed, drinkColor, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, saveGameEnd, REQ_NEED, reqTally, requestGame, markReqDone, AUTO_ORDER, AUTO_LABEL, autoInfo, autoSpec, saveAuto, notifyOwner, updateLook, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
 })(window);
