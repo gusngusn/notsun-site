@@ -375,7 +375,12 @@ function loop(t){ const dt = Math.min(.05, (t - last) / 1000); last = t;
     g.fillStyle = '#ffb27a'; g.font = '44px "Do Hyeon", sans-serif'; g.fillText('혼자 와도 낯설지 않은 밤', 480, 310);
     g.fillStyle = '#e8d8cc'; g.font = '38px "Do Hyeon", sans-serif'; g.fillText(`지금 ${guests.filter(c => c.sit).length}명이 함께 마시는 중`, 480, 400);
     const blink = Math.floor(t / 500) % 2; g.fillStyle = blink ? '#ffd36a' : '#ff9a7a'; g.fillText('✦ 큐알을 찍고 자리에 앉아 보세요 ✦', 480, 470); scrTex.needsUpdate = true; }
-  if (view && t - scrAt > (FOCUS > .05 ? [30, 50, 70, 100][LQ] : [100, 250, 500, 800][LQ])) { scrAt = t; try { const dm = isDemo(), list = dm ? DEMO : liveGuests; view.render(scrCv.getContext('2d'), scrCv.width, scrCv.height, list, t, { storyTip: 1, catHost: false, catPets: [], day: N.bizDate(), count: dm ? 0 : presentN, qr: QRC, owners: ownerState.owners, live: ownerState.live, seats: ownerState.seats, order: ownerState.order, served: ownerState.served, auto: (typeof canRunAuto === 'function' && canRunAuto()) ? N.autoInfo(ownerState.auto) : null, reqs: typeof reqList === 'function' ? reqList() : [], bday: ownerState.bday, bdays: ownerState.bdays, lucky: ownerState.lucky, best: ownerState.best, vip: ownerState.vip, q: ownerState.q, rec: recName, cheers: typeof cheerList !== 'undefined' ? cheerList : [], game: ownerState.game, gameActs: typeof gameActs !== 'undefined' ? gameActs : [], theme: THEME, footer: dm ? '첫 번째 낯선 손님이 되어주세요' : '' }); try { soloFx(list, t); } catch (e) {} scrTex.needsUpdate = true; } catch (e) {} }
+  // 11월 12일 사장님: 경마처럼 뒷벽 스크린으로 다가가는 게임은 글자가 흐림 → 다가갈 때만 그림을 1920칸으로 촘촘하게 + 부드럽게
+  if (view) { const hi = FOCUS > .05, wantW = hi ? 1920 : 1280; if (scrCv.width !== wantW) { scrCv.width = wantW; scrCv.height = wantW * 9 / 16; scrTex.magFilter = hi ? THREE.LinearFilter : THREE.NearestFilter; scrTex.dispose(); scrTex.needsUpdate = true; scrAt = 0; } }
+  const OV = ovOn(); ovBox.style.display = OV ? 'block' : 'none';
+  if (view && t - scrAt > (FOCUS > .05 || OV ? [30, 50, 70, 100][LQ] : [100, 250, 500, 800][LQ])) { scrAt = t; try { const dm = isDemo(), list = dm ? DEMO : liveGuests;
+    let tc = scrCv; if (OV) { const r = ovCv.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1), w = Math.round(r.width * dpr), h = Math.round(w * 9 / 16); if (ovCv.width !== w) { ovCv.width = w; ovCv.height = h; } tc = ovCv; }   // 경마: 화면 위에 띄운 창에 바로 그림(글자 또렷)
+    view.render(tc.getContext('2d'), tc.width, tc.height, list, t, { gameOnly: OV, storyTip: 1, catHost: false, catPets: [], day: N.bizDate(), count: dm ? 0 : presentN, qr: QRC, owners: ownerState.owners, live: ownerState.live, seats: ownerState.seats, order: ownerState.order, served: ownerState.served, auto: (typeof canRunAuto === 'function' && canRunAuto()) ? N.autoInfo(ownerState.auto) : null, reqs: typeof reqList === 'function' ? reqList() : [], bday: ownerState.bday, bdays: ownerState.bdays, lucky: ownerState.lucky, best: ownerState.best, vip: ownerState.vip, q: OV ? '' : ownerState.q, rec: recName, cheers: typeof cheerList !== 'undefined' ? cheerList : [], game: ownerState.game, gameActs: typeof gameActs !== 'undefined' ? gameActs : [], theme: THEME, footer: dm ? '첫 번째 낯선 손님이 되어주세요' : '' }); if (!OV) { try { soloFx(list, t); } catch (e) {} scrTex.needsUpdate = true; } } catch (e) {} }
   if (window.__neon) window.__neon.material.opacity = (Math.floor(t / 120) % 29) ? 1 : .35;
   // 카메라: 바깥에서 문이 열리고 → 문 안쪽 한 걸음에 멈춰 서서 매장 전체를 봄(걷지 않음)
   if (intro < 1) { intro = Math.min(1, intro + dt / 3.2); }
@@ -838,7 +843,7 @@ buildExtra = function(k){ buildExtra0(k);
     const ice = (x, z) => { const h = .12 + Math.random() * .22, m = new THREE.Mesh(new THREE.ConeGeometry(.035, h, 5), new THREE.MeshLambertMaterial({ color: '#e8f6ff', emissive: '#a8d0ff', emissiveIntensity: .3 })); m.rotation.x = Math.PI; m.position.set(x, RH - h / 2, z); EX.add(m); };
     for (let i = 0; i < 34; i++) { ice(-RW / 2 + i * .2, -RD / 2 - .1); ice(-RW / 2 - .1, -RD / 2 + i * .2); ice(RW / 2 + .1, -RD / 2 + i * .2); }   // 고드름
     bx(EX, RW + .3, .1, .3, 0, RH, -RD / 2 - .05, '#f4f8ff'); bx(EX, .3, .1, RD + .2, -RW / 2 - .05, RH, 0, '#f4f8ff'); bx(EX, .3, .1, RD + .2, RW / 2 + .05, RH, 0, '#f4f8ff');   // 지붕에 쌓인 눈
-    for (let i = 0; i < 16; i++) { const m = new THREE.Mesh(new THREE.SphereGeometry(.35 + Math.random() * .3, 10, 8), M('#f4f8ff')); m.scale.y = .4; const side = i % 3; m.position.set(side === 0 ? -RW / 2 - .35 : side === 1 ? RW / 2 + .35 : -3 + Math.random() * 6, -.12, side === 2 ? -RD / 2 - .35 : -3 + Math.random() * 6); EX.add(m); }   // 눈 더미
+    /* 가게 밑 눈 더미 16개는 바닥이 울퉁불퉁해 보여서 없앰(11월 12일 사장님) */
     [[-4.4, 3.8], [4.4, 3.8], [-4.4, -3.6], [4.4, -3.6]].forEach(([x, z]) => { for (let j = 0; j < 8; j++) bx(EX, .1, .1, .1, x, .2 + j * .28, z, j % 2 ? '#d6262e' : '#ffffff'); bx(EX, .3, .14, .06, x, 2.2, z + .07, '#d6262e'); });   // 가로등 사탕 줄무늬·리본
   }
   if (k === 'halloween') {
@@ -988,6 +993,55 @@ function drawSky(t){ if (!wxReady) return; const g = BG.getContext('2d'), W = 16
   bgT.needsUpdate = true; }
 function raining3(k){ return k === 'rain' || k === 'storm' || k === 'snow'; }
 (function wxLoop(t){ animWx(t || performance.now()); requestAnimationFrame(wxLoop); })();
+// ---------- 11월 12일 사장님: 매장 밖은 타일 바닥·3D 거리 대신 2D 밤 그림(하늘·달·별·낮은 건물 그림자) — 더 가볍게 ----------
+ground.visible = false; CALM.visible = false; FAR.visible = false; walk.forEach(m => m.visible = false); while (PUDDLES.children.length) PUDDLES.remove(PUDDLES.children[0]);   // 바닥이 없으니 물웅덩이도 없음
+// 테마 장식 중 바닥에 서 있던 것(트리·눈사람·가로등 사탕무늬 등)은 빼고, 가게에 붙은 것(고드름·지붕 눈)과 내리는 것만 남김
+const nearShop = o => Math.abs(o.position.x) < RW / 2 + .6 && Math.abs(o.position.z) < RD / 2 + .6;
+const buildOutside2 = buildOutside; buildOutside = function(k){ buildOutside2(k); while (OUT.children.length) OUT.remove(OUT.children[0]); OFALL.length = 0; };   // 3D로 내리던 눈·꽃잎 260개도 없앰 → 2D 그림으로(아래 theme2D)
+const buildExtra2 = buildExtra; buildExtra = function(k){ buildExtra2(k); EX.children.slice().forEach(o => { if (!nearShop(o)) { EX.remove(o); const i = EXA.indexOf(o); if (i >= 0) EXA.splice(i, 1); } }); };
+groundTheme = '';   // 다음 반복에서 위 규칙으로 다시 꾸밈
+const STREET2D = (() => { const out = []; let x = -10, s = 11; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+  while (x < 1610) { const w = 70 + r() * 110, h = 110 + r() * 170, win = []; for (let yy = 22; yy < h - 14; yy += 26) for (let xx = 12; xx < w - 14; xx += 22) if (r() < .45) win.push([xx, yy, r()]); out.push({ x, w, h, win, roof: r() < .5 ? 'flat' : 'gable', sign: r() < .25 ? ['#ff5a5a', '#5ad0ff', '#ffd23a', '#9aff8a'][Math.floor(r() * 4)] : '' }); x += w + 4 + r() * 10; }
+  return out; })();
+function street2D(t){ const g = BG.getContext('2d'), W = 1600, H = 900, snowy = WXS.kind === 'snow' || THEME === 'christmas', wet = WXS.kind === 'rain' || WXS.kind === 'storm';
+  // 아래쪽 은은한 거리 불빛
+  const gl = g.createLinearGradient(0, H * .5, 0, H); gl.addColorStop(0, 'rgba(0,0,0,0)'); gl.addColorStop(1, wet ? 'rgba(60,70,110,.55)' : 'rgba(90,40,70,.45)'); g.fillStyle = gl; g.fillRect(0, H * .5, W, H * .5);
+  // 낮은 건물 그림자(교동 골목 느낌) + 창문 불빛 + 작은 간판
+  STREET2D.forEach(b => { const y0 = H - b.h; g.fillStyle = '#0b0912'; g.fillRect(b.x, y0, b.w, b.h);
+    if (b.roof === 'gable') { g.beginPath(); g.moveTo(b.x - 6, y0); g.lineTo(b.x + b.w / 2, y0 - 26); g.lineTo(b.x + b.w + 6, y0); g.fill(); }
+    if (snowy) { g.fillStyle = '#e8eef8'; if (b.roof === 'gable') { g.beginPath(); g.moveTo(b.x - 6, y0); g.lineTo(b.x + b.w / 2, y0 - 26); g.lineTo(b.x + b.w + 6, y0); g.lineTo(b.x + b.w / 2, y0 - 18); g.fill(); } else g.fillRect(b.x - 2, y0 - 5, b.w + 4, 6); }
+    b.win.forEach(([xx, yy, v]) => { const on = (Math.floor(t / 5000 + v * 9) % 9) !== 0; g.fillStyle = on ? (v < .5 ? '#ffd890' : '#ffc070') : '#1e1a26'; g.fillRect(b.x + xx, y0 + yy, 9, 12); });
+    if (b.sign) { g.save(); g.shadowColor = b.sign; g.shadowBlur = 14; g.fillStyle = b.sign; g.globalAlpha = (Math.floor(t / 140 + b.x) % 37) ? .9 : .4; g.fillRect(b.x + b.w * .2, y0 + 8, b.w * .6, 6); g.restore(); } });
+  // 바닥 띠(길)
+  g.fillStyle = wet ? '#151a2a' : snowy ? '#cfd8e8' : '#120e18'; g.fillRect(0, H - 18, W, 18);
+  theme2D(g, t, W, H);
+  bgT.needsUpdate = true; }
+// 매장 밖 테마도 2D 그림으로(11월 12일 사장님: 크리스마스면 트리·눈·산타·루돌프)
+function tree2D(g, x, by, h, t){ const w = h * .62; [[0, .38], [.22, .32], [.42, .26]].forEach(([y, s], i) => { g.fillStyle = ['#1f6a34', '#24783c', '#2a8a44'][i]; g.beginPath(); g.moveTo(x, by - h + y * h * .55 - 10); g.lineTo(x - w * (s + .12), by - h * (.32 - y * .55) + 30 - y * h * .1); g.lineTo(x + w * (s + .12), by - h * (.32 - y * .55) + 30 - y * h * .1); g.fill(); });
+  g.fillStyle = '#5a3a20'; g.fillRect(x - h * .05, by - h * .1, h * .1, h * .1);
+  for (let i = 0; i < 16; i++) { const yy = by - h * .2 - (i % 6) * h * .11, xx = x + Math.sin(i * 2.4) * (h * .05 + (i % 6) * h * .035) * -1 + (i % 2 ? 1 : -1) * h * .08; const on = (Math.floor(t / 400) + i) % 3 !== 0; g.fillStyle = on ? ['#ff3a3a', '#ffd23a', '#5ab0ff', '#ffffff'][i % 4] : '#3a3a3a'; g.beginPath(); g.arc(xx, yy, h * .018, 0, 7); g.fill(); }
+  g.save(); g.shadowColor = '#ffe060'; g.shadowBlur = 20; g.fillStyle = '#ffe060'; g.beginPath(); for (let a = 0; a < 10; a++) { const r = a % 2 ? h * .025 : h * .055, an = -Math.PI / 2 + a * Math.PI / 5; g.lineTo(x + Math.cos(an) * r, by - h + 2 + Math.sin(an) * r); } g.fill(); g.restore(); }
+function sleigh2D(g, t, W){ const sx = ((t / 11) % (W + 900)) - 450, sy = 150 + Math.sin(t / 700) * 14;
+  // 루돌프 4마리(맨 앞은 빨간 코)
+  for (let r = 0; r < 4; r++) { const rx = sx + 70 + r * 52, ry = sy + 6 + Math.sin(t / 160 + r) * 3; g.fillStyle = '#8a5a30'; g.fillRect(rx, ry, 30, 11); g.fillRect(rx + 24, ry - 10, 8, 12); g.fillRect(rx + 28, ry - 12, 10, 7);
+    g.fillStyle = '#5e3a18'; g.fillRect(rx + 2, ry + 11, 3, 9 + Math.sin(t / 90 + r) * 2); g.fillRect(rx + 24, ry + 11, 3, 9 - Math.sin(t / 90 + r) * 2); g.fillRect(rx + 26, ry - 18, 2, 7); g.fillRect(rx + 30, ry - 18, 2, 7); g.fillRect(rx + 24, ry - 19, 4, 2); g.fillRect(rx + 30, ry - 19, 4, 2);
+    if (r === 3) { g.save(); g.shadowColor = '#ff3a3a'; g.shadowBlur = 12; g.fillStyle = '#ff3a3a'; g.fillRect(rx + 37, ry - 11, 4, 4); g.restore(); } }
+  g.strokeStyle = 'rgba(255,230,180,.7)'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(sx + 52, sy + 8); g.lineTo(sx + 70 + 3 * 52 + 20, sy + 10); g.stroke();
+  // 썰매와 산타
+  g.fillStyle = '#c8202e'; g.fillRect(sx, sy, 56, 18); g.fillRect(sx - 4, sy - 8, 10, 14); g.fillStyle = '#ffd23a'; g.fillRect(sx - 6, sy + 20, 66, 3); g.fillRect(sx + 56, sy + 14, 4, 9);
+  g.fillStyle = '#d6262e'; g.fillRect(sx + 16, sy - 18, 18, 18); g.fillStyle = '#f6d5bb'; g.fillRect(sx + 20, sy - 26, 11, 9); g.fillStyle = '#ffffff'; g.fillRect(sx + 19, sy - 19, 13, 6); g.fillStyle = '#d6262e'; g.fillRect(sx + 19, sy - 33, 12, 7); g.fillStyle = '#ffffff'; g.fillRect(sx + 29, sy - 35, 5, 5);
+  g.fillStyle = '#8a5a2a'; g.fillRect(sx + 2, sy - 14, 12, 12); g.fillStyle = '#2a8a4a'; g.fillRect(sx + 6, sy - 20, 9, 8); }
+function theme2D(g, t, W, H){ const k = THEME;
+  const fall = (n, col, size, speed, shape) => { for (let i = 0; i < n; i++) { const p = BGP[i % BGP.length], x = (p.x + Math.sin(t / 1200 + p.p) * 30 + i * 13) % W, y = (p.y + t * speed * p.s + i * 7) % (H + 40) - 20; g.fillStyle = typeof col === 'function' ? col(i) : col;
+    if (shape === 'heart') { g.font = `${(size * p.s * 2.4) | 0}px sans-serif`; g.fillText('♥', x, y); } else if (shape === 'petal') { g.beginPath(); g.ellipse(x, y, size * 1.4, size * .8, t / 500 + i, 0, 7); g.fill(); } else { g.beginPath(); g.arc(x, y, size * (.5 + p.s * .7), 0, 7); g.fill(); } } };
+  if (k === 'christmas') { sleigh2D(g, t, W); tree2D(g, 150, H - 18, 330, t); tree2D(g, 1480, H - 18, 250, t + 777); fall(130, 'rgba(255,255,255,.9)', 3.2, .045); }
+  else if (k === 'halloween') { for (let i = 0; i < 7; i++) { const x = (i * 240 + t / 6) % 1800 - 100, y = 110 + (i % 4) * 45 + Math.sin(t / 250 + i) * 12, f = Math.abs(Math.sin(t / 110 + i)); g.fillStyle = '#0a0410'; g.beginPath(); g.ellipse(x, y, 9, 6, 0, 0, 7); g.fill(); g.beginPath(); g.moveTo(x, y); g.lineTo(x - 30, y - 12 * f); g.lineTo(x - 16, y + 4); g.moveTo(x, y); g.lineTo(x + 30, y - 12 * f); g.lineTo(x + 16, y + 4); g.fill(); }
+    [[120, H - 18], [1500, H - 18], [1400, H - 18]].forEach(([x, y], i) => { const s = i === 2 ? 26 : 40; g.fillStyle = '#ff7a1a'; g.beginPath(); g.ellipse(x, y - s * .8, s, s * .8, 0, 0, 7); g.fill(); g.fillStyle = '#ffe03a'; g.fillRect(x - s * .45, y - s, s * .25, s * .2); g.fillRect(x + s * .2, y - s, s * .25, s * .2); g.fillRect(x - s * .4, y - s * .55, s * .8, s * .12); g.fillStyle = '#3a6a2a'; g.fillRect(x - 3, y - s * 1.75, 6, s * .25); }); }
+  else if (['valentine', 'white', 'rose', 'pepero'].includes(k)) fall(50, k === 'white' ? 'rgba(255,255,255,.7)' : 'rgba(255,120,170,.75)', 7, .03, 'heart');
+  else if (k === 'spring') fall(70, i => i % 2 ? 'rgba(255,190,214,.9)' : 'rgba(255,240,244,.9)', 4, .025, 'petal');
+  else if (k === 'chuseok') fall(40, i => i % 2 ? 'rgba(255,140,40,.85)' : 'rgba(200,80,30,.85)', 4, .03, 'petal');
+  else if (k === 'seollal') { const fw = (t / 2600) % 1, cx = 300 + ((Math.floor(t / 2600) * 523) % 1000); for (let a = 0; a < 18; a++) { g.fillStyle = ['#ffd23a', '#ff6a6a', '#8ad0ff'][a % 3]; g.globalAlpha = 1 - fw; g.beginPath(); g.arc(cx + Math.cos(a / 18 * 6.28) * fw * 140, 200 + Math.sin(a / 18 * 6.28) * fw * 140, 5, 0, 7); g.fill(); } g.globalAlpha = 1; } }
+const drawSkyWx = drawSky; drawSky = function(t){ drawSkyWx(t); if (typeof wxReady === 'undefined' || wxReady) street2D(t); };
 
 wxReady = true;
 // ---------- 지금 스크린(screen.html)의 게임 진행·로그인·자동 게임·게임 신청·새 버전 새로고침 그대로 ----------
@@ -1323,7 +1377,12 @@ function soloState(list){ const now = Date.now(), busy = !!(ownerState && ownerS
   const lines = real.filter(g => typeof g.msg === 'string' && g.msg.startsWith('📖 ')).sort((a, b) => (a.ms || 0) - (b.ms || 0)), sig = lines.map(g => g.id + ':' + (g.ms || 0)).join('|');
   if (SOLO.storySeen === null) SOLO.storySeen = sig; else if (sig !== SOLO.storySeen) { const was = SOLO.storySeen; SOLO.storySeen = sig; const add = lines.filter(g => !was.includes(g.id + ':' + (g.ms || 0))); if (add.length) { SOLO.storyShow = now + 10000; SOLO.storyNew = add[add.length - 1].id; } }
   const cyc = now % 1200000; return !busy && lines.length && (now < SOLO.storyShow || (lines.length >= 2 && cyc > 300000 && cyc < 315000)) ? 'story' : ''; }
-function fullOn(){ const st = ownerState || {}, now = Date.now(); if (soloState(isDemo() ? DEMO : liveGuests)) return true; return (!!st.game && !g3on()) || (st.lucky && st.lucky.ms && now - st.lucky.ms < 26000) || (st.bday && st.bday.ms && now - st.bday.ms < 22000); }
+// 11월 12일 사장님: 경마는 카메라를 당기지 않고 예전처럼 화면 위에 게임 창을 크게 띄움
+const OV_TYPES = ['race'];
+function ovOn(){ const g = ownerState && ownerState.game; return !!(g && OV_TYPES.includes(g.type)); }
+const ovBox = document.createElement('div'); ovBox.style.cssText = 'position:fixed;inset:0;display:none;z-index:5;background:#0c0a10';   // 예전처럼 화면 전체를 꽉 채움(경마판만)
+const ovCv = document.createElement('canvas'); ovCv.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(100vw,177.78vh);aspect-ratio:16/9;display:block'; ovBox.appendChild(ovCv); document.body.appendChild(ovBox);
+function fullOn(){ const st = ownerState || {}, now = Date.now(); if (ovOn()) return false; if (soloState(isDemo() ? DEMO : liveGuests)) return true; return (!!st.game && !g3on()) || (st.lucky && st.lucky.ms && now - st.lucky.ms < 26000) || (st.bday && st.bday.ms && now - st.bday.ms < 22000); }
 // 게임·추첨·생일·숨바꼭질·이어쓰기: 2D로 바꾸지 않고 카메라가 3D 매장 뒷벽 스크린으로 부드럽게 다가감(11월 12일 사장님)
 (function focusLoop(){ FOCUS += ((fullOn() ? 1 : 0) - FOCUS) * .035; requestAnimationFrame(focusLoop); })();
 // 큐알: 지금 스크린과 같은 손님용 주소(index.html)

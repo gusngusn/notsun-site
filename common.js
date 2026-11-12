@@ -1790,7 +1790,8 @@
           talkIcon(ctx, s, ix, iy, k, t + p.i * 400); }); }
       if (pick && !opts.game) { if (pick.key !== lastKey) { lastKey = pick.key; since = t; } bubble(ctx, s, pick.x, pick.y, pick.text, pick.kind, t - since, pickIcon); }
       luckyFx(ctx, s, t, lk, opts.lucky);
-      gameFx(ctx, s, t, placed, opts.game, opts.gameActs || [], headY, opts.qr);
+      if (opts.gameOnly) { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); const bg = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height); bg.addColorStop(0, '#1a0e12'); bg.addColorStop(1, '#0c0a10'); ctx.fillStyle = bg; ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height); ctx.restore(); }   // 3D 스크린 위에 띄우는 게임 창(경마): 방명록 그림은 지우고 게임만(11월 12일 사장님)
+      gameFx(ctx, s, t, placed, opts.game, opts.gameActs || [], headY, opts.qr && !opts.gameOnly ? opts.qr : null);
       bdayFx(ctx, s, t, placed, opts.bday, headY);
       cheerFx(ctx, s, t, placed, opts.cheers, headY);
       heartFx(ctx, s, t, placed, headY);
