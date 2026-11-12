@@ -235,7 +235,7 @@ body:has(.catcard) .toast{top:104px}
     <div class="opts">
       <label class="btn" for="photo">셀카로 내 색 입히기</label>
       <input id="photo" type="file" accept="image/*" capture="user" hidden>
-      <div class="group"><b>시즌 코스튬</b><div class="chips"><button class="btn small" id="diceBtn" type="button">🎲 주사위 굴리기</button><button class="btn small" id="diceOff" type="button" hidden>벗기</button></div><small id="diceName" style="color:var(--muted)"></small></div>
+      <div class="group"><b>시즌 코스튬</b><div class="chips"><button class="btn small" id="diceBtn" type="button">🎲 주사위 굴리기</button><button class="btn small" id="diceOff" type="button" hidden>벗기</button></div><small id="diceName" style="color:var(--muted)"></small><div class="chips" id="cosPick" style="margin-top:6px"></div></div>
       <div class="group thmg"><b>컨셉 테마</b><div class="chips" id="thm"></div><button class="btn small" id="thmRand" type="button" hidden>🎲 레트로 코디 랜덤</button></div>
       <div class="group"><b>성별</b><div class="chips" id="sx"></div></div>
       <div class="group"><b>머리</b><div class="chips" id="hs"></div></div>
@@ -459,7 +459,11 @@ function accInit(){ const box = $('custom'), opts = box && box.querySelector('.o
   function showTab(){ [...tabs.children].forEach((b, n) => b.setAttribute('aria-selected', String(n === ptab))); [...panel.children].forEach(g => store.appendChild(g)); store.querySelectorAll(window.__accAll ? '[data-tab]' : `[data-tab="${ptab}"]`).forEach(g => panel.appendChild(g)); }
   showTab(); }
 function accSync(){}
-function diceUi(dk){ const nm = $('diceName'), off = $('diceOff'); if (!nm) return; nm.textContent = dk && dk.k ? `🎭 ${dk.name}` : '굴리면 이번 시즌 코스튬 중 하나를 입어요'; off.hidden = !(dk && dk.k); }
+function diceUi(dk){ const nm = $('diceName'), off = $('diceOff'); if (!nm) return; nm.textContent = dk && dk.k ? `🎭 ${dk.name}` : '굴리거나 아래에서 골라 입어요'; off.hidden = !(dk && dk.k);
+  // 이번 시즌 코스튬을 직접 골라 입기(11월 12일 사장님: 루돌프 코·산타 모자·산타 옷·루돌프 옷·트리 등)
+  const pk = $('cosPick'); if (!pk || !N.seasonPool) return; const st = cur().style, pool = N.seasonPool(theme, st), sig = theme + '|' + st[0] + '|' + (diceN || 0);
+  if (pk.dataset.sig === sig) return; pk.dataset.sig = sig; pk.innerHTML = '';
+  pool.forEach((k, i) => { const d = N.seasonCostume(theme, i + 1, st); if (!d.k) return; const b = document.createElement('button'); b.type = 'button'; b.className = 'btn small'; b.textContent = d.name; b.setAttribute('aria-pressed', diceN === i + 1 ? 'true' : 'false'); if (diceN === i + 1) b.style.borderColor = 'var(--glow)'; b.onclick = () => { diceN = i + 1; redraw(); }; pk.appendChild(b); }); }
 // 코스튬 뽑기는 원하는 손님만: 앉으면 물어보고, 내 자리에서도 언제든 뽑기·벗기·다시 입기
 async function setCos(on){ const me = loadMe(); if (!me) return; const v = Number.isInteger(on) && on > 0 ? on : !!on; saveMe({ ...me, cos: v }); try { await N.setGuestCos(me.id, v); } catch (e) {} refreshCos(); }
 function rollMine(){ const me = loadMe(); if (!me) return; setCos(N.rollSeason(theme, me.look.style, typeof me.cos === 'number' ? me.cos : 0)); }
@@ -839,11 +843,22 @@ function renderGame(g){
     const inGame = (g.players || []).some(p => p.gid === me.id);
     if (!inGame) { if (g.phase === 'boom') gOpen(`<h3>💥 펑! ${escH(g.loserNick || '')}님 당첨</h3><p>미션: ${escH(g.mission || '')}</p>`); else gOpen(`<h3>💣 폭탄이 ${escH(g.holderNick || '')}님한테!</h3><p>스크린을 봐주세요.</p>`); return; }
     if (g.phase === 'play') {
+      const catBox = g.cat ? `<div class="recbox">${g.rounds ? g.round + '/' + g.rounds + '판 · ' : ''}주제: <b>${escH(g.cat)}</b></div>` : '';
       if (g.holder === me.id) { if (L.k !== g.k) { L.k = g.k; L.sent = false; gAlert('bomb'); }
-        gOpen('<h3>💣 폭탄이 나한테 왔어요!</h3><button class="gbig red" id="gPass" type="button">넘기기!</button>');
-        gq('gPass').disabled = !!L.sent; gq('gPass').onclick = async () => { if (L.sent) return; L.sent = true; gq('gPass').disabled = true; try { await gDo('pass', { k: g.k | 0 }); } catch (e) { L.sent = false; gq('gPass').disabled = false; } }; }
-      else gOpen(`<h3>💣 지금 ${escH(g.holderNick || '')}님 손에…</h3><p>두근두근. 폭탄이 오면 진동이 울려요.</p>`);
+        if (!g.cat) { gOpen('<h3>💣 폭탄이 나한테 왔어요!</h3><button class="gbig red" id="gPass" type="button">넘기기!</button>');
+          gq('gPass').disabled = !!L.sent; gq('gPass').onclick = async () => { if (L.sent) return; L.sent = true; gq('gPass').disabled = true; try { await gDo('pass', { k: g.k | 0 }); } catch (e) { L.sent = false; gq('gPass').disabled = false; } }; return; }
+        // 업그레이드(11월 12일): 주제에 맞는 답을 써야 넘어감 · 답은 내 말풍선으로 스크린에 뜸 · 이번 판에 나온 답은 다시 못 씀
+        gOpen(`<h3>💣 폭탄이 나한테 왔어요!</h3>${catBox}<form id="gBombF" style="display:grid;gap:8px"><input id="gBombIn" type="text" maxlength="16" enterkeyhint="send" placeholder="답 쓰고 넘기기" style="font-size:22px;padding:12px;border-radius:12px;border:2px solid #ff6a5a;background:#140c0d;color:#fff4ea;text-align:center"><button class="gbig red" type="submit" ${L.sent ? 'disabled' : ''}>넘기기!</button></form><p id="gBombP"></p>`);
+        try { gq('gBombIn').focus(); } catch (e) {}
+        gq('gBombF').onsubmit = async ev => { ev.preventDefault(); if (L.sent) return; const v = gq('gBombIn').value.trim().slice(0, 16); if (!v) return; const nv = v.replace(/\s/g, '');
+          const used = (typeof allGuests !== 'undefined' ? allGuests : []).map(x => N.bombRead(x.msg)).filter(x => x && x.round === g.round).map(x => x.txt.replace(/\s/g, '')).concat(L.used || []);
+          if (used.includes(nv)) { gq('gBombP').innerHTML = '<b style="color:#ff6a5a">이미 나온 답이에요! 다른 걸로</b>'; gq('gBombIn').value = ''; return; }
+          L.sent = true; L.used = (L.used || []).concat(nv); const m0 = loadMe(), m = N.bombMsg(g.round, v);
+          try { await N.updateMsg(m0.day, m0.id, m); saveMe({ ...m0, msg: m }); } catch (e) {}   // 말풍선이 안 올라가도(10초 제한 등) 폭탄은 넘어가게
+          try { await gDo('pass', { k: g.k | 0 }); } catch (e) { L.sent = false; toast('넘기지 못했어요. 다시!'); renderGame(GM); } }; }
+      else gOpen(`<h3>💣 지금 ${escH(g.holderNick || '')}님 손에…</h3>${catBox}<p>${g.cat ? '내 차례에 쓸 답을 미리 생각해 두세요! ' : ''}폭탄이 오면 진동이 울려요.</p>`);
       return; }
+    if (g.phase === 'result') { const b = g.board || [], mine = b.find(x => x.gid === me.id); gOpen(`<h3>💣 폭탄 돌리기 끝!</h3><p>${b.length ? b.map(x => `${escH(x.nick)} ${x.n}번 펑`).join('<br>') : ''}</p><p>${mine ? '나는 ' + mine.n + '번 터졌어요 😵' : '한 번도 안 터졌어요! 🎉'}</p>`); return; }
     if (g.phase === 'boom') { if (g.loser === me.id) { if (!L.boomVib) { L.boomVib = true; gAlert('boom'); }
         gOpen(`<h3>💥 펑! 내가 당첨!</h3><p>미션: <b style="color:#ffd9b8">${escH(g.mission || '')}</b></p>`); }
       else gOpen(`<h3>🎉 살았다!</h3><p>${escH(g.loserNick || '')}님 당첨 · 미션: ${escH(g.mission || '')}</p>`); return; }
@@ -896,9 +911,56 @@ function renderGame(g){
     if (g.phase === 'run') { gOpen(`<h3>🏇 달려라!</h3>${L.horse != null ? `<p>내 말: <b style="color:${H5[L.horse].c}">${L.horse + 1}번 ${H5[L.horse].n}</b> · <span data-rme>곧 출발</span></p>` : '<p>어느 말이 이길까요?</p>'}<div class="rbars">${H5.map((h, i) => `<div class="rb${i === L.horse ? ' me' : ''}"><span class="rn" style="color:${h.c}">${i + 1}. ${escH(h.n)}</span><div class="rt"><i data-rb="${i}" style="background:${h.c}"></i><em data-rh="${i}">🏇</em></div></div>`).join('')}</div>`); raceLoop(g, L.horse); return; }
     const w = (g.order || [])[0], hit = g.pk ? g.pk[me.id] === w && me.id in g.pk : L.horse === w;
     gOpen(`<h3>${hit ? '🎯 적중!' : '🏁 결승!'}</h3><p>${w + 1}번 ${H5[w].n} 우승${L.horse != null && !hit ? ` · 내 말은 ${L.horse + 1}번` : ''}</p>${g.lucky === me.id ? `<p><b>🎉 추첨 당첨!${g.reward ? ' 쿠폰이 곧 화면에 떠요.' : ''}</b></p>` : ''}`); return; }
+  const others = () => (g.players || []).map((p, i) => ({ p, i })).filter(x => x.p.gid !== me.id);
+  if (g.type === 'img') {   // 이미지게임(11월 12일): 질문마다 참여자 중 한 명을 몰래 뽑기
+    if (g.phase === 'join') { joinUI('🙋 이미지게임', "'여기서 ~할 것 같은 사람은?' 질문 3개! 참여한 사람 중 한 명을 몰래 뽑아요. 누가 누굴 뽑았는지는 안 보여요. (3명 이상)"); return; }
+    if (!inP) { gOpen('<h3>🙋 이미지게임 중</h3><p>스크린을 봐주세요!</p>'); return; }
+    const key = 'iv' + g.round, os = others();
+    if (g.phase === 'vote') { if (L[key] == null) { gOpen(`<h3>🙋 ${g.round}/${g.total} · 여기서<br>${escH(g.q || '')}은?</h3><div class="gopts">${os.map(x => `<button class="gopt" type="button" data-v="${x.i}">${escH(x.p.nick)}</button>`).join('')}</div>`);
+        document.querySelectorAll('#gBody .gopt').forEach(b => b.onclick = async () => { const v = +b.dataset.v; L[key] = v; renderGame(GM); try { await gDo('vote', { v, k: g.round }); } catch (e) { L[key] = null; toast('보내지 못했어요. 다시 눌러주세요.'); renderGame(GM); } }); return; }
+      gOpen(`<h3>🙋 뽑았어요!</h3><p>내가 뽑은 사람: <b>${escH((g.players[L[key]] || {}).nick || '')}</b> (비밀)</p><p>결과는 스크린에서!</p>`); return; }
+    if (g.phase === 'reveal') { const t = g.tally || [], mine = t.find(x => x.gid === me.id); gOpen(`<h3>🙋 ${t[0] ? escH(t[0].nick) + '님 ' + t[0].n + '표!' : '아무도 안 뽑혔어요'}</h3><p>${escH(g.q || '')}</p><p>${mine ? `나는 ${mine.n}표 받았어요` : '나는 0표'}</p>`); return; }
+    const b = g.best || []; gOpen(`<h3>🙋 오늘의 주인공</h3><p>${b.length ? b.map((x, i) => `${['🥇', '🥈', '🥉'][i]} ${escH(x.nick)} ${x.n}표`).join('<br>') : '없어요'}</p>`); return; }
+  if (g.type === 'liar') {   // 라이어게임(11월 12일): 힌트는 내 말풍선 한 줄('🕵️ ')로 스크린에 뜸
+    if (g.phase === 'join') { joinUI('🕵️ 라이어게임', '① 참여한 사람 휴대폰에 제시어가 떠요<br>② 딱 한 명, 라이어는 주제만 알고 제시어는 몰라요<br>③ 차례대로 힌트를 한 줄씩 써요 (너무 쉬우면 라이어가 눈치채요!)<br>④ 라이어 같은 사람을 투표로 찾아요<br>⑤ 걸린 라이어가 제시어를 맞히면 라이어 역전승!<br><b>3~8명 · 먼저 참여한 8명까지, 8명이 차면 바로 시작</b>'); return; }
+    if (!inP) { gOpen(`<h3>🕵️ 라이어게임 중</h3><p>주제: ${escH(g.cat || '')} · 스크린 속 힌트를 보고 라이어를 맞혀 보세요!</p>`); return; }
+    const sec = N.liarOpen(g.sec) || {}, liarMe = sec.l === me.id, ps = g.players || [];
+    const role = liarMe ? `<div class="recbox"><b>🕵️ 내가 라이어!</b><br>주제: ${escH(g.cat || '')} · 제시어는 몰라요. 들키지 않게 힌트를 쓰세요</div>` : `<div class="recbox">주제: ${escH(g.cat || '')} · 제시어: <b>${escH(sec.w || '')}</b><br>라이어는 제시어를 몰라요</div>`;
+    if (g.phase === 'word') { gOpen(`<h3>🕵️ 내 역할 확인</h3>${role}<p>옆 사람한테 보여 주지 마세요!</p>`); return; }
+    if (g.phase === 'hint') { const cur = ps[g.turn] || {}, mine = cur.gid === me.id, hk = 'h' + g.turn;
+      if (!mine || L[hk]) { gOpen(`<h3>✍️ ${escH(cur.nick || '')}님 힌트 차례</h3>${role}<p>${L[hk] ? '힌트 보냈어요! 스크린에 떠요.' : '순서: ' + ps.map((p, i) => (i === g.turn ? '<b>' + escH(p.nick) + '</b>' : escH(p.nick))).join(' → ')}</p>`); return; }
+      gOpen(`<h3>✍️ 내 차례! 힌트 한 줄</h3>${role}<form id="gLiarF" style="display:grid;gap:8px"><input id="gLiarIn" type="text" maxlength="20" enterkeyhint="send" placeholder="제시어를 직접 쓰면 안 돼요" style="font-size:20px;padding:12px;border-radius:12px;border:2px solid #ffb27a;background:#140c0d;color:#fff4ea;text-align:center"><button class="gbig" type="submit">보내기</button></form>`);
+      if (L.hBeep !== hk) { L.hBeep = hk; gAlert('soft'); }
+      gq('gLiarF').onsubmit = async ev => { ev.preventDefault(); const v = gq('gLiarIn').value.trim().slice(0, 20); if (!v) return; if (!liarMe && sec.w && v.replace(/\s/g, '').includes(sec.w)) { toast('제시어를 그대로 쓰면 안 돼요!'); return; }
+        L[hk] = 1; renderGame(GM); const m0 = loadMe(); try { const m = N.LIAR_MARK + v; await N.updateMsg(m0.day, m0.id, m); saveMe({ ...m0, msg: m }); await gDo('vote', { v: 0, k: 100 + g.turn }); } catch (e) { L[hk] = 0; toast('보내지 못했어요. 잠깐 뒤 다시 보내 주세요.'); renderGame(GM); } }; return; }
+    if (g.phase === 'vote') { const key = 'lv'; if (L[key] == null) { gOpen(`<h3>🕵️ 라이어는 누구?</h3>${role}<div class="gopts">${others().map(x => `<button class="gopt" type="button" data-v="${x.i}">${escH(x.p.nick)}</button>`).join('')}</div>`);
+        document.querySelectorAll('#gBody .gopt').forEach(b => b.onclick = async () => { const v = +b.dataset.v; L[key] = v; renderGame(GM); try { await gDo('vote', { v, k: 1 }); } catch (e) { L[key] = null; toast('보내지 못했어요. 다시 눌러주세요.'); renderGame(GM); } }); return; }
+      gOpen(`<h3>🕵️ 투표 완료!</h3><p>내가 고른 사람: <b>${escH((ps[L[key]] || {}).nick || '')}</b></p><p>결과는 스크린에서!</p>`); return; }
+    if (g.phase === 'guess') { if (liarMe && L.lg == null) { gOpen(`<h3>😱 걸렸어요! 제시어를 맞히면 역전승</h3><div class="gopts">${(g.opts || []).map((w, i) => `<button class="gopt" type="button" data-v="${i}">${escH(w)}</button>`).join('')}</div>`);
+        document.querySelectorAll('#gBody .gopt').forEach(b => b.onclick = async () => { const v = +b.dataset.v; L.lg = v; renderGame(GM); try { await gDo('vote', { v, k: 2 }); } catch (e) { L.lg = null; renderGame(GM); } }); return; }
+      gOpen(`<h3>🕵️ ${escH(g.pickNick || '')}님이 라이어?!</h3><p>${liarMe ? '골랐어요. 두근두근…' : '라이어가 제시어를 맞히는 중… 맞히면 라이어 역전승!'}</p>`); return; }
+    const cw = g.win === 'citizen', iWin = liarMe ? !cw : cw;
+    gOpen(`<h3>${iWin ? '🎉 승리!' : '😵 패배…'}</h3><p>라이어: <b>${escH(g.liarNick || '')}</b> · 제시어: <b>${escH(g.word || '')}</b></p><p>${cw ? '시민 승리!' : g.guess ? '라이어가 제시어를 맞혀서 역전승!' : '라이어가 끝까지 안 들켰어요!'}</p>`); return; }
+  if (g.type === 'face' || g.type === 'cho') {   // 인물퀴즈·초성퀴즈(11월 12일): 스크린을 보고 정답을 시간 안에 쓰기 · 입력칸은 문제가 바뀌어도 그대로 두어 키보드가 안 닫히게
+    const isC = g.type === 'cho', NM = isC ? '🔤 초성퀴즈' : '🧑 인물퀴즈';
+    if (g.phase === 'join') { joinUI(NM, (isC ? '스크린에 주제와 초성이 크게 떠요. 10초 안에(명대사는 15초) 휴대폰에 정답을 쓰면 생존!' : '스크린에 인물 사진이 크게 떠요. 5초 안에 휴대폰에 이름을 맞게 쓰면 생존!') + ' 끝까지 남으면 1등' + (g.reward ? ` · 상품: ${escH(g.reward)}` : '')); return; }
+    if (!inP) { gOpen(`<h3>${NM} 중</h3><p>스크린을 보고 같이 맞혀 보세요!</p>`); return; }
+    const alive = (g.alive || []).includes(me.id), outMe = (g.out || []).includes(me.id), key = 'f' + g.round, ci = isC ? N.choInfo(g.img) : null, info = isC ? ['', ci ? ci.ans + (ci.src ? ' (' + ci.src + ')' : '') : ''] : (N.faceInfo(g.img) || []);
+    if (g.phase === 'result') { const win = (g.winners || []).some(w => w.gid === me.id); gOpen(win ? `<h3>🏆 1등!</h3><p>${g.reward ? '🎁 상품 쿠폰이 나오면 바로 화면에 떠요.' : '축하해요!'}</p>` : `<h3>🧑 인물퀴즈 끝</h3><p>${(g.winners || []).length ? escH(g.winners[0].nick) + '님 1등!' : '1등 없음'}</p>`); return; }
+    if (!alive && !outMe) { gOpen('<h3>😵 탈락</h3><p>남은 사람들을 응원해 주세요!</p>'); return; }
+    let box = gq('gFaceIn'); if (!box || $('gPanel').hidden) { gOpen('<h3 id="gFaceH"></h3><p id="gFaceP"></p><form id="gFaceF" autocomplete="off" style="display:grid;gap:8px"><input id="gFaceIn" type="text" maxlength="20" enterkeyhint="send" placeholder="이름 쓰고 보내기" style="font-size:22px;padding:12px;border-radius:12px;border:2px solid #ffb27a;background:#140c0d;color:#fff4ea;text-align:center"><button class="gbig" type="submit">보내기</button></form>'); box = gq('gFaceIn');
+      gq('gFaceF').onsubmit = async ev => { ev.preventDefault(); const G2 = GM; if (!G2 || (G2.type !== 'face' && G2.type !== 'cho') || G2.phase !== 'q') return; const k2 = 'f' + G2.round; if (L[k2]) return; const v = box.value; if (!v.trim()) return;
+        if ((G2.type === 'cho' ? N.choOk : N.faceOk)(G2.img, v)) { L[k2] = 1; box.value = ''; try { navigator.vibrate && navigator.vibrate(40); } catch (e) {} gBeep([990, 1320], .07); renderGame(GM); try { await gDo('ox', { v: 1, k: G2.round }); } catch (e) { L[k2] = 0; toast('보내지 못했어요. 다시 보내 주세요.'); renderGame(GM); } }
+        else { box.value = ''; gq('gFaceP').innerHTML = '<b style="color:#ff6a5a">땡! 다시 써 보세요</b>'; try { navigator.vibrate && navigator.vibrate([60, 40, 60]); } catch (e) {} } }; }
+    const H3 = gq('gFaceH'), P = gq('gFaceP');
+    if (g.phase === 'q') { box.readOnly = !!L[key]; H3.textContent = L[key] ? '⭕ 정답! 다음 문제 기다리는 중' : isC ? `🔤 ${g.round}번 · 주제: ${ci ? ci.cat : ''}` : `🧑 ${g.round}번 · 스크린 속 이 사람은?`; P.innerHTML = L[key] ? '살아남았어요!' : isC ? `초성 <b style="font-size:22px;color:#ffd36a">${escH(ci ? N.chosung(ci.ans) : '')}</b> · 정답을 쓰고 보내기` : '이름을 쓰고 보내기 (띄어쓰기 상관없어요)'; if (!L[key]) try { box.focus(); } catch (e) {} return; }
+    box.readOnly = true; H3.textContent = outMe ? '😵 탈락!' : g.redo ? '😅 모두 못 맞혀서 전원 부활!' : '⭕ 생존!'; P.innerHTML = `정답: <b style="color:#ffd36a">${escH(info[1] || '')}</b>${g.fastNick ? ` · 제일 빨리 맞힌 사람 ${escH(g.fastNick)}님` : ''}`;
+    if (L.fk !== g.k) { L.fk = g.k; try { navigator.vibrate && navigator.vibrate(outMe ? [160, 70, 160] : [40]); } catch (e) {} if (outMe) gBeep([330, 220], .14); }
+    if (outMe) { setTimeout(() => { if (GM && GM.k === g.k && gq('gFaceIn')) { gOpen('<h3>😵 탈락</h3><p>정답: ' + escH(info[1] || '') + '<br>남은 사람들을 응원해 주세요!</p>'); } }, 2500); }
+    return; }
   if (g.type === 'rps' || g.type === 'ox') {
     const isR = g.type === 'rps', nm = isR ? '✊ 사장님과 가위바위보' : '⭕ OX 서바이벌';
-    if (g.phase === 'join') { joinUI(nm, isR ? '스크린 속 사장님과 다 같이 가위바위보! 지면 탈락, 이기거나 비기면 다음 판. 끝까지 살아남으면 우승!' : '술 상식 OX 문제! 틀리면 탈락, 끝까지 살아남으면 우승!'); return; }
+    if (g.phase === 'join') { joinUI(nm, isR ? '스크린 속 사장님과 다 같이 가위바위보! 지면 탈락, 이기거나 비기면 다음 판. 끝까지 살아남으면 우승!' : '상식 OX 문제! 틀리면 탈락, 끝까지 살아남으면 우승!'); return; }
     if (!inP) { gOpen(`<h3>${nm} 중</h3><p>스크린을 봐주세요.</p>`); return; }
     const alive = (g.alive || []).includes(me.id);
     if (g.phase === 'result') { const win = (g.winners || []).some(w => w.gid === me.id); gOpen(win ? `<h3>🏆 우승!</h3><p>${g.reward ? '끝까지 살아남았어요! 🎁 상품 쿠폰이 나오면 바로 화면에 떠요.' : '끝까지 살아남았어요!'}</p>` : `<h3>${nm} 끝</h3><p>${(g.winners || []).length ? (g.winners || []).map(w => escH(w.nick)).join(', ') + '님 우승' : '우승자 없음'}</p>`); return; }
@@ -925,7 +987,7 @@ function renderGame(g){
 // 막판 3초: 아직 안 고른 손님 휴대폰에 째깍 + 진동
 setInterval(() => { const g = GM, me = loadMe(); if (!g || !me || !(g.dur > 0) || gHide || !gLocal || gLocal.n !== g.n) return; const L = gLocal, pk = g.phase + '|' + (g.round || 0);
   if (L.phK !== pk) { L.phK = pk; L.phT = Date.now(); L.cdLast = 0; }
-  const need = g.phase === 'join' ? !L.joined && !L.passed : (g.type === 'race' && g.phase === 'pick') ? L.horse == null : (g.type === 'bal' && g.phase === 'play') ? L.bal == null : ((g.type === 'rps' && g.phase === 'pick') || (g.type === 'ox' && g.phase === 'q')) ? (g.alive || []).includes(me.id) && L['r' + g.round] == null : false;
+  const need = g.phase === 'join' ? !L.joined && !L.passed : (g.type === 'race' && g.phase === 'pick') ? L.horse == null : (g.type === 'bal' && g.phase === 'play') ? L.bal == null : ((g.type === 'rps' && g.phase === 'pick') || (g.type === 'ox' && g.phase === 'q')) ? (g.alive || []).includes(me.id) && L['r' + g.round] == null : ((g.type === 'face' || g.type === 'cho') && g.phase === 'q') ? (g.alive || []).includes(me.id) && !L['f' + g.round] : false;
   if (!need) return; const st = Math.min(L.phT, g.ms && Math.abs(Date.now() - g.ms) < 60000 ? g.ms : L.phT), c = Math.ceil(g.dur - (Date.now() - st) / 1000); if (c < 1 || c > 3 || L.cdLast === c) return; L.cdLast = c;
   try { navigator.vibrate && navigator.vibrate(c === 1 ? [70, 50, 70] : 35); } catch (e) {} gBeep([c === 1 ? 1320 : 990], .07);
   const h = document.querySelector('#gBody h3'); if (h) { let b = document.getElementById('gCd'); if (!b) { b = document.createElement('b'); b.id = 'gCd'; b.style.cssText = 'display:block;color:#ff6a5a;font-size:22px;margin-top:4px'; h.after(b); } b.textContent = `⏰ ${c}초!`; } }, 250);

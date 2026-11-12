@@ -71,7 +71,7 @@
     default: { n: [['', 'u']], r: [['shades', 'u'], ['flower', 'f'], ['cat', 'f'], ['hero', 'm'], ['heartband', 'f'], ['straw', 'u'], ['scarf', 'u'], ['horns', 'm']] },
     halloween: { n: [['vampire', 'u'], ['witch', 'f'], ['mummy', 'u'], ['ghost', 'u'], ['pumpkinhead', 'u'], ['frank', 'm'], ['skeleton', 'u'], ['zombie', 'u'], ['werewolf', 'm'], ['devil', 'u'], ['reaper', 'u'], ['jiangshi', 'u'], ['cat', 'f'], ['pirate', 'u']],
       r: [['hero', 'm'], ['villain', 'u'], ['starhero', 'u'], ['plague', 'u'], ['gwishin', 'f'], ['astronaut', 'u'], ['robot', 'u'], ['alien', 'u']] },
-    christmas: { n: [['santasuit', 'u'], ['antler', 'u'], ['elf', 'u'], ['sweater', 'u'], ['earmuff', 'f'], ['scarf', 'u']], r: [['snowman', 'u'], ['ginger', 'u'], ['xtree', 'u']] },
+    christmas: { n: [['santa', 'u'], ['rudnose', 'u'], ['santasuit', 'u'], ['rudsuit+antler', 'u'], ['xtree', 'u'], ['antler', 'u'], ['elf', 'u'], ['sweater', 'u'], ['earmuff', 'f'], ['scarf', 'u']], r: [['snowman', 'u'], ['ginger', 'u']] },   // 11월 12일 사장님: 루돌프 코·산타 모자·산타 옷·루돌프 옷·트리를 손님이 골라 입기
     summer: { n: [['swim+shades', 'u'], ['swim+straw', 'u'], ['swim+lei', 'u'], ['swim', 'u']], r: [['swim+shades+lei', 'u'], ['swim+straw+lei', 'u']] },
     spring: { n: [['flower', 'u'], ['lei', 'u']], r: [['wings', 'f'], ['heartband', 'f'], ['straw', 'u'], ['shades', 'm']] },
     valentine: { n: [['heartband', 'u'], ['rosehair', 'f']], r: [['wings', 'u'], ['flower', 'f'], ['shades', 'm']] },
@@ -93,7 +93,7 @@
     idolm: '무대 조명을 받는 아이돌 무대의상이에요', idolf: '무대 조명을 받는 아이돌 무대의상이에요', idolm2: '벨벳 무대의상의 아이돌이에요', idolf2: '벨벳 무대의상의 아이돌이에요', goldking: '온몸이 금빛인 황금 왕이에요', goldqueen: '다이아처럼 반짝이는 황금 여왕이에요' };
   const COS_NAME = { lincoln: '에이브러햄 링컨', gogh: '빈센트 반 고흐', beethoven: '베토벤', jangys: '장영실', nightingale: '나이팅게일', curie: '마리 퀴리', yanggf: '양귀비', nanseol: '허난설헌', king: '세종대왕', admiral: '이순신 장군', silla: '선덕여왕', nile: '클레오파트라', bicorne: '나폴레옹', caesar: '율리우스 카이사르', painter: '레오나르도 다빈치', hwarang: '김유신', gwanggaeto: '광개토대왕', genghis: '칭기즈칸', mozart: '모차르트', shakespeare: '셰익스피어', saimdang: '신사임당', antoinette: '마리 앙투아네트', joan: '잔 다르크', elizabeth: '엘리자베스 1세', idolm: '아이돌 (블랙·남)', idolf: '아이돌 (블랙·여)', idolm2: '아이돌 (벨벳·남)', idolf2: '아이돌 (벨벳·여)', trot: '트로트 스타', rock: '록스타', rapper: '래퍼', topstar: '톱배우', goldking: '황금 왕', goldqueen: '황금 여왕', unicorn: '유니콘', hero: '가면 히어로', villain: '마왕', starhero: '별 히어로', plague: '역병 의사', gwishin: '처녀귀신', astronaut: '우주비행사', robot: '로봇', alien: '외계인',
     vampire: '뱀파이어', witch: '마녀', mummy: '미라', ghost: '유령', pumpkinhead: '호박머리', frank: '괴물', skeleton: '해골', zombie: '좀비', werewolf: '늑대인간', devil: '꼬마 악마', reaper: '저승사자', jiangshi: '강시', cat: '고양이', pirate: '해적',
-    shades: '선글라스', flower: '꽃핀', heartband: '하트 머리띠', straw: '밀짚모자', scarf: '목도리', horns: '뿔', snowman: '눈사람', ginger: '진저브레드', xtree: '트리', wings: '천사 날개', santasuit: '산타', antler: '루돌프', elf: '요정', sweater: '스웨터', earmuff: '귀마개', swim: '수영복', hanbok: '색동 한복', hanbok2: '파스텔 한복', hanbok3: '단아한 한복', bokjumeoni: '복주머니', gat: '선비 (갓·도포)', jokduri: '족두리 신부', rabbit: '달토끼', lei: '꽃목걸이', rosehair: '장미', candy: '막대사탕', pepero: '빼빼로', party: '고깔모자' };
+    shades: '선글라스', flower: '꽃핀', heartband: '하트 머리띠', straw: '밀짚모자', scarf: '목도리', horns: '뿔', snowman: '눈사람', ginger: '진저브레드', xtree: '트리 옷', wings: '천사 날개', santasuit: '산타 옷', antler: '루돌프 뿔', santa: '산타 모자', rudnose: '루돌프 코', rudsuit: '루돌프 옷', elf: '요정', sweater: '스웨터', earmuff: '귀마개', swim: '수영복', hanbok: '색동 한복', hanbok2: '파스텔 한복', hanbok3: '단아한 한복', bokjumeoni: '복주머니', gat: '선비 (갓·도포)', jokduri: '족두리 신부', rabbit: '달토끼', lei: '꽃목걸이', rosehair: '장미', candy: '막대사탕', pepero: '빼빼로', party: '고깔모자' };
   // 사장 코스튬 고르기: '' = 시즌 기본(바텐더 복장 + 시즌 의상), 'none' = 바텐더 복장만, 그 외 = 고른 코스튬
   const OWNER_COS = (() => { const seen = new Set(), out = []; const add = (tier, l) => l.forEach(([k]) => { if (!k || seen.has(k) || k.includes('+')) return; seen.add(k); out.push({ k, tier, name: COS_NAME[k] || k }); });
     add('레전드', LEGEND); add('시크릿', SECRET); add('레어', STAR_R); add('레어', GACHA.halloween.r); add('할로윈', GACHA.halloween.n); add('크리스마스', GACHA.christmas.n.concat(GACHA.christmas.r)); add('설날·추석', GACHA.seollal.n.concat(GACHA.seollal.r, GACHA.chuseok.r));
@@ -181,6 +181,7 @@
       if (on('unicorn')) { shirt = '#f4ecff'; pants = '#b8a8f0'; }
       if (on('alien')) { skin = '#8fd47a'; hair = '#8fd47a'; shirt = '#4a4a5a'; }
       if (on('santasuit')) { shirt = '#d6262e'; pants = '#d6262e'; }
+      if (on('rudsuit')) { shirt = '#8a5a30'; pants = '#6a4422'; }
       if (on('elf')) { shirt = '#2a8a4a'; pants = '#d6262e'; }
       if (on('snowman')) { shirt = '#f6f8fc'; pants = '#e8ecf4'; }
       if (on('ginger')) { skin = '#c8844a'; shirt = '#b8743c'; pants = '#a8662e'; }
@@ -609,6 +610,8 @@
       G(10, 11, ['OOOo', 'Oo..'], { O: '#f08a1a', o: '#c8601a' }); G(3, 16, ['RRhRRhRRhRRhRR', 'RRRRRRRRRRRRRR'], { R: '#d6262e', h: '#ff6a6a' }); G(12, 18, ['RRR', 'RhR', 'RRR', 'RhR', 'w.w'], { R: '#d6262e', h: '#ff6a6a', w: '#ffffff' }); [21, 24, 27].forEach(y => G(9, y, ['Kk', 'KK'], { K: '#151515', k: '#4a4a4a' })); }
     if (cs === 'ginger') { G(3, 8, ['WW.WW.WW.WW.WW'], { W: '#ffffff' }); G(6, 14, ['W......W', '.WWWWWW.'], { W: '#ffffff' }); [[9, 20, '#e23b4a'], [9, 23, '#4fd36a'], [9, 26, '#3a7aff']].forEach(([gx, gy, c]) => G(gx, gy, ['cc', 'cw'], { c, w: '#ffffff' })); for (let k = 0; k < 7; k++) P(3 + k * 2, 28 + (k % 2), 1, 1, '#ffffff'); P(2, 22, 1, 1, '#ffffff'); P(17, 22, 1, 1, '#ffffff'); }
     if (cs === 'sweater') { G(4, 19, ['WGWGWGWGWGWG', 'GWGWGWGWGWGW', '....YY......', '...GGGG.....', '..GGRGGG....', '.GGGGGRGG...', '.....KK.....', 'WGWGWGWGWGWG'], { W: '#ffffff', G: '#2a8a4a', Y: '#ffd23a', R: '#e23b4a', K: '#6a4020' }); }
+    if (cs === 'rudnose') G(8, 11, ['.rr.', 'rRRr', 'rRRr', '.rr.'], { R: '#ff3a3a', r: '#ff9a8a' });
+    if (cs === 'rudsuit') G(6, 18, ['.WWWWWW.', 'WWwWWwWW', '.WWWWWW.'], { W: '#f2e2c8', w: '#e0ccb0' });
     if (cs === 'xtree') { G(7, -6, ['..YY..', '.YHHY.', 'YHHHHY', '.YHHY.', 'Y.YY.Y'], { Y: '#ffd23a', H: '#fff6c0' });
       for (let k = 0; k < 13; k++) { const w2 = 6 + k; P(10 - Math.ceil(w2 / 2), 17 + k, w2, 1, k % 4 === 3 ? '#1a5a30' : (k % 2 ? '#2a8a4a' : '#3aa05a')); }
       [[6, 21, '#e23b4a'], [12, 23, '#ffd23a'], [8, 26, '#3a7aff'], [14, 28, '#e23b4a'], [5, 28, '#ffd23a'], [10, 19, '#ff8ad8']].forEach(([a2, b2, c2]) => { P(a2, b2, 2, 2, c2); P(a2, b2, 1, 1, '#ffffff'); }); }
@@ -1886,11 +1889,11 @@
           const el = (Date.now() - (g.startMs || g.ms)) / 1000, iv = Math.max(140, 700 - el * 22);
           if (Date.now() - GS.tick > iv) { GS.tick = Date.now(); sfxTick(Math.min(8, el / 3)); if (el > 8 && iv < 400) sfxBeat(); }
           { const hp = Math.max(0, 1 - (Date.now() - GS.tick) / iv), hot = Math.min(1, el / 25); ctx.save(); const gr = ctx.createRadialGradient(240 * s, 135 * s, 90 * s, 240 * s, 135 * s, 290 * s); gr.addColorStop(0, 'rgba(255,60,30,0)'); gr.addColorStop(1, `rgba(255,60,30,${(hot * (.12 + hp * .22)).toFixed(3)})`); ctx.fillStyle = gr; ctx.fillRect(0, 0, W * s, H * s); ctx.restore(); }
-          banner(ctx, s, t, '💣 폭탄 돌리기', to ? `지금 ${to.g.nick}님 손에! 휴대폰에서 '넘기기'` : '', '#ff8a5a');
+          banner(ctx, s, t, g.cat ? `💣 ${g.rounds ? g.round + '/' + g.rounds + '판 · ' : ''}주제: ${g.cat}` : '💣 폭탄 돌리기', to ? (g.cat ? `지금 ${to.g.nick}님 손에! 주제에 맞는 답을 쓰면 넘어가요` : `지금 ${to.g.nick}님 손에! 휴대폰에서 '넘기기'`) : '', '#ff8a5a');
         }
         if (g.phase === 'boom') {
           const p = find(g.loser); const k = Math.min(1, e / 600);
-          if (GS.boomKey !== g.n + '') { GS.boomKey = g.n + ''; sfxBoom(); shake(1100, 16); if (p) burst(p.x, headY(p) - 8, 60, FIRE, 1.6); }
+          if (GS.boomKey !== g.n + '|' + (g.round || 0)) { GS.boomKey = g.n + '|' + (g.round || 0); sfxBoom(); shake(1100, 16); if (p) burst(p.x, headY(p) - 8, 60, FIRE, 1.6); }
           if (p) { const cx = p.x * s, cy = (headY(p) - 8) * s; ctx.save();
             const k2 = Math.min(1, e / 1400);
             if (e < 1400) { ctx.fillStyle = `rgba(255,255,220,${Math.max(0, .9 - e / 300)})`; ctx.fillRect(0, 0, 480 * s, 270 * s);
@@ -2074,6 +2077,44 @@
           once('oxw' + g.n, () => { if (w.length) { sfxFanfare(); shake(350, 5); w.forEach(x => { const p = find(x.gid); if (p) burst(p.x, headY(p) - 12, 30, CONF, 1.2); }); } });
           banner(ctx, s, t, w.length ? `🏆 최후의 생존자 ${w.map(x => x.nick).join(', ')}님!` : 'OX 서바이벌 끝!', w.length && g.reward ? `상품: ${g.reward}` : '', '#ffd36a');
           w.forEach(x => { const p = find(x.gid); if (p) { const j = Math.abs(Math.sin(t / 200)) * 2; T('🏆', p.x, headY(p) - 12 - j, 9, '#ffd36a', 'center', false); } }); }
+      }
+      if (g.type === 'bomb' && g.phase === 'result') { const b = g.board || []; banner(ctx, s, t, b[0] ? `💣 오늘의 폭탄 자석 ${b[0].nick}님 (${b[0].n}번 펑)` : '💣 폭탄 돌리기 끝!', b.slice(1).map(x => `${x.nick} ${x.n}번`).join(' · ') || (g.mission ? '미션: ' + g.mission : ''), '#ff8a5a'); }
+      if (g.type === 'img') {   // 이미지게임(2D 화면용 간단판)
+        if (g.phase === 'join') joinBanner('🙋 이미지게임 참여자 모집! (3명 이상)', '#ffb27a');
+        else if (g.phase === 'vote') { const vs = new Set(acts.filter(a => a.kind === 'vote' && a.k === g.round).map(a => a.gid)); banner(ctx, s, t, `🙋 여기서 ${g.q || ''}은?`, `${g.round}/${g.total} · 휴대폰에서 한 명 몰래 뽑기 · ${vs.size}/${(g.players || []).length}명 · ${left()}초`, '#ffb27a'); (g.players || []).forEach(p => overHead(p.gid, vs.has(p.gid) ? '✔' : '…', vs.has(p.gid) ? '#7ee08a' : '#b9a59c', 6)); }
+        else if (g.phase === 'reveal') { const tl = g.tally || []; banner(ctx, s, t, `🙋 여기서 ${g.q || ''}은?`, tl[0] ? `👑 ${tl[0].nick}님 ${tl[0].n}표!` : '아무도 안 뽑혔어요', '#ffd36a'); tl.forEach((x, i) => overHead(x.gid, (i ? '' : '👑') + x.n + '표', i ? '#e0d0c6' : '#ffd36a', 8)); }
+        else if (g.phase === 'result') { const b = g.best || []; banner(ctx, s, t, b[0] ? `🙋 오늘의 주인공 ${b[0].nick}님!` : '이미지게임 끝!', b.slice(1).map(x => x.nick + ' ' + x.n + '표').join(' · '), '#ffd36a'); }
+      }
+      if (g.type === 'liar') {   // 라이어게임(2D 화면용 간단판)
+        const ps = g.players || [];
+        if (g.phase === 'join') joinBanner('🕵️ 라이어게임 참여자 모집! (3명 이상)', '#ffb27a');
+        else if (g.phase === 'word') banner(ctx, s, t, `🕵️ 라이어게임 · 주제: ${g.cat || ''}`, '휴대폰에서 내 제시어를 확인하세요', '#ffb27a');
+        else if (g.phase === 'hint') { const cur = ps[g.turn] || {}; banner(ctx, s, t, `🕵️ 주제: ${g.cat || ''} · ✍️ ${cur.nick || ''}님 힌트 차례`, `휴대폰에 힌트 한 줄 · ${left()}초`, '#ffb27a'); if (cur.gid) overHead(cur.gid, '✍️', '#ffd36a', 8); }
+        else if (g.phase === 'vote') { const vs = new Set(acts.filter(a => a.kind === 'vote' && a.k === 1).map(a => a.gid)); banner(ctx, s, t, '🕵️ 라이어는 누구?', `휴대폰에서 투표 · ${vs.size}/${ps.length}명 · ${left()}초`, '#ffb27a'); }
+        else if (g.phase === 'guess') banner(ctx, s, t, `🕵️ ${g.pickNick || ''}님이 라이어였다!`, '제시어를 맞히면 라이어 역전승', '#ff8a7a');
+        else if (g.phase === 'result') banner(ctx, s, t, g.win === 'citizen' ? '🎉 시민 승리!' : '🕵️ 라이어 승리!', `라이어 ${g.liarNick || ''} · 제시어 '${g.word || ''}'`, '#ffd36a');
+      }
+      if (g.type === 'cho') {   // 초성퀴즈(2D 화면용 간단판)
+        const q = choInfo(g.img) || {};
+        if (g.phase === 'join') joinBanner('🔤 초성퀴즈 참여자 모집!', '#ffb27a');
+        else if (g.phase === 'q' || g.phase === 'ans') { banner(ctx, s, t, `🔤 초성퀴즈 · ${g.round}번 · 주제: ${q.cat || ''}`, g.phase === 'q' ? `휴대폰에 정답 쓰기 · ${left()}초` : `정답: ${q.ans || ''}${q.src ? ' (' + q.src + ')' : ''}`, '#ffb27a');
+          const cs = chosung(q.ans || ''); box(80, 60, 320, 60, g.phase === 'ans' ? '#7ee08a' : '#ffb27a'); T(g.phase === 'ans' ? (q.ans || '') : cs, 240, 98, cs.length > 10 ? 14 : 22, '#fff4ea');
+          if (g.phase === 'q') { const ok = new Set(acts.filter(a => a.kind === 'ox' && a.k === g.round && a.v === 1).map(a => a.gid)); (g.alive || []).forEach(gid => overHead(gid, ok.has(gid) ? '✔' : '…', ok.has(gid) ? '#7ee08a' : '#b9a59c', 6)); }
+          else (g.out || []).forEach(gid => overHead(gid, '탈락', '#ff6a5a', 7)); }
+        else if (g.phase === 'result') { const w = g.winners || []; banner(ctx, s, t, w.length ? `🏆 초성퀴즈 1등 ${w.map(x => x.nick).join(', ')}님!` : '초성퀴즈 끝!', w.length && g.reward ? `상품: ${g.reward}` : '', '#ffd36a'); }
+      }
+      if (g.type === 'face') {   // 인물퀴즈(2D 화면용: 3D 스크린은 화면 가운데 큰 사진으로 따로 보여 줌)
+        const im = (GS.fimg = GS.fimg || {})[g.img] || (g.img ? (GS.fimg[g.img] = Object.assign(new Image(), { src: faceSrc(g.img) })) : null);
+        if (g.phase === 'join') joinBanner('🧑 인물퀴즈 참여자 모집!', '#ffb27a');
+        else if (g.phase === 'q' || g.phase === 'ans') { const alive = g.alive || [], info = faceInfo(g.img) || [];
+          banner(ctx, s, t, `🧑 인물퀴즈 · ${g.round}번`, g.phase === 'q' ? `생존 ${alive.length}명 · 휴대폰에 이름 쓰기 · ${left()}초` : `정답: ${info[1] || ''} · ${(g.out || []).length ? (g.out || []).length + '명 탈락' : (g.redo ? '모두 틀려서 전원 부활!' : '탈락자 없음!')}`, '#ffb27a');
+          if (im && im.complete && im.naturalWidth) { const H0 = 150, W0 = Math.min(260, H0 * im.naturalWidth / im.naturalHeight); ctx.drawImage(im, (240 - W0 / 2) * s, 40 * s, W0 * s, H0 * s); }
+          if (g.phase === 'q') { const ok = new Set(acts.filter(a => a.kind === 'ox' && a.k === g.round && a.v === 1).map(a => a.gid)); alive.forEach(gid => overHead(gid, ok.has(gid) ? '✔' : '…', ok.has(gid) ? '#7ee08a' : '#b9a59c', 6)); }
+          else { once('fa' + g.n + '|' + g.k, () => { const no = (g.out || []).length; sfxSlam(no > 0); (g.out || []).forEach(gid => { const p = find(gid); if (p) burst(p.x, headY(p) - 6, 12, FIRE, .8); }); }); (g.out || []).forEach(gid => overHead(gid, '탈락', '#ff6a5a', 7)); } }
+        else if (g.phase === 'result') { const w = g.winners || [];
+          once('faw' + g.n, () => { if (w.length) { sfxFanfare(); shake(350, 5); w.forEach(x => { const p = find(x.gid); if (p) burst(p.x, headY(p) - 12, 30, CONF, 1.2); }); } });
+          banner(ctx, s, t, w.length ? `🏆 인물퀴즈 1등 ${w.map(x => x.nick).join(', ')}님!` : '인물퀴즈 끝!', w.length && g.reward ? `상품: ${g.reward}` : '', '#ffd36a');
+          w.forEach(x => { const p = find(x.gid); if (p) T('🏆', p.x, headY(p) - 12 - Math.abs(Math.sin(t / 200)) * 2, 9, '#ffd36a', 'center', false); }); }
       }
     }
     // 오늘의 질문 (스크린 위쪽 띠)
@@ -2563,7 +2604,7 @@
   const setBest = id => saveEvent('best', { day: bizDate(), id: id || '' });
   const setVip = ids => saveEvent('vip', { day: bizDate(), ids: (ids || []).slice(0, 40) });
   // ---------- 게임 데이터 ----------
-  const GAME_TYPES = ['bomb', 'ten', 'toast', 'bal', 'nun', 'rou', 'race', 'rps', 'ox'];
+  const GAME_TYPES = ['bomb', 'ten', 'toast', 'bal', 'nun', 'rou', 'race', 'rps', 'ox', 'face', 'img', 'liar', 'cho'];
   // 매시 정각 자동 게임: 스크린이 진행 · 사장님이 리모컨에서 다음 게임을 고를 수 있음 (안 고르면 순서대로)
   const AUTO_ORDER = ['race', 'bal', 'rou', 'ox', 'rps', 'bomb', 'nun', 'ten'];   // 다 같이 건배는 뺌 (2026-10-26)
   const AUTO_LABEL = { race: '🏇 픽셀 경마', bal: '⚖️ 밸런스 게임', rou: '🎡 행운의 룰렛', ox: '⭕ OX 서바이벌', toast: '🥂 다 같이 건배', rps: '✊ 사장님과 가위바위보', bomb: '💣 폭탄 돌리기', nun: '🙊 눈치게임', ten: '⏱ 10초 맞추기' };
@@ -2658,13 +2699,84 @@
   const BAL_QS = [['평생 소주만', '평생 맥주만'], ['짜장면', '짬뽕'], ['부먹', '찍먹'], ['혼술', '떼술'], ['해장은 국밥', '해장은 라면'], ['여행은 계획파', '여행은 즉흥파'],
     ['10년 전으로 가기', '10년 후로 가기'], ['월급 2배 주6일', '지금 월급 주4일'], ['여름 바다', '겨울 산'], ['민트초코 호', '민트초코 불호'], ['고백은 직접 만나서', '고백은 메시지로'],
     ['첫 잔은 맥주', '첫 잔은 칵테일'], ['아침형 인간', '저녁형 인간'], ['연락 자주 하는 친구', '가끔 만나도 편한 친구'], ['평생 치킨 금지', '평생 라면 금지']];
-  const OX_QS = [['모히또는 쿠바에서 시작된 칵테일이다', 0, '쿠바 아바나에서 유래했어요'], ['데킬라는 선인장으로 만든다', 1, '선인장이 아니라 아가베(용설란)로 만들어요'],
-    ['샴페인은 프랑스 샹파뉴 지방에서 만든 것만 그렇게 부를 수 있다', 0, '다른 곳 스파클링은 프로세코·카바 등으로 불러요'], ['블러디 메리의 기본 술은 진이다', 1, '보드카가 기본이에요'],
-    ['롱아일랜드 아이스티에는 홍차가 들어간다', 1, '차는 없고, 콜라로 홍차 색을 내요'], ['진토닉의 토닉워터에는 원래 말라리아 약 성분이 들어있었다', 0, '퀴닌이라는 성분이 쓴맛을 내요'],
-    ['버번 위스키는 미국에서 만든 것만 버번이라고 부른다', 0, '미국 법으로 정해져 있어요'], ['사케는 쌀로 만든다', 0, '쌀과 누룩(코지)으로 빚어요'],
-    ['스카치 위스키는 최소 3년 이상 숙성해야 한다', 0, '스코틀랜드 법으로 3년 이상이에요'], ['화이트 러시안은 러시아에서 처음 만들어졌다', 1, '보드카를 써서 붙은 이름일 뿐이에요'],
-    ['싱글 몰트는 한 증류소에서 보리 몰트로만 만든 위스키다', 0, '여러 증류소 것을 섞으면 블렌디드예요'], ['맥주의 쓴맛은 홉에서 나온다', 0, '홉이 쓴맛과 향을 내요'],
-    ['와인은 오래 둘수록 무조건 맛있어진다', 1, '대부분은 몇 년 안에 마시는 게 좋아요'], ['소맥의 원조는 일본이다', 1, '한국 술자리에서 생긴 문화예요'], ['칵테일 마가리타에는 소금을 잔 테두리에 묻힌다', 0, '솔트 림이라고 해요']];
+  // OX 문제(11월 12일 사장님 "술 얘기 말고 재밌는 걸로", 예시: 일반상식 OX 100문제 같은 '다들 그렇게 알지만 사실은…' 문제) — 동물·몸·속설·역사·생활·우리나라, 술은 3개만
+  const OX_QS = [['문어는 심장이 3개다', 0, '아가미 쪽에 2개, 몸통에 1개가 있어요'], ['펭귄도 무릎이 있다', 0, '털 속에 숨어 있어서 안 보일 뿐이에요'],
+    ['펭귄은 남극에만 산다', 1, '적도 근처 갈라파고스에도 살아요'], ['고양이는 단맛을 느끼지 못한다', 0, '단맛을 느끼는 유전자가 작동하지 않아요'],
+    ['달팽이는 이빨이 있다', 0, '혀에 아주 작은 이빨이 수천 개 붙어 있어요'], ['바나나는 나무에서 열린다', 1, '바나나는 아주 큰 풀이에요'],
+    ['딸기 겉에 박힌 작은 점들은 씨다', 0, '사실은 씨를 품은 진짜 열매예요'], ['딸기는 장미와 같은 집안 식물이다', 0, '사과·배·복숭아도 같은 장미과예요'],
+    ['번개는 같은 곳에 두 번 떨어지지 않는다', 1, '높은 건물엔 1년에도 여러 번 떨어져요'], ['금붕어의 기억력은 3초다', 1, '몇 달 동안 기억한다는 실험 결과가 있어요'],
+    ['코끼리는 쥐를 무서워한다', 1, '만화 속 이야기일 뿐이에요'], ['코끼리는 점프를 못 한다', 0, '몸이 너무 무거워서 네 발이 동시에 뜨지 않아요'],
+    ['북극곰의 피부는 하얀색이다', 1, '털은 투명하고 피부는 검은색이에요'], ['소는 위가 4개다', 0, '위가 네 칸으로 나뉘어 있어요'],
+    ['소는 빨간색을 보면 흥분한다', 1, '빨강을 잘 구분 못 해요. 천이 움직여서 달려드는 거예요'], ['개는 세상을 흑백으로 본다', 1, '노란색과 파란색은 구분해요'],
+    ['개미는 잠을 자지 않는다', 1, '짧게 여러 번 나눠서 자요'], ['거미는 곤충이다', 1, '다리가 8개라서 곤충이 아니에요'],
+    ['에펠탑은 여름에 조금 더 높아진다', 0, '더우면 쇠가 늘어나 10㎝ 넘게 커져요'], ['에펠탑은 원래 잠깐 세웠다가 허물 계획이었다', 0, '20년 뒤 철거할 예정이었어요'],
+    ['만리장성은 우주에서 맨눈으로 보인다', 1, '폭이 좁아서 맨눈으로는 안 보여요'], ['모나리자에는 눈썹이 없다', 0, '눈썹도 속눈썹도 거의 안 보여요'],
+    ['나폴레옹은 키가 아주 작았다', 1, '그 시절 프랑스 남자 평균쯤이었어요'], ['바이킹은 뿔 달린 투구를 썼다', 1, '뿔 투구 유물은 나온 적이 없어요'],
+    ['당근을 많이 먹으면 밤눈이 밝아진다', 1, '전쟁 때 일부러 퍼뜨린 소문이에요'], ['사람은 뇌를 10%만 쓴다', 1, '뇌는 거의 모든 부분을 써요'],
+    ['10원 동전에 그려진 탑은 석가탑이다', 1, '다보탑이에요'], ['100원 동전 속 인물은 세종대왕이다', 1, '이순신 장군이에요'],
+    ['500원 동전에 그려진 새는 학이다', 0, '두루미(학)가 날고 있어요'], ['1000원 지폐 속 인물은 퇴계 이황이다', 0, '5000원은 율곡 이이예요'],
+    ['우리나라 지폐는 나무로 만든 종이다', 1, '솜(면)으로 만들어서 잘 안 찢어져요'], ['올림픽 금메달은 순금이다', 1, '은에 금을 얇게 입힌 거예요'],
+    ['토마토는 과학적으로 열매(과일)다', 0, '씨를 품은 열매라서 과일로 쳐요'], ['어른이 되면 뼈 개수가 아기 때보다 줄어든다', 0, '약 300개가 붙어서 206개가 돼요'],
+    ['혀는 부위마다 느끼는 맛이 따로 있다', 1, '혀 전체에서 모든 맛을 느껴요'], ['매운맛은 맛이 아니라 아픔이다', 0, '혀가 아픔으로 느끼는 거예요'],
+    ['손톱은 발톱보다 빨리 자란다', 0, '손톱이 두세 배쯤 빨라요'], ['면도하면 털이 더 굵게 난다', 1, '잘린 끝이 뭉툭해 보일 뿐이에요'],
+    ['땀 자체는 냄새가 없다', 0, '피부에 사는 세균이 냄새를 만들어요'], ['껌을 삼키면 7년 동안 배 속에 남는다', 1, '며칠 안에 그대로 나와요'],
+    ['손가락 관절을 자꾸 꺾으면 관절염이 생긴다', 1, '연구해 보니 관절염과는 관계가 없었어요'], ['사람 몸에서 가장 큰 기관은 피부다', 0, '어른 피부를 펼치면 2㎡쯤 돼요'],
+    ['기린과 사람은 목뼈 개수가 같다', 0, '둘 다 7개예요. 기린은 하나하나가 길어요'], ['사람은 자면서 1년에 거미를 몇 마리씩 삼킨다', 1, '근거 없는 소문이에요'],
+    ['꿀은 오래 두어도 잘 상하지 않는다', 0, '수천 년 된 무덤 속 꿀도 멀쩡했대요'], ['금성은 하루가 1년보다 길다', 0, '한 바퀴 도는 데 지구 날짜로 240일이 넘어요'],
+    ['낙타 혹에는 물이 들어 있다', 1, '지방이 들어 있어요'], ['박쥐는 눈이 보이지 않는다', 1, '대부분 박쥐는 눈으로도 잘 봐요'],
+    ['타조는 위험하면 머리를 땅에 묻는다', 1, '땅에 낮게 엎드리거나 달아나요'], ['고래는 물고기다', 1, '새끼에게 젖을 먹이는 젖먹이 동물이에요'],
+    ['거북이는 등딱지에서 몸을 빼낼 수 있다', 1, '등딱지가 뼈와 붙어 있어요'], ['나비는 발로 맛을 본다', 0, '발에 맛을 느끼는 감각이 있어요'],
+    ['카멜레온은 주변 색에 맞춰 몸 색을 바꾼다', 1, '주로 기분과 온도에 따라 바뀌어요'], ['캥거루는 뒷걸음질을 못 한다', 0, '꼬리와 다리 생김새 때문이에요'],
+    ['돌고래는 뇌를 반쪽씩 번갈아 재운다', 0, '한쪽이 자는 동안 다른 쪽이 숨을 쉬어요'], ['코알라는 하루 20시간쯤 잔다', 0, '유칼립투스 잎은 힘이 별로 안 나서요'],
+    ['개미핥기는 이빨이 없다', 0, '긴 혀로 핥아 먹어서 이빨이 필요 없어요'], ['하마는 고기를 먹는 동물이다', 1, '주로 풀을 먹어요'],
+    ['하마는 붉은빛 땀을 흘린다', 0, '햇빛을 막아 주는 붉은 분비물이에요'], ['어린 시절로 되돌아가는 해파리가 있다', 0, '위기 때 어린 단계로 돌아가는 해파리가 있어요'],
+    ['하품은 옮는다', 0, '남이 하품하는 걸 보면 따라 하기 쉬워요'], ['무지개 색은 딱 일곱 가지뿐이다', 1, '색은 끊김 없이 이어지고, 일곱은 나눈 방식일 뿐이에요'],
+    ['사막은 항상 덥다', 1, '남극도 비가 거의 안 와서 사막이에요'], ['소리는 공기보다 물속에서 더 빨리 퍼진다', 0, '물속에서 4배 넘게 빨라요'],
+    ['태풍의 눈 안은 바람이 약하고 맑다', 0, '눈을 벗어나면 다시 비바람이 몰아쳐요'], ['비행기 블랙박스는 검은색이다', 1, '찾기 쉽게 주황색으로 칠해요'],
+    ['십이지장은 길이가 12㎝라서 붙은 이름이다', 1, '손가락 12개를 나란히 놓은 길이라서예요'], ['아라비아 숫자는 아랍에서 만들었다', 1, '인도에서 만들어져 아랍 상인이 퍼뜨렸어요'],
+    ['브라질은 스페인어를 쓴다', 1, '포르투갈어를 써요'], ['문어 다리는 8개, 오징어 다리는 10개다', 0, '오징어는 긴 다리 2개가 더 있어요'],
+    ['대구 약령시는 조선 시대부터 열렸다', 0, '360년 넘게 이어진 약재 시장이에요'], ['교동은 예전에 전자 골목으로 유명했다', 0, '낯선 자리도 원래 전자상가였어요'],
+    ['술을 마시면 몸이 따뜻해진다', 1, '따뜻한 느낌만 들고 체온은 오히려 빨리 떨어져요'], ['데킬라는 선인장으로 만든다', 1, '선인장이 아니라 용설란(아가베)으로 만들어요'],
+    ['롱아일랜드 아이스티에는 홍차가 들어간다', 1, '차는 없고, 콜라로 홍차 색을 내요']];
+  // ---------- 인물퀴즈(11월 12일 사장님): 사진 = 사이트 pq 폴더 · a = 워크샵 인물퀴즈 2024 PDF, b = 네이버 배우 2탄, c = 한국 남자 배우(발표 파일) · 겹친 사람(아이유)은 a만 ----------
+  // [사진 이름, 정답(화면에 보일 이름), 같이 인정하는 답…] — 띄어쓰기·대소문자·기호는 무시하고 비교
+  const FACE_QS = (() => { const A = ['도라에몽', '고소영', '정용진', '김제덕', '체게바라|게바라', '김수현', '성동일', '양세찬', '박보영', '방탄소년단|BTS|방탄', '엘사', '오은영', '주윤발', '타이거우즈', '김예지', '마라도나', '최양락', '세종대왕|이도|세종', '짱구|신짱구', '고흐|반고흐|빈센트반고흐', '나이팅게일', '최민식', '통키', '이승연', '워렌버핏|워런버핏|버핏', '호날두|크리스티아누호날두', '간디|마하트마간디', '톰크루즈|탐크루즈', '궤도', '주진모', '마이클조던|조던', '배철수', '이종범', '제니', '타노스', '박남정', '쿨|COOL', '달리|살바도르달리', '오바마|버락오바마', '앤해서웨이|앤해더웨이|해서웨이', '오프라윈프리|오프라', '삼장법사', '모차르트', '안성재', '엄태구', '세일러문', '심은하', '마크저커버그|저커버그', '안세영', '김창완', '한강', '박지성', '최화정', '김계란', '이재용', '뉴진스|NEWJEANS', '박보검', '벤자민프랭클린|벤저민프랭클린|프랭클린', '김민종', '류승룡', '코난|명탐정코난', '김고은', '에단호크', '소피마르소', '페이커|이상혁|FAKER', '아인슈타인', '이경규', '캔디', '이미연', '트럼프|도널드트럼프|도날드트럼프', '김민재', '김구|백범김구|백범', '양조위', '김준호', '김동현', '마이클잭슨', '아이유|이지은', '에디슨|토머스에디슨', '메텔', '마더테레사|테레사수녀|테레사', '스티븐호킹|호킹', '조수미', '김해준', '봉준호', '코요테', '김연자', '슈베르트', '조성진', '강수진', '김완선'];
+    const B = ['장동윤', '박은빈', '전여빈', '지창욱', '장규리', '임시완', '정은채', '지수', '박솔로몬', '수지', '이주빈', '박규영', '정채연', '이연희', '노윤서', '이시영', '조이현', '', '나나|임진아', '유승호', '보나|김지연', '강민아', '황민현', '김유정', '홍수주', '하니|안희연', '변우석', '원진아', '최효주', '한예슬'];
+    const C = ['이병헌', '정우성', '고수', '김영철', '송중기', '이경영', '조정석', '유연석', '송강호', '마동석', '이상엽', '강동원', '하정우'];
+    const out = []; [['a', A], ['b', B], ['c', C]].forEach(([p, L]) => L.forEach((s, i) => { if (s) out.push([p + String(i + 1).padStart(2, '0'), ...s.split('|')]); })); return out; })();
+  const faceNorm = s => String(s || '').toUpperCase().replace(/[^0-9A-Z가-힣]/g, '');
+  const faceInfo = img => FACE_QS.find(q => q[0] === img) || null;
+  const faceOk = (img, txt) => { const q = faceInfo(img), v = faceNorm(txt); return !!(q && v && q.slice(1).some(a => faceNorm(a) === v)); };
+  const faceSrc = img => 'pq/' + img + '.jpg';
+  // ---------- 초성퀴즈(11월 12일 사장님: 영화·드라마·라면·음식·명대사 등 여러 주제) — 초성은 정답에서 자동으로 뽑음 ----------
+  //  [정답, 같이 인정하는 답…] · 명대사는 [대사, 나온 작품]
+  const CHO_DATA = {
+    영화: ['기생충', '괴물', '올드보이', '부산행', '극한직업', '명량', '국제시장', '베테랑', '범죄도시', '신과함께', '왕의 남자', '해운대', '타짜', '살인의 추억', '과속스캔들', '7번방의 선물', '써니', '건축학개론', '관상', '암살', '도둑들', '겨울왕국', '타이타닉', '어벤져스', '해리포터', '라라랜드', '인터스텔라', '아바타', '알라딘', '서울의 봄', '파묘', '내부자들', '곡성', '아저씨', '엽기적인 그녀', '늑대소년', '수상한 그녀'],
+    드라마: ['오징어 게임', '사랑의 불시착', '도깨비', '태양의 후예', '응답하라 1988', '이상한 변호사 우영우|우영우', '더 글로리', '눈물의 여왕', '대장금', '꽃보다 남자', '시크릿 가든', '별에서 온 그대', '미생', '슬기로운 의사생활', '이태원 클라쓰', '나의 아저씨', '호텔 델루나', '펜트하우스', '스카이 캐슬', '동백꽃 필 무렵', '선재 업고 튀어', '무빙', '재벌집 막내아들', '내 이름은 김삼순', '커피프린스 1호점', '모래시계', '주몽'],
+    라면: ['신라면', '진라면', '안성탕면', '너구리', '짜파게티', '불닭볶음면', '삼양라면', '육개장', '사리곰탕', '비빔면', '참깨라면', '열라면', '오징어짬뽕', '진짬뽕', '꼬꼬면', '짜왕', '틈새라면', '스낵면', '김치사발면', '왕뚜껑', '무파마'],
+    음식: ['김치찌개', '된장찌개', '떡볶이', '삼겹살', '비빔밥', '불고기', '순두부찌개', '부대찌개', '감자탕', '짜장면', '짬뽕', '탕수육', '냉면', '칼국수', '김밥', '순대', '치킨', '족발', '보쌈', '닭갈비', '갈비탕', '제육볶음', '잡채', '해물파전', '막창', '납작만두', '찜닭', '곱창', '라볶이', '오므라이스'],
+    명대사: [['너나 잘하세요', '친절한 금자씨'], ['니가 가라 하와이', '친구'], ['어이가 없네', '베테랑'], ['뭣이 중헌디', '곡성'], ['살아있네', '범죄와의 전쟁'], ['지금까지 이런 맛은 없었다', '극한직업'], ['내가 니 시다바리가', '친구'], ['나 이대 나온 여자야', '타짜'], ['묻고 더블로 가', '타짜'], ['라면 먹고 갈래요', '봄날은 간다'], ['너는 계획이 다 있구나', '기생충'], ['애기야 가자', '파리의 연인'], ['이게 최선입니까 확실해요', '시크릿 가든'], ['브라보 멋지다 연진아', '더 글로리'], ['밥은 먹고 다니냐', '살인의 추억'], ['고마해라 마이 묵었다 아이가', '친구']]
+  };
+  const CHO_CATS = Object.keys(CHO_DATA);
+  const CHO_QS = (() => { const out = []; CHO_CATS.forEach((c, ci) => CHO_DATA[c].forEach((x, i) => { const [ans, src] = Array.isArray(x) ? x : [x, '']; const al = ans.split('|'); out.push({ id: 'k' + ci + '_' + i, cat: c, ans: al[0], alt: al, src }); })); return out; })();
+  const CHOS = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
+  const chosung = s => [...String(s)].map(ch => { const c = ch.charCodeAt(0) - 0xAC00; return c >= 0 && c < 11172 ? CHOS[Math.floor(c / 588)] : ch; }).join('');
+  const choInfo = id => CHO_QS.find(q => q.id === id) || null;
+  const choOk = (id, txt) => { const q = choInfo(id), v = faceNorm(txt); return !!(q && v && q.alt.some(a => faceNorm(a) === v)); };
+  const choSec = id => { const q = choInfo(id); return q && q.cat === '명대사' ? 15 : 10; };   // 한 문제 시간: 보통 10초, 명대사 15초
+  // ---------- 이미지게임(11월 12일 사장님 · 가벼운 칭찬·웃긴 질문): '여기서 가장 ~할 것 같은 사람은?' → 참여자 중 한 명 몰래 뽑기 ----------
+  const IMG_QS = ['술이 제일 셀 것 같은 사람', '연애하면 제일 다정할 것 같은 사람', '숨은 직업이 아이돌일 것 같은 사람', '노래방 가면 마이크 안 놓을 것 같은 사람', '어릴 때 반장 했을 것 같은 사람', '오늘 제일 늦게 집에 갈 것 같은 사람', '요리를 제일 잘할 것 같은 사람', '고양이를 키울 것 같은 사람', '여행 가면 계획표를 짜 올 것 같은 사람', '알고 보면 반전 매력이 있을 것 같은 사람', '단톡방에서 제일 말 많을 것 같은 사람', '아침형 인간일 것 같은 사람', '길에서 캐스팅 당해 봤을 것 같은 사람', '돈 관리를 제일 잘할 것 같은 사람', '춤을 제일 잘 출 것 같은 사람', '좀비 세상에서 끝까지 살아남을 것 같은 사람', '사진을 제일 잘 찍어 줄 것 같은 사람', '부탁을 거절 못 할 것 같은 사람', '혼술 고수일 것 같은 사람', '알고 보면 운동 마니아일 것 같은 사람', '웃음소리가 제일 클 것 같은 사람', '사진첩에 음식 사진이 제일 많을 것 같은 사람', '드라마 보다가 제일 잘 울 것 같은 사람', '복권 당첨되면 조용히 사라질 것 같은 사람', '해장 맛집을 제일 많이 알 것 같은 사람', '외국어를 잘할 것 같은 사람', '게임에서 지고는 못 살 것 같은 사람', '오늘 처음 봤지만 친해지고 싶은 사람', '이 가게 단골이 될 것 같은 사람', '첫사랑이랑 결혼할 것 같은 사람'];
+  // ---------- 라이어게임(11월 12일 사장님 · 휴대폰에 한 줄씩): 시민은 주제+제시어, 라이어는 주제만 ----------
+  const LIAR_CATS = [['음식', '떡볶이 김치찌개 삼겹살 짜장면 치킨 초밥 피자 라면 냉면 김밥'], ['동물', '고양이 강아지 펭귄 기린 코끼리 호랑이 토끼 판다 하마 다람쥐'], ['장소', '놀이공원 찜질방 공항 도서관 노래방 편의점 수영장 병원 영화관 캠핑장'],
+    ['직업', '소방관 요리사 선생님 의사 경찰 가수 미용사 택배기사 바텐더 유튜버'], ['술', '하이볼 칵테일 맥주 위스키 소주 와인 막걸리 샴페인 데킬라 사케'], ['물건', '우산 휴대폰 칫솔 안경 거울 베개 냉장고 자전거 지갑 시계'],
+    ['운동', '축구 야구 농구 수영 볼링 골프 탁구 배드민턴 클라이밍 요가'], ['과일', '사과 바나나 수박 딸기 포도 귤 복숭아 망고 키위 참외']].map(([c, w]) => [c, w.split(' ')]);
+  // 제시어·라이어는 게임 정보에 그대로 두지 않고 살짝 감춰서 저장(화면을 열어 봐도 바로 안 보이게)
+  const liarPack = o => { try { return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).split('').reverse().join(''); } catch (e) { return ''; } };
+  const liarOpen = s => { try { return JSON.parse(decodeURIComponent(escape(atob(String(s || '').split('').reverse().join(''))))); } catch (e) { return null; } };
+  const LIAR_MARK = '🕵️ ';
+  // ---------- 폭탄 돌리기 주제(11월 12일 업그레이드): 폭탄을 든 사람이 주제에 맞는 답을 써야 넘어감 ----------
+  const BOMB_CATS = ['치킨 브랜드', '라면 이름', '편의점에서 파는 것', '노래방 애창곡', '아이돌 그룹', '한국 드라마 제목', '과일', '동물', '나라 이름', '나라의 수도', '축구 선수', '프로야구 팀', '영화 제목', '만화 캐릭터', '커피 메뉴', '칵테일 이름', '술 종류', '술안주', '대구 음식', '지하철역 이름', '자동차 브랜드', '휴대폰 앱', '과자 이름', '아이스크림 이름', '운동 종목', '직업', '색깔', '부엌에 있는 것', '여행 가고 싶은 나라', '놀이공원 놀이기구', '겨울에 생각나는 것', "'ㄱ'으로 시작하는 음식", "'사'로 시작하는 단어", '빨간색인 것', '동그란 것', '배우 이름', '가수 이름', '빵 종류', '분식 메뉴', '바다에 사는 것', '학교에 있는 것', '꽃 이름', '채소', '탈것', '악기', '브랜드 이름', '디저트', '야식 메뉴'];
+  const BOMB_ROUNDS = 3, bombMsg = (round, txt) => '💣' + round + ' ' + txt, bombRead = m => { const r = /^💣(\d+) (.+)$/.exec(String(m || '')); return r ? { round: +r[1], txt: r[2] } : null; };
   // ---------- 메뉴판 (기본값: 매장 메뉴판 기준 · 사장 리모컨에서 수정 가능) ----------
   const M = (name, price, extra) => ({ name, price, ...(extra || {}) });
   const W_ = (name, abv, price, bottle, group) => ({ name, abv, price, bottle, group, whisky: true });
@@ -3047,6 +3159,6 @@
     lsSet('notsun-owner-live', { who, msg, ms: Date.now() }); ping();
   }
 
-  global.Notsun = { setGuestLeft, findMyGuest, resetDay, watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, horseSprite, raceProg, raceInfo, RACE_T0, BAL_QS, OX_QS, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, LOOK_THEMES, FITS, COS_DESC, issueLegendCoupon, BOTTOMS, ACCS, HAIR_X, TOPS, EYES, ACC_X, SHOES, PANTS_COLORS, EX_RE, setGuestCos, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
-    CAT_HIDE, shopOpen, STORY, balSet, muteSfx: v => { SFX.mute = !!v; }, BAL_SEC, setCatVisit, watchCatVisit, petCat, safeReload, netErr, newOrderId: () => LIVE ? fs.collection('orders').doc().id : 'o' + Date.now(), watchCatPets, THEMES, resolveTheme, costumeFor, drawCostume, cosSeed, seasonCostume, rollSeason, cosOf, OWNER_COS, ownerCostume, cardAura, AURA_FX, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, saveOff, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, clearUsedCoupons, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, announceServed, drinkColor, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, saveGameEnd, REQ_NEED, reqTally, requestGame, markReqDone, AUTO_ORDER, AUTO_LABEL, autoInfo, autoSpec, saveAuto, notifyOwner, updateLook, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
+  global.Notsun = { setGuestLeft, findMyGuest, resetDay, watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, horseSprite, raceProg, raceInfo, RACE_T0, BAL_QS, OX_QS, FACE_QS, faceOk, faceInfo, faceSrc, IMG_QS, LIAR_CATS, liarPack, liarOpen, LIAR_MARK, BOMB_CATS, BOMB_ROUNDS, bombMsg, bombRead, CHO_CATS, CHO_QS, chosung, choInfo, choOk, choSec, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, LOOK_THEMES, FITS, COS_DESC, issueLegendCoupon, BOTTOMS, ACCS, HAIR_X, TOPS, EYES, ACC_X, SHOES, PANTS_COLORS, EX_RE, setGuestCos, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
+    CAT_HIDE, shopOpen, STORY, balSet, muteSfx: v => { SFX.mute = !!v; }, BAL_SEC, setCatVisit, watchCatVisit, petCat, safeReload, netErr, newOrderId: () => LIVE ? fs.collection('orders').doc().id : 'o' + Date.now(), watchCatPets, THEMES, resolveTheme, costumeFor, drawCostume, cosSeed, seasonCostume, rollSeason, seasonPool, cosOf, OWNER_COS, ownerCostume, cardAura, AURA_FX, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, saveOff, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, clearUsedCoupons, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, announceServed, drinkColor, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, saveGameEnd, REQ_NEED, reqTally, requestGame, markReqDone, AUTO_ORDER, AUTO_LABEL, autoInfo, autoSpec, saveAuto, notifyOwner, updateLook, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
 })(window);

@@ -164,6 +164,10 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
       <div class="gbtns">
         <button class="btn primary" id="gTen" type="button">⏱ 10초 맞추기</button>
         <button class="btn primary" id="gOx" type="button">⭕ OX 서바이벌</button>
+        <button class="btn primary" id="gFace" type="button">🧑 인물퀴즈</button>
+        <span style="display:inline-flex;gap:6px;align-items:center"><button class="btn primary" id="gCho" type="button">🔤 초성퀴즈</button><select id="gChoCat" aria-label="초성퀴즈 주제" style="font-size:15px;padding:6px;border-radius:8px"><option value="">주제 섞기</option></select></span>
+        <button class="btn primary" id="gImg" type="button">🙋 이미지게임</button>
+        <button class="btn primary" id="gLiar" type="button">🕵️ 라이어게임</button>
         <button class="btn primary" id="gBal" type="button">⚖️ 밸런스 게임</button>
       </div>
       <b class="glab">🎉 이벤트</b>
@@ -591,8 +595,12 @@ try { const r = localStorage.getItem('notsun-reward'); if (r !== null) $('reward
 let couponsNow = [];
 function renderCoupons(){
   const el = $('coupons'); el.innerHTML = ''; const q = $('couponFind').value.trim().toUpperCase();
-  const list = couponsNow.filter(c => !q || c.code.includes(q) || c.show.includes(q) || c.nick.toUpperCase().includes(q));
-  if (!list.length) { el.innerHTML = '<p class="sub">' + (q ? '찾는 쿠폰이 없어요.' : '아직 발급한 쿠폰이 없어요.') + '</p>'; return; }
+  // 사용 완료·기간 만료 쿠폰은 목록에서 자동으로 숨김(11월 12일 사장님). 쿠폰번호·닉네임으로 찾을 때만 지난 쿠폰도 보여 줌(손님이 "쓴 적 없다"고 할 때 확인용)
+  const live = c => { const s = N.couponState(c); return s === 'ready' || s === 'today'; };
+  const list = couponsNow.filter(c => q ? (c.code.includes(q) || c.show.includes(q) || c.nick.toUpperCase().includes(q)) : live(c));
+  const hid = q ? 0 : couponsNow.filter(c => !live(c)).length;
+  if (!list.length) { el.innerHTML = '<p class="sub">' + (q ? '찾는 쿠폰이 없어요.' : hid ? `지금 쓸 수 있는 쿠폰이 없어요. (지난 쿠폰 ${hid}장은 숨김 · 번호로 찾으면 보여요)` : '아직 발급한 쿠폰이 없어요.') + '</p>'; return; }
+  if (hid) { const p = document.createElement('p'); p.className = 'sub'; p.style.margin = '0 0 6px'; p.textContent = `사용 완료·기간 만료 ${hid}장은 숨겼어요 (번호로 찾으면 보여요)`; el.appendChild(p); }
   list.forEach(c => {
     const st = N.couponState(c), r = document.createElement('div'); r.className = 'row';
     const t = document.createElement('span'); t.textContent = `${c.kind === 'legend' ? '🌟 ' : c.kind === 'secret' ? '✨ ' : ''}${c.show} · ${c.nick} · ${c.reward}${c.kind === 'legend' ? ' (레전드 · 오늘만)' : c.kind === 'secret' ? ' (시크릿 · 오늘만)' : ''}`;
@@ -625,7 +633,7 @@ $('clearUsed').onclick = async () => {
   catch (e) { b.textContent = '정리 실패 (보안 규칙 확인 필요)'; }
   setTimeout(() => { b.disabled = false; b.textContent = '🧹 사용된 쿠폰 정리'; }, 3000);
 };
-function startCoupons(){ N.watchCoupons(list => { couponsNow = list; renderCoupons(); }); }
+function startCoupons(){ N.watchCoupons(list => { couponsNow = list; renderCoupons(); }); setInterval(() => { if (document.activeElement !== $('couponFind')) renderCoupons(); }, 10 * 60 * 1000); }   // 날짜가 바뀌어 만료된 쿠폰도 저절로 빠지게
 // ---------- 주문 ----------
 var pastOpen = false, ordersNow = [], seenOrders = null, alertOk = false, wakeLock = null;
 const wonO = n => (n || 0).toLocaleString('ko-KR') + '원';
@@ -792,6 +800,11 @@ $('gRou').onclick = gStart('rou', () => ({ phase: 'join', dur: 20, reward: gRewa
 $('gRace').onclick = gStart('race', () => ({ phase: 'pick', dur: 20, reward: gReward() }), n => ({ pickUntil: n + 20000 }), '🏇 경마 우승마 고르는 중 (20초)…');
 $('gRps').onclick = gStart('rps', () => ({ phase: 'join', dur: 20, reward: gReward() }), n => ({ joinUntil: n + 20000 }), '✊ 가위바위보 참여자 모집 (20초)…');
 $('gOx').onclick = gStart('ox', () => ({ phase: 'join', dur: 20, reward: gReward() }), n => ({ joinUntil: n + 20000, qs: shuffle(N.OX_QS).slice(0, 5) }), '⭕ OX 서바이벌 참여자 모집 (20초)…');
+$('gFace').onclick = (() => { let qs = []; return gStart('face', () => { qs = shuffle(N.FACE_QS.map(q => q[0])).slice(0, 15); return { phase: 'join', dur: 20, reward: gReward(), qs }; }, n => ({ joinUntil: n + 20000, qs, tsum: {} }), '🧑 인물퀴즈 참여자 모집 (20초)…'); })();   // 사진 132장 중 15장 · 한 장에 5초
+N.CHO_CATS.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; $('gChoCat').appendChild(o); });
+$('gCho').onclick = (() => { let qs = []; return gStart('cho', () => { const cat = $('gChoCat').value; qs = shuffle(N.CHO_QS.filter(q => !cat || q.cat === cat).map(q => q.id)).slice(0, 10); return { phase: 'join', dur: 20, reward: gReward(), qs, cat: cat || '' }; }, n => ({ joinUntil: n + 20000, qs, tsum: {} }), '🔤 초성퀴즈 참여자 모집 (20초)…'); })();   // 10문제 · 10초(명대사 15초)
+$('gImg').onclick = (() => { let qs = []; return gStart('img', () => { qs = shuffle(N.IMG_QS).slice(0, 3); return { phase: 'join', dur: 20 }; }, n => ({ joinUntil: n + 20000, qs, total: {} }), '🙋 이미지게임 참여자 모집 (20초)…'); })();   // 3명 이상 · 질문 3개
+$('gLiar').onclick = (() => { let c = null, w = ''; return gStart('liar', () => { c = N.LIAR_CATS[Math.floor(Math.random() * N.LIAR_CATS.length)]; w = c[1][Math.floor(Math.random() * c[1].length)]; return { phase: 'join', dur: 30, cat: c[0] }; }, n => ({ joinUntil: n + 30000, cat: c[0], word: w }), '🕵️ 라이어게임 참여자 모집 (30초 · 스크린에 하는 법)…'); })();   // 3명 이상 · 최대 10명
 $('gStop').onclick = () => host.stop('게임을 멈췄어요.');
 // 레시피 (사장님만)
 var recipes = {}, rcpName = '';
