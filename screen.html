@@ -77,7 +77,7 @@ var LQ = 0, QFIX = false;
   function tick(t){ on = false; const gap = [0, 31, 39, 47][window.LQ | 0] || 0; if (gap && t - last < gap) { on = true; nat(tick); return; } last = t; const run = q; q = []; run.forEach(f => { try { f(t); } catch (e) { console.error(e); } }); }
   window.requestAnimationFrame = f => { q.push(f); if (!on) { on = true; nat(tick); } return q.length; }; })(); try { const m = location.search.match(/[?&]q=(\d)/); QFIX = !!m; LQ = m ? +m[1] : +(localStorage.getItem('notsun3dQ2') || 0); } catch (e) {} LQ = Math.max(0, Math.min(3, LQ | 0));
 /* 해상도는 깎지 않음(11월 12일 사장님: 흐릿함) — 단계가 내려가면 초당 장수·하늘·뒷벽 스크린 갱신만 줄임 */
-const PR = [Math.min(2, devicePixelRatio || 1), Math.max(1, Math.min(1.5, devicePixelRatio || 1)), 1, 1];
+const PR = [Math.min(2, Math.max(1.25, devicePixelRatio || 1)),   /* 가장 좋은 단계는 1.25배 촘촘하게(버벅이면 자동으로 내려감) */ Math.max(1, Math.min(1.5, devicePixelRatio || 1)), 1, 1];
 const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: LQ <= 1, powerPreference: 'high-performance' });
 renderer.setPixelRatio(PR[LQ]);
 const scene = new THREE.Scene(); scene.background = new THREE.Color('#0d090a'); scene.fog = new THREE.Fog('#0d090a', 14, 26);
@@ -143,7 +143,7 @@ TABLES.forEach(r => table(...r));
 const SEATS = [
   [.83, -2.55], [1.47, -2.55], [2.12, -2.55], [2.92, -1.95], [-.05, -1.42], [-.05, -.64], [-.05, .05], [1.13, -1.3], [1.99, -1.28], [1.2, -.42],   // 왼쪽 ┌ 10석: 위 3 · 오른쪽 끝 1 · 왼쪽 3 · 안쪽 3
   [2.31, -.85], [2.9, .0], [2.9, .69], [2.9, 1.42], [1.64, .51], [1.66, 1.1], [.81, 1.1], [.73, 2.3], [1.71, 2.3], [2.47, 2.3]   // 오른쪽 ┘ 10석: 위쪽 끝 1 · 오른쪽 3 · 안쪽 3 · 아래 3
-].map(([x, z]) => ({ x, z, y: .56, kind: '테이블' }));
+].map(([x, z]) => ({ x, z, y: .8, kind: '테이블' }));   // 11월 12일 사장님: 입구 쪽 손님이 서 있는 것처럼 보임 → 의자 위에 올라앉게(예전 .56은 발이 바닥)
 SEATS.forEach(s => { box(.32, .05, .32, s.x, .38, s.z, M('#141416')); box(.05, .38, .05, s.x, 0, s.z, M('#2a2a2e')); });
 const ALLSEATS = STOOLS.concat(SEATS);
 // 테이블 무선 조명(사진 속 버섯 모양 등)
@@ -151,7 +151,7 @@ const ALLSEATS = STOOLS.concat(SEATS);
 // ---------- 대형 스크린 (뒤벽, 실제 방명록 화면을 그대로 그림) ----------
 var FOCUS = 0;
 const scrCv = document.createElement('canvas'); scrCv.width = 1280; scrCv.height = 720;
-const scrTex = new THREE.CanvasTexture(scrCv); scrTex.magFilter = THREE.NearestFilter; scrTex.generateMipmaps = false; scrTex.minFilter = THREE.LinearFilter; scrTex.anisotropy = renderer.capabilities.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 1;
+const scrTex = new THREE.CanvasTexture(scrCv); scrTex.magFilter = THREE.NearestFilter; scrTex.anisotropy = renderer.capabilities.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 1;
 // 실제 매장 비율: 벽 위쪽에 걸린 스크린(손님 머리와 안 겹치게 높이)
 box(3.1, 1.78, .04, .25, 1.27, -3.22, M('#d8d4cc'));
 const scrMesh = new THREE.Mesh(new THREE.PlaneGeometry(3.0, 1.69), new THREE.MeshBasicMaterial({ map: scrTex })); scrMesh.position.set(.25, 2.16, -3.19); scene.add(scrMesh);
@@ -175,8 +175,10 @@ box(.02, .03, 4.5, 3.06, 1.92, -.7, ME('#ff8a5a', '#ff6a3a'));   // 선반 아�
 // '낯선' 네온 간판(깜빡이)은 11월 12일 사장님 요청으로 없앰
 // 스크린과 메인바 사이 벽: '- notsun -' 글자 + 위에서 비추는 갓등(2D 스크린과 같은 모습)
 // 11월 12일 사장님(매장 시험): 글자가 너무 흐릿함 → 그림을 4배 촘촘하게, 번짐은 줄이고 획을 굵고 밝게
-{ const c = document.createElement('canvas'); c.width = 1024; c.height = 256; const g = c.getContext('2d'); g.font = '600 128px Georgia, "Times New Roman", serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  const txt = '- n o t s u n -'; g.shadowColor = '#ff9a7a'; g.shadowBlur = 18; g.fillStyle = '#ffe6dc'; g.fillText(txt, 512, 132); g.shadowBlur = 0; g.fillStyle = '#fff6f0'; g.fillText(txt, 512, 132);
+// (저녁 사장님: 여전히 흐림 → 가는 세리프 대신 굵은 획 + 테두리로, 멀리서 작아져도 안 뭉개지게)
+{ const c = document.createElement('canvas'); c.width = 2048; c.height = 512; const g = c.getContext('2d'); g.font = '900 230px Georgia, "Times New Roman", serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  const txt = '-notsun-'; try { g.letterSpacing = '40px'; } catch (e) {} g.shadowColor = '#ff7a5a'; g.shadowBlur = 40; g.fillStyle = '#ffd8c8'; g.fillText(txt, 1024, 266); g.shadowBlur = 0;
+  g.lineWidth = 14; g.strokeStyle = '#3a0c0c'; g.strokeText(txt, 1024, 266); g.fillStyle = '#fff4ec'; g.fillText(txt, 1024, 266);
   const nt = new THREE.CanvasTexture(c); nt.anisotropy = renderer.capabilities.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 1;
   const m = new THREE.Mesh(new THREE.PlaneGeometry(1.6, .4), new THREE.MeshBasicMaterial({ map: nt, transparent: true })); m.position.set(-2.1, 1.95, -3.185); m.renderOrder = 3; scene.add(m);
   // 갓등: 벽에서 나온 팔 + 줄 + 갓 + 전구
@@ -211,7 +213,8 @@ const PXM = .036;   // 캐릭터 1픽셀 = 3.6cm
 function texOf(look, sit, drink, frame){ if (!N || !N.sprite) return null; const c = N.sprite(look, sit, drink, frame, ''); const t = new THREE.CanvasTexture(c); t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; return { t, w: c.width, h: c.height }; }
 // 멀리(스크린 쪽) 있는 글자·그림이 흐려지지 않게: 줄여 그릴 때 번지는 단계 그림(밉맵)을 끄고 비스듬한 면도 또렷하게(11월 12일 사장님)
 const MAXA = renderer.capabilities.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 1;
-function sharp(t){ t.generateMipmaps = false; t.minFilter = THREE.LinearFilter; t.anisotropy = MAXA; return t; }
+// (11월 12일 저녁 사장님 '해상도가 조금 안 좋아짐' → 번짐을 끄면 글자가 거칠게 깨져서 부드러운 단계 그림은 다시 켜고, 비스듬한 면 또렷하게만 유지)
+function sharp(t){ t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter; t.anisotropy = MAXA; return t; }
 // 이름표: 11월 12일 사장님(매장 시험) '이름이 너무 작아 안 보임' → 글자 크게 + 어두운 바탕 띠
 function label(text, color){ const c = document.createElement('canvas'); c.width = 512; c.height = 96; const g = c.getContext('2d'); g.font = '58px "Do Hyeon", sans-serif'; g.textAlign = 'center';
   const tw = Math.min(500, g.measureText(text).width + 34); g.fillStyle = 'rgba(20,8,10,.72)'; g.beginPath(); g.roundRect((512 - tw) / 2, 10, tw, 76, 30); g.fill();
@@ -457,8 +460,10 @@ const JUKE = (() => { const g = new THREE.Group(), L = c => new THREE.MeshLamber
   const swing = new THREE.Group(); swing.position.set(-.45, .64, -.02); g.add(swing);
   const str = new THREE.Mesh(new THREE.BoxGeometry(.01, .26, .01), dark); str.position.y = -.13; swing.add(str);
   const ball = new THREE.Mesh(new THREE.SphereGeometry(.05, 12, 10), new THREE.MeshLambertMaterial({ color: '#ff5a5a', emissive: '#601010' })); ball.position.y = -.29; swing.add(ball);
-  g.position.set(-2.5, 0, 2.3); g.rotation.y = .5; scene.add(g);
-  return { tick(t){ swing.rotation.z = Math.sin(t / 520) * .35; swing.rotation.x = Math.sin(t / 830) * .15; kit.scale.y = 1 + Math.sin(t / 700) * .04;
+  g.position.set(-2.5, 0, 2.3); g.rotation.y = .5; scene.add(g); g.updateMatrixWorld(true);
+  const W3 = (x, y, z) => { const v = g.localToWorld(new THREE.Vector3(x, y, z)); return [v.x, v.y, v.z]; };
+  const spots = [W3(-.24, .69, -.14), W3(.24, 1.17, .14)];   // 고양이가 올라앉는 칸: 가운데 분홍 방석 · 오른쪽 위 둥근 판
+  return { spots, tick(t){ swing.rotation.z = Math.sin(t / 520) * .35; swing.rotation.x = Math.sin(t / 830) * .15; kit.scale.y = 1 + Math.sin(t / 700) * .04;
       const k = (t / 2400) % 1; zz.position.set(-.1 + k * .12, 1.75 + k * .25, -.12); zz.material.opacity = k < .7 ? 1 : (1 - k) / .3; } }; })();
 // 손님 테이블 위 잔 · 코스터 (자리에 앉으면 잔이 놓임)
 const GLASS = { whisky: '#c88a30', cocktail: '#e05a7a', beer: '#f0c040', champagne: '#f6e6a0' };
@@ -577,7 +582,10 @@ function guestSpot(g){ const p = g.grp.position, si = ALLSEATS.findIndex(s => Ma
   if (s.kind === '오너바') return [-1.82, .78, s.z + .32];
   let best = null, bd = 1e9; TABLES.forEach(([x0, z0, x1, z1]) => { const px = Math.min(x1 - .18, Math.max(x0 + .18, s.x)), pz = Math.min(z1 - .18, Math.max(z0 + .18, s.z)), dd = Math.hypot(px - s.x, pz - s.z); if (dd < bd) { bd = dd; best = [px, pz]; } });
   const sx = best[0] + (best[0] === s.x ? .3 : 0), sz = best[1] + (best[1] === s.z ? .3 : 0); return [sx, .67, sz]; }
-function catDecide(c, ci, t){ const u = c.userData, r = Math.random();
+function catDecide(c, ci, t){ const u = c.userData, r = Math.random(); u.towerK = -1;
+  // 캣타워 올라가기(11월 12일 사장님): 가운데 방석 판까지, 또는 한 번 더 뛰어 오른쪽 위 둥근 판까지 · 두 마리가 같은 칸은 안 고름
+  if (typeof JUKE !== 'undefined' && JUKE.spots && Math.random() < .25) { const used = (CATS[1 - ci] && CATS[1 - ci].userData.towerK); let k = Math.random() < .5 ? 0 : 1; if (k === used) k = 1 - k;
+    if (k !== used) { const [m, hi] = JUKE.spots; catPlan(c, m[0], m[1], m[2]); if (k === 1) u.plan.push({ k: 'jump', to: hi.slice() }); u.towerK = k; u.after = Math.random() < .55 ? 'sleep' : 'sit'; u.say = ''; return; } }
   if (ci === 0 ? r < .4 : r < .3) { const h = CAT_HOME[ci]; catPlan(c, h.x, h.y, h.z); u.after = ci === 0 ? 'sleep' : (Math.random() < .5 ? 'sit' : 'sleep'); u.say = ''; }
   else if (r < .65) { const gs = seatedGuests(); if (gs.length) { const g = gs[Math.floor(Math.random() * gs.length)], [x, y, z] = guestSpot(g); catPlan(c, x, y, z); u.after = 'visit'; u.visitG = g; } else { const f = FLOOR_SPOTS[Math.floor(Math.random() * FLOOR_SPOTS.length)]; catPlan(c, f[0], 0, f[1]); u.after = 'sit'; } }
   else if (r < .88) { const f = FLOOR_SPOTS[Math.floor(Math.random() * FLOOR_SPOTS.length)]; catPlan(c, f[0], 0, f[1]); u.after = Math.random() < .5 ? 'groom' : 'sit'; }
@@ -1617,11 +1625,11 @@ function applyLights(){ try { const keep = [99, 10, 6, 4][LQ], all = []; scene.t
 function applyLite(){ try { const nF = [1e9, 140, 70, 40][LQ]; OFALL.forEach((f, i) => { f.visible = i < nF; }); EXA.forEach((m, i) => { m.userData.lite = LQ >= 2 && i % 2 === 1; if (m.userData.lite) m.visible = false; }); } catch (e) {} }
 applyLights(); applyLite(); setInterval(() => { applyLights(); applyLite(); }, 5000);
 /* 버벅임 자동 조절: 4초마다 초당 장수를 재서 22장 미만이면 한 단계 가볍게. 가장 가벼운 단계에서도 초당 8장 미만이 20초 이어지면 그때만 2D로 */
-{ let n = 0, t0 = performance.now() + 3000, low = 0, up = 0; (function fq(){ const now = performance.now(); if (now < t0) { n = 0; return requestAnimationFrame(fq); } n++; const el = now - t0;
+{ let n = 0, t0 = performance.now() + 3000, low = 0, up = 0, downAt = 0; (function fq(){ const now = performance.now(); if (now < t0) { n = 0; return requestAnimationFrame(fq); } n++; const el = now - t0;
   if (el >= 4000) { const fps = n / (el / 1000); n = 0; t0 = now; window.__fps = Math.round(fps);
-    if (fps < 18 && LQ < 3 && !QFIX) { LQ++; up = 0; renderer.setPixelRatio(PR[LQ]); fit(); applyLights(); applyLite(); try { localStorage.setItem('notsun3dQ2', LQ); } catch (e) {} }
+    if (fps < 18 && LQ < 3 && !QFIX) { LQ++; up = 0; downAt = now; renderer.setPixelRatio(PR[LQ]); fit(); applyLights(); applyLite(); try { localStorage.setItem('notsun3dQ2', LQ); } catch (e) {} }
     // 다시 빨라지면 화질도 되돌림(11월 12일: 한 번 낮아지면 계속 흐릿하던 문제) · 초당 40장 이상이 12초 이어지면 한 단계 위로
-    else if (fps >= 40 && LQ > 0 && !QFIX) { if (++up >= 3) { up = 0; LQ--; renderer.setPixelRatio(PR[LQ]); fit(); applyLights(); applyLite(); try { localStorage.setItem('notsun3dQ2', LQ); } catch (e) {} } } else up = 0;
+    else if (fps >= 40 && LQ > 0 && !QFIX && now - downAt > 300000) { if (++up >= 3) { up = 0; LQ--; renderer.setPixelRatio(PR[LQ]); fit(); applyLights(); applyLite(); try { localStorage.setItem('notsun3dQ2', LQ); } catch (e) {} } } else up = 0;
     low = (fps < 8 && LQ >= 3) ? low + 1 : 0;
     if (low >= 5 && !/keep3d/.test(location.hash) && !(ownerState && ownerState.game)) { location.replace('screen2d.html' + location.hash); return; } }
   requestAnimationFrame(fq); })(); }
