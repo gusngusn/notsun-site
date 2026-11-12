@@ -121,6 +121,11 @@ details.fold{border:1.5px solid var(--glow);background:linear-gradient(180deg,#2
 .chat .cin{display:flex;gap:8px;margin-top:8px}.chat .cin input{flex:1;min-width:0;font-size:16px;padding:11px 12px;border-radius:12px;border:1px solid #6a3a48;background:#120a0d;color:#fff}.chat .cin button{border:0;border-radius:12px;padding:0 16px;background:#ff6fa0;color:#2a0f18;font-weight:800;font-size:16px}
 .chat .cfoot{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:12px;color:var(--muted)}.chat .cfoot button{background:none;border:0;color:#ff8f8f;font-size:13px;text-decoration:underline;padding:4px}
 .chat .cend{text-align:center;color:#ffb3cc;font-size:14px;padding:10px;border:1px dashed #6a3a48;border-radius:12px;margin-top:8px}
+.chat .cbox{position:relative}
+.chat .clock{position:absolute;inset:56px 14px auto;margin:0 auto;max-width:360px;background:#2a1820f2;border:2px solid #ff6fa0;border-radius:18px;padding:22px 16px;text-align:center;box-shadow:0 10px 40px #000a;z-index:2}
+.chat .clock[hidden]{display:none}.chat .clock .ic{font-size:44px;line-height:1}.chat .clock b{display:block;font:22px "Do Hyeon",sans-serif;color:#ffd0e0;margin:10px 0 6px}.chat .clock small{display:block;color:#c8a8b6;font-size:14px;line-height:1.5}
+.chat .clock .row{display:flex;gap:8px;margin-top:14px}.chat .clock .row button{flex:1;border:0;border-radius:12px;padding:12px 6px;font-size:16px;font-weight:800}
+.chat .clock .keep{background:#ff6fa0;color:#2a0f18}.chat .clock .bye{background:#3a2530;color:#ffd0e0;border:1px solid #6a3a48!important}
 .mpop{position:fixed;inset:0;z-index:30;background:#000a;display:flex;align-items:center;justify-content:center;padding:16px}
 .mpop .mbox{background:#24151a;border:1px solid #ff6fa0;border-radius:18px;padding:26px 22px;text-align:center;max-width:340px;box-shadow:0 0 60px #ff5c9355}
 .mpop .mh{font-size:56px;animation:hb 1s ease-in-out infinite}.mpop b{display:block;font:30px "Do Hyeon",sans-serif;color:#ff8fb5;margin:6px 0}
@@ -345,7 +350,7 @@ body:has(.catcard) .toast{top:104px}
 <div class="toast" id="toast" hidden role="status"></div>
 <div class="gflash" id="gFlash" aria-hidden="true"></div>
 <div class="mpop" id="mutualPop" hidden role="dialog" aria-label="서로 하트"><div class="mbox"><div class="mh">💞</div><b>서로 하트!</b><p id="mutualTxt"></p><small>이 알림은 두 분 휴대폰에만 떠요. 스크린과 사장님 화면에는 나오지 않아요.</small><button class="btn primary" id="mutualChat" type="button">💬 짧게 대화하기</button><button class="btn ghost" id="mutualOk" type="button" style="margin-top:8px">나중에</button></div></div>
-<div class="chat" id="chat" hidden role="dialog" aria-label="서로 하트 대화"><div class="cbox"><div class="chead"><b id="chatTitle">💬 대화</b><button type="button" id="chatClose">닫기</button></div><p class="cnote">서로 하트를 보낸 두 분만 볼 수 있어요. 인스타 아이디 정도 가볍게 주고받아요. 오늘 영업이 끝나면 대화도 사라져요.</p><div class="clist" id="chatList"></div><div id="chatEnd" class="cend" hidden></div><div class="cin" id="chatIn"><input id="chatText" type="text" maxlength="60" placeholder="예: 인스타 @notsun 이에요" enterkeyhint="send" autocomplete="off"><button type="button" id="chatSend">보내기</button></div><div class="cfoot"><span id="chatLeft"></span><button type="button" id="chatStop">대화 그만하기</button></div></div></div>
+<div class="chat" id="chat" hidden role="dialog" aria-label="서로 하트 대화"><div class="cbox"><div class="chead"><b id="chatTitle">💬 대화</b><button type="button" id="chatClose">닫기</button></div><p class="cnote">서로 하트를 보낸 두 분만 볼 수 있어요. 인스타 아이디 정도 가볍게 주고받아요. 오늘 영업이 끝나면 대화도 사라져요.</p><div class="clist" id="chatList"></div><div class="clock" id="chatAsk" hidden><div class="ic">🤔</div><b>정말 대화를 끝낼까요?</b><small>끝내면 오늘은 두 분 모두<br>더 이상 메시지를 보낼 수 없어요.</small><div class="row"><button type="button" class="keep" id="chatAskNo">계속 대화하기</button><button type="button" class="bye" id="chatAskYes">끝내기</button></div></div><div class="clock" id="chatLock" hidden><div class="ic">🔒</div><b id="chatLockT"></b><small id="chatLockS"></small><div class="row"><button type="button" class="keep" id="chatLockOk">확인</button></div></div><div id="chatEnd" class="cend" hidden></div><div class="cin" id="chatIn"><input id="chatText" type="text" maxlength="60" placeholder="예: 인스타 @notsun 이에요" enterkeyhint="send" autocomplete="off"><button type="button" id="chatSend">보내기</button></div><div class="cfoot"><span id="chatLeft"></span><button type="button" id="chatStop">대화 그만하기</button></div></div></div>
 <div class="gpanel" id="gPanel" hidden role="dialog" aria-label="게임">
   <button class="gx" id="gClose" type="button" aria-label="게임 창 닫기">✕</button>
   <div id="gBody"></div>
@@ -732,7 +737,7 @@ function renderHearts(){
   $('heartGot').textContent = me.noheart ? '하트 받기 꺼짐' : `받은 하트 💗 ${heartShownN == null ? got : Math.min(got, heartShownN)}`;
   const sent = heartTo || [], left = Math.max(0, N.HEART_MAX - sent.length);
   $('heartLeft').textContent = `오늘 남은 하트 ${left}개`;
-  const mm = mutualSeen(); $('mutualBox').innerHTML = mm.map(id => { const g = allGuests.find(x => x.id === id); return g ? `<div class="mrow3">💞 <b>${chEsc(g.nick)}</b>님과 서로 하트${chatUnread[id] ? '<span class="cdot" title="새 메시지"></span>' : ''}<button type="button" class="cbtn" data-chat="${chEsc(id)}">💬 대화</button></div>` : ''; }).join(''); $('mutualBox').querySelectorAll('[data-chat]').forEach(b => b.onclick = () => openChat(b.dataset.chat)); chatWatchAll(mm);
+  const mm = mutualSeen(); $('mutualBox').innerHTML = mm.map(id => { const g = allGuests.find(x => x.id === id); return g ? `<div class="mrow3">💞 <b>${chEsc(g.nick)}</b>님과 서로 하트${chatUnread[id] ? '<span class="cdot" title="새 메시지"></span>' : ''}<button type="button" class="cbtn" data-chat="${chEsc(id)}">${chatState[id] && chatState[id].closed ? '🔒 끝난 대화' : '💬 대화'}</button></div>` : ''; }).join(''); $('mutualBox').querySelectorAll('[data-chat]').forEach(b => b.onclick = () => openChat(b.dataset.chat)); chatWatchAll(mm);
   const open = allGuests.filter(g => !g.npc && !g.left && g.id !== me.id && g.uid && g.uid !== (mine && mine.uid) && !g.noheart && g.talk !== 2);
   if (!open.length) { $('heartNote').textContent = '지금은 하트를 받을 수 있는 손님이 없어요.'; return; }
   if ($('heartNote').textContent.startsWith('지금은')) $('heartNote').textContent = '';
@@ -763,6 +768,8 @@ function chatSaveSeen(){ try { localStorage.setItem(chatSeenKey(), JSON.stringif
 function chatWatchAll(ids){ const me = loadMe(); if (!me) return;
   ids.forEach(id => { if (chatSubs[id]) return;
     chatSubs[id] = N.watchChat(me.day, me.id, id, st => { const prev = chatState[id]; chatState[id] = st;
+      if (prev && !prev.closed && st.closed && st.closedBy !== me.id) { chatLockSeen[id] = false; try { navigator.vibrate && navigator.vibrate([120, 80, 120]); } catch (e) {}
+        if (chatWith !== id) { const g = allGuests.find(x => x.id === id); toast(`🔒 ${g ? g.nick : '상대'}님이 대화를 마쳤어요`); } renderHearts(); }
       const theirs = st.msgs.filter(m => m.fromGid !== me.id).length;
       if (chatWith === id) { chatSeenN[id] = theirs; chatSaveSeen(); renderChat(); }
       else if (theirs > (chatSeenN[id] || 0)) { const was = !!chatUnread[id]; chatUnread[id] = true; if (!was || (prev && theirs > prev.msgs.filter(m => m.fromGid !== me.id).length)) { const g = allGuests.find(x => x.id === id); toast(`💬 ${g ? g.nick : '서로 하트'}님이 메시지를 보냈어요`); try { navigator.vibrate && navigator.vibrate([40, 60, 40]); } catch (e) {} } renderHearts(); } }); }); }
@@ -777,7 +784,17 @@ function renderChat(){ const me = loadMe(), id = chatWith; if (!me || !id) retur
   $('chatLeft').textContent = st.closed ? '' : `남은 메시지 ${left}개`;
   const off = st.closed || left <= 0; $('chatText').disabled = off; $('chatSend').disabled = off; $('chatIn').hidden = st.closed; $('chatStop').hidden = st.closed;
   $('chatEnd').hidden = !st.closed && left > 0; $('chatEnd').textContent = st.closed ? (st.closedBy === me.id ? '대화를 그만했어요. 더 이상 메시지를 주고받을 수 없어요.' : '상대방이 대화를 마쳤어요.') : '오늘 보낼 수 있는 메시지를 다 썼어요.';
-  $('chatStop').textContent = chatStopArm ? '정말 그만할까요? 한 번 더 누르면 닫혀요' : '대화 그만하기'; }
+  $('chatAsk').hidden = !chatStopArm || st.closed;
+  const g = allGuests.find(x => x.id === id), nm = g ? g.nick : '상대';
+  $('chatLock').hidden = !st.closed || !!chatLockSeen[id];
+  if (st.closed) { const mineClose = st.closedBy === me.id;
+    $('chatLockT').textContent = mineClose ? '대화를 마쳤어요' : `${nm}님이 대화를 마쳤어요`;
+    $('chatLockS').textContent = mineClose ? '오늘은 이 대화에서 더 이상 메시지를 보낼 수 없어요.' : '상대방이 대화를 끝내서 더 이상 메시지를 보낼 수 없어요. 아쉽지만 즐거운 시간 보내세요 🙂'; } }
+var chatLockSeen = {};
+$('chatAskNo').onclick = () => { chatStopArm = 0; renderChat(); };
+$('chatAskYes').onclick = async () => { const me = loadMe(), id = chatWith; chatStopArm = 0; if (!me || !id) return; chatLockSeen[id] = false;
+  try { await N.closeChat(me.day, me.id, id); } catch (e) { toast('닫지 못했어요. 잠시 뒤 다시 해주세요.'); } renderChat(); };
+$('chatLockOk').onclick = () => { if (chatWith) chatLockSeen[chatWith] = true; renderChat(); };
 var chatBusy = false;
 async function chatSendNow(){ const me = loadMe(), id = chatWith; if (!me || !id || chatBusy) return; const t = $('chatText').value.trim(); if (!t) return;
   const st = chatState[id] || { msgs: [] }, n = st.msgs.filter(m => m.fromGid === me.id).length + 1; chatBusy = true; $('chatSend').disabled = true;
@@ -788,8 +805,7 @@ $('chatSend').onclick = chatSendNow;
 $('chatText').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); chatSendNow(); } });
 $('chatClose').onclick = () => { $('chat').hidden = true; chatWith = null; chatStopArm = 0; };
 $('chatStop').onclick = async () => { const me = loadMe(), id = chatWith; if (!me || !id) return;
-  if (!chatStopArm) { chatStopArm = 1; renderChat(); setTimeout(() => { chatStopArm = 0; if (chatWith) renderChat(); }, 4000); return; }
-  chatStopArm = 0; try { await N.closeChat(me.day, me.id, id); } catch (e) { toast('닫지 못했어요. 잠시 뒤 다시 해주세요.'); } renderChat(); };
+  chatStopArm = 1; renderChat(); };
 async function heartWatch(){ // 내 하트 개수가 늘면: 알림 + 내가 보낸 사람 중 서로 하트가 됐는지 확인
   const me = loadMe(); if (!me) return; const mine = allGuests.find(g => g.id === me.id); if (!mine) return;
   const n = mine.hearts | 0;  // 하트 받기를 껐다 켜도 가짜 알림이 안 뜨게 실제 개수로 비교
