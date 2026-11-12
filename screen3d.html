@@ -381,6 +381,8 @@ function loop(t){ const dt = Math.min(.05, (t - last) / 1000); last = t;
   if (view && t - scrAt > (FOCUS > .05 || OV ? [30, 50, 70, 100][LQ] : [100, 250, 500, 800][LQ])) { scrAt = t; try { const dm = isDemo(), list = dm ? DEMO : liveGuests;
     let tc = scrCv; if (OV) { const r = ovCv.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1), w = Math.round(r.width * dpr), h = Math.round(w * 9 / 16); if (ovCv.width !== w) { ovCv.width = w; ovCv.height = h; } tc = ovCv; }   // 경마: 화면 위에 띄운 창에 바로 그림(글자 또렷)
     view.render(tc.getContext('2d'), tc.width, tc.height, list, t, { gameOnly: OV, storyTip: 1, catHost: false, catPets: [], day: N.bizDate(), count: dm ? 0 : presentN, qr: QRC, owners: ownerState.owners, live: ownerState.live, seats: ownerState.seats, order: ownerState.order, served: ownerState.served, auto: (typeof canRunAuto === 'function' && canRunAuto()) ? N.autoInfo(ownerState.auto) : null, reqs: typeof reqList === 'function' ? reqList() : [], bday: ownerState.bday, bdays: ownerState.bdays, lucky: ownerState.lucky, best: ownerState.best, vip: ownerState.vip, q: OV ? '' : ownerState.q, rec: recName, cheers: typeof cheerList !== 'undefined' ? cheerList : [], game: ownerState.game, gameActs: typeof gameActs !== 'undefined' ? gameActs : [], theme: THEME, footer: dm ? '첫 번째 낯선 손님이 되어주세요' : '' }); if (!OV) { try { soloFx(list, t); } catch (e) {} scrTex.needsUpdate = true; } } catch (e) {} }
+  // 경마 창이 떠 있는 동안에도 뒷벽 스크린은 평소 방명록 화면(게임 없이 · 1초마다)
+  if (view && OV && t - (window.__scr2At || 0) > 1000) { window.__scr2At = t; try { const dm = isDemo(), list = dm ? DEMO : liveGuests; view.render(scrCv.getContext('2d'), scrCv.width, scrCv.height, list, t, { storyTip: 0, catHost: false, catPets: [], day: N.bizDate(), count: dm ? 0 : presentN, qr: QRC, owners: ownerState.owners, seats: ownerState.seats, game: null, gameActs: [], theme: THEME, footer: '' }); scrTex.needsUpdate = true; } catch (e) {} }
   if (window.__neon) window.__neon.material.opacity = (Math.floor(t / 120) % 29) ? 1 : .35;
   // 카메라: 바깥에서 문이 열리고 → 문 안쪽 한 걸음에 멈춰 서서 매장 전체를 봄(걷지 않음)
   if (intro < 1) { intro = Math.min(1, intro + dt / 3.2); }
@@ -1500,7 +1502,7 @@ function soloState(list){ const now = Date.now(), busy = !!(ownerState && ownerS
 // 11월 12일 사장님: 경마는 카메라를 당기지 않고 예전처럼 화면 위에 게임 창을 크게 띄움
 const OV_TYPES = ['race'];
 function ovOn(){ const g = ownerState && ownerState.game; return !!(g && OV_TYPES.includes(g.type)); }
-const ovBox = document.createElement('div'); ovBox.style.cssText = 'position:fixed;inset:0;display:none;z-index:5;background:#0c0a10';   // 예전처럼 화면 전체를 꽉 채움(경마판만)
+const ovBox = document.createElement('div'); ovBox.style.cssText = 'position:fixed;inset:0;display:none;z-index:5;background:rgba(10,6,12,.28);pointer-events:none';   /* 매장이 비치게 아주 옅게만 어둡게 */   // 예전처럼 화면 전체를 꽉 채움(경마판만)
 const ovCv = document.createElement('canvas'); ovCv.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(100vw,177.78vh);aspect-ratio:16/9;display:block'; ovBox.appendChild(ovCv); document.body.appendChild(ovBox);
 function fullOn(){ return false;   /* 11월 12일 사장님: 이제 뒷벽 스크린으로 다가가는 일은 없음(전부 3D 매장 안에서) */ const st = ownerState || {}, now = Date.now(); if (ovOn()) return false; if (soloState(isDemo() ? DEMO : liveGuests)) return true; return (!!st.game && !g3on()) || (st.lucky && st.lucky.ms && now - st.lucky.ms < 26000) || (st.bday && st.bday.ms && now - st.bday.ms < 22000); }
 // 게임·추첨·생일·숨바꼭질·이어쓰기: 2D로 바꾸지 않고 카메라가 3D 매장 뒷벽 스크린으로 부드럽게 다가감(11월 12일 사장님)
