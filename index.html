@@ -220,7 +220,7 @@ body:has(.catcard) .toast{top:104px}
       <div class="qbox"><canvas id="qpreview" width="70" height="110" aria-label="랜덤 캐릭터"></canvas><button class="dice" id="dice" type="button" aria-label="캐릭터 다시 뽑기">🎲</button></div>
       <div><p class="qtitle">닉네임만 쓰면 끝</p><p class="qsub">캐릭터는 랜덤으로 만들어져요. 앉은 뒤 '내 캐릭터 꾸미기'에서 바꿀 수 있어요.</p></div>
     </div>
-    <label class="f">닉네임 <input id="nick" type="text" maxlength="8" placeholder="예: 퇴근한 곰"></label>
+    <label class="f">닉네임 <span style="display:flex;gap:6px;align-items:stretch"><input id="nick" type="text" maxlength="8" placeholder="예: 퇴근한 곰" style="flex:1;min-width:0"><button type="button" id="nickDice" aria-label="닉네임 랜덤으로 돌리기" title="랜덤 닉네임" style="flex:none;width:52px;border-radius:12px;border:1px solid #ffb27a;background:#2a1a1b;color:#fff;font-size:22px;cursor:pointer">🎲</button></span></label>
     <button class="btn primary" id="quickGo" disabled>바에 앉기</button>
     <details class="more"><summary>+ 한 줄 · 생일 (안 써도 돼요)</summary>
     <label class="f">오늘의 한 줄 (안 써도 돼요) <input id="msg" type="text" maxlength="24" placeholder="예: 오늘 퇴사함"></label>
@@ -570,6 +570,13 @@ function randomize(){
 $('dice').onclick = () => { randomize(); $('dice').animate && $('dice').animate([{ transform: 'rotate(0)' }, { transform: 'rotate(360deg)' }], { duration: 400 }); };
 $('openCustom').onclick = () => { const open = $('custom').hidden; $('custom').hidden = !open; $('openCustom').setAttribute('aria-expanded', String(open)); $('openCustom').textContent = open ? '✏️ 꾸미기 접기' : '✏️ 직접 꾸미기 (머리·옷·술·대화)'; if (open) $('custom').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
 $('nick').addEventListener('input', redraw);
+// 닉네임 랜덤 돌리기(11월 12일 사장님: 귀엽고 위트 있는 이름) · 8글자 이내
+const NICK_A = ['퇴근한', '배고픈', '수줍은', '낯가리는', '혼술하는', '졸린', '신난', '설레는', '고독한', '당당한', '새벽의', '월요병', '눈치보는', '텐션업', '몰래온', '소심한', '칼퇴한', '반차쓴', '취한척', '말많은'];
+const NICK_B = ['곰', '고양이', '펭귄', '감자', '두부', '햄스터', '오리', '수달', '판다', '너구리', '알파카', '만두', '쿼카', '토끼', '부엉이', '다람쥐', '레몬', '올리브', '얼음', '하이볼'];
+const NICK_W = ['하이볼요정', '레몬한조각', '얼음두개만', '막차놓침', '내일출근', '칼퇴성공', '안주도둑', '잔은반만', '혼자왔어요', '사실극I', '알고보면E', '한잔만요', '집에가기싫어', '오늘은취함', '위스키초보', '건배담당', '조용한관객', '말걸어줘요', '구석자리파', '두번째잔'];
+function randNick(){ for (let k = 0; k < 20; k++) { const n = Math.random() < .45 ? NICK_W[Math.floor(Math.random() * NICK_W.length)] : NICK_A[Math.floor(Math.random() * NICK_A.length)] + ' ' + NICK_B[Math.floor(Math.random() * NICK_B.length)];
+    const v = n.length > 8 ? n.replace(/ /g, '') : n; if (v.length <= 8 && v !== $('nick').value) return v; } return '낯선 손님'; }
+$('nickDice').addEventListener('click', e => { e.preventDefault(); const b = $('nickDice'); b.animate && b.animate([{ transform: 'rotate(0)' }, { transform: 'rotate(360deg)' }], { duration: 350 }); $('nick').value = randNick(); redraw(); check(); });
 $('photo').addEventListener('change', e => {
   const f = e.target.files && e.target.files[0]; if (!f) return;
   const url = URL.createObjectURL(f), img = new Image();
@@ -943,7 +950,7 @@ function renderGame(g){
     gOpen(`<h3>${iWin ? '🎉 승리!' : '😵 패배…'}</h3><p>라이어: <b>${escH(g.liarNick || '')}</b> · 제시어: <b>${escH(g.word || '')}</b></p><p>${cw ? '시민 승리!' : g.guess ? '라이어가 제시어를 맞혀서 역전승!' : '라이어가 끝까지 안 들켰어요!'}</p>`); return; }
   if (g.type === 'face' || g.type === 'cho') {   // 인물퀴즈·초성퀴즈(11월 12일): 스크린을 보고 정답을 시간 안에 쓰기 · 입력칸은 문제가 바뀌어도 그대로 두어 키보드가 안 닫히게
     const isC = g.type === 'cho', NM = isC ? '🔤 초성퀴즈' : '🧑 인물퀴즈';
-    if (g.phase === 'join') { joinUI(NM, (isC ? '스크린에 주제와 초성이 크게 떠요. 10초 안에(명대사는 15초) 휴대폰에 정답을 쓰면 생존!' : '스크린에 인물 사진이 크게 떠요. 5초 안에 휴대폰에 이름을 맞게 쓰면 생존!') + ' 끝까지 남으면 1등' + (g.reward ? ` · 상품: ${escH(g.reward)}` : '')); return; }
+    if (g.phase === 'join') { joinUI(NM, (isC ? '스크린에 주제와 초성이 크게 떠요. 10초 안에(명대사는 15초) 휴대폰에 정답을 쓰면 생존!' : '스크린에 인물 사진이 크게 떠요. 10초 안에 휴대폰에 이름을 맞게 쓰면 생존!') + ' 끝까지 남으면 1등' + (g.reward ? ` · 상품: ${escH(g.reward)}` : '')); return; }
     if (!inP) { gOpen(`<h3>${NM} 중</h3><p>스크린을 보고 같이 맞혀 보세요!</p>`); return; }
     const alive = (g.alive || []).includes(me.id), outMe = (g.out || []).includes(me.id), key = 'f' + g.round, ci = isC ? N.choInfo(g.img) : null, info = isC ? ['', ci ? ci.ans + (ci.src ? ' (' + ci.src + ')' : '') : ''] : (N.faceInfo(g.img) || []);
     if (g.phase === 'result') { const win = (g.winners || []).some(w => w.gid === me.id); gOpen(win ? `<h3>🏆 1등!</h3><p>${g.reward ? '🎁 상품 쿠폰이 나오면 바로 화면에 떠요.' : '축하해요!'}</p>` : `<h3>🧑 인물퀴즈 끝</h3><p>${(g.winners || []).length ? escH(g.winners[0].nick) + '님 1등!' : '1등 없음'}</p>`); return; }
@@ -951,9 +958,11 @@ function renderGame(g){
     let box = gq('gFaceIn'); if (!box || $('gPanel').hidden) { gOpen('<h3 id="gFaceH"></h3><p id="gFaceP"></p><form id="gFaceF" autocomplete="off" style="display:grid;gap:8px"><input id="gFaceIn" type="text" maxlength="20" enterkeyhint="send" placeholder="이름 쓰고 보내기" style="font-size:22px;padding:12px;border-radius:12px;border:2px solid #ffb27a;background:#140c0d;color:#fff4ea;text-align:center"><button class="gbig" type="submit">보내기</button></form>'); box = gq('gFaceIn');
       gq('gFaceF').onsubmit = async ev => { ev.preventDefault(); const G2 = GM; if (!G2 || (G2.type !== 'face' && G2.type !== 'cho') || G2.phase !== 'q') return; const k2 = 'f' + G2.round; if (L[k2]) return; const v = box.value; if (!v.trim()) return;
         if ((G2.type === 'cho' ? N.choOk : N.faceOk)(G2.img, v)) { L[k2] = 1; box.value = ''; try { navigator.vibrate && navigator.vibrate(40); } catch (e) {} gBeep([990, 1320], .07); renderGame(GM); try { await gDo('ox', { v: 1, k: G2.round }); } catch (e) { L[k2] = 0; toast('보내지 못했어요. 다시 보내 주세요.'); renderGame(GM); } }
-        else { box.value = ''; gq('gFaceP').innerHTML = '<b style="color:#ff6a5a">땡! 다시 써 보세요</b>'; try { navigator.vibrate && navigator.vibrate([60, 40, 60]); } catch (e) {} } }; }
+        else { box.value = ''; gq('gFaceP').innerHTML = '<b style="color:#ff6a5a">땡! 다시 써 보세요</b>';
+          { const m0 = loadMe(); if (m0 && N.faceMsg) { const m = N.faceMsg(G2.round, v.trim()); N.updateMsg(m0.day, m0.id, m).then(() => saveMe({ ...m0, msg: m })).catch(() => {}); } }   /* 오답은 정답 공개 때 스크린 캐릭터 머리 위에 */ try { navigator.vibrate && navigator.vibrate([60, 40, 60]); } catch (e) {} } }; }
     const H3 = gq('gFaceH'), P = gq('gFaceP');
-    if (g.phase === 'q') { box.readOnly = !!L[key]; H3.textContent = L[key] ? '⭕ 정답! 다음 문제 기다리는 중' : isC ? `🔤 ${g.round}번 · 주제: ${ci ? ci.cat : ''}` : `🧑 ${g.round}번 · 스크린 속 이 사람은?`; P.innerHTML = L[key] ? '살아남았어요!' : isC ? `초성 <b style="font-size:22px;color:#ffd36a">${escH(ci ? N.chosung(ci.ans) : '')}</b> · 정답을 쓰고 보내기` : '이름을 쓰고 보내기 (띄어쓰기 상관없어요)'; if (!L[key]) try { box.focus(); } catch (e) {} return; }
+    if (g.phase === 'q') { if (L.fq !== g.k) { L.fq = g.k; box.value = ''; }   // 새 문제가 뜨면 전에 쓴 답을 자동으로 지움(11월 12일 사장님)
+      box.readOnly = !!L[key]; H3.textContent = L[key] ? '⭕ 정답! 다음 문제 기다리는 중' : isC ? `🔤 ${g.round}번 · 주제: ${ci ? ci.cat : ''}` : `🧑 ${g.round}번 · 스크린 속 이 사람은?`; P.innerHTML = L[key] ? '살아남았어요!' : isC ? `초성 <b style="font-size:22px;color:#ffd36a">${escH(ci ? N.chosung(ci.ans) : '')}</b> · 정답을 쓰고 보내기` : '이름을 쓰고 보내기 (띄어쓰기 상관없어요)'; if (!L[key]) try { box.focus(); } catch (e) {} return; }
     box.readOnly = true; H3.textContent = outMe ? '😵 탈락!' : g.redo ? '😅 모두 못 맞혀서 전원 부활!' : '⭕ 생존!'; P.innerHTML = `정답: <b style="color:#ffd36a">${escH(info[1] || '')}</b>${g.fastNick ? ` · 제일 빨리 맞힌 사람 ${escH(g.fastNick)}님` : ''}`;
     if (L.fk !== g.k) { L.fk = g.k; try { navigator.vibrate && navigator.vibrate(outMe ? [160, 70, 160] : [40]); } catch (e) {} if (outMe) gBeep([330, 220], .14); }
     if (outMe) { setTimeout(() => { if (GM && GM.k === g.k && gq('gFaceIn')) { gOpen('<h3>😵 탈락</h3><p>정답: ' + escH(info[1] || '') + '<br>남은 사람들을 응원해 주세요!</p>'); } }, 2500); }

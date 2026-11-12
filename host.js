@@ -7,7 +7,7 @@
   function createGameHost(N, opts) {
     const LIAR_MAX = 8;   // 라이어게임 최대 인원(11월 12일 사장님)
     const bombFuse = () => 15000 + Math.random() * 30000;   // 폭탄: 안 보이는 도화선 15~45초(11월 12일)
-    const FACE_SEC = 5, FACE_GRACE = 1500, FACE_MS = FACE_SEC * 1000 + FACE_GRACE;
+    const FACE_SEC = 10, FACE_GRACE   /* 11월 12일 사장님(매장 시험): 5초는 너무 짧음 → 10초 */ = 1500, FACE_MS = FACE_SEC * 1000 + FACE_GRACE;
     const qSec = id => (G && G.type === 'cho' && N.choSec) ? N.choSec(id) : FACE_SEC, qMs = id => qSec(id) * 1000 + FACE_GRACE;   // 초성퀴즈는 10초(명대사 15초)   // 인물퀴즈: 5초 + 인터넷으로 답이 도착하는 여유 1.5초
     const ID = opts.id, IS_SCREEN = /^screen/.test(ID), TAKEOVER = IS_SCREEN ? 9000 : 12000, HB_EVERY = 3000, SLEEP_GAP = 8000, TX_LIMIT = 8000;
     let G = null, gActs = [], gOff = null, H = null, lastText = '', confirmed = false, busy = false, gBusy = false;

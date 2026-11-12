@@ -2777,6 +2777,9 @@
   const LIAR_MARK = '🕵️ ';
   // ---------- 폭탄 돌리기 주제(11월 12일 업그레이드): 폭탄을 든 사람이 주제에 맞는 답을 써야 넘어감 ----------
   const BOMB_CATS = ['치킨 브랜드', '라면 이름', '편의점에서 파는 것', '노래방 애창곡', '아이돌 그룹', '한국 드라마 제목', '과일', '동물', '나라 이름', '나라의 수도', '축구 선수', '프로야구 팀', '영화 제목', '만화 캐릭터', '커피 메뉴', '칵테일 이름', '술 종류', '술안주', '대구 음식', '지하철역 이름', '자동차 브랜드', '휴대폰 앱', '과자 이름', '아이스크림 이름', '운동 종목', '직업', '색깔', '부엌에 있는 것', '여행 가고 싶은 나라', '놀이공원 놀이기구', '겨울에 생각나는 것', "'ㄱ'으로 시작하는 음식", "'사'로 시작하는 단어", '빨간색인 것', '동그란 것', '배우 이름', '가수 이름', '빵 종류', '분식 메뉴', '바다에 사는 것', '학교에 있는 것', '꽃 이름', '채소', '탈것', '악기', '브랜드 이름', '디저트', '야식 메뉴'];
+  // 인물·초성퀴즈 오답: 정답 공개 때 캐릭터 머리 위에 띄워 웃음 포인트로(11월 12일 사장님) · 손님 한 줄 칸에 '🙈번호 답'으로 실어 보냄
+  const faceMsg = (round, txt) => '🙈' + round + ' ' + String(txt).slice(0, 16), faceRead = m => { const r = /^🙈(\d+) (.+)$/.exec(String(m || '')); return r ? { round: +r[1], txt: r[2] } : null; };
+  const isGameMsg = m => /^(💣\d+ |🙈\d+ |🕵️ )/.test(String(m || ''));
   const BOMB_ROUNDS = 3, bombMsg = (round, txt) => '💣' + round + ' ' + txt, bombRead = m => { const r = /^💣(\d+) (.+)$/.exec(String(m || '')); return r ? { round: +r[1], txt: r[2] } : null; };
   // ---------- 메뉴판 (기본값: 매장 메뉴판 기준 · 사장 리모컨에서 수정 가능) ----------
   const M = (name, price, extra) => ({ name, price, ...(extra || {}) });
@@ -3135,7 +3138,9 @@
   const SHOP_HOURS_TEXT = '오후 7시 ~ 새벽 1시 (금·토는 새벽 3시까지)';
   // 고양이 숨바꼭질 시간표 (손님 폰 · 스크린 공용, 2026-11-08): 영업시간(19~03시) 매시 10분·40분에 3분 동안, 숨는 곳은 영업일+회차로 정해짐
   const CAT_HIDE = (() => {
-    const SPOTS = [{ label: '가운데 조명 옆', x: 262, y: 74 }, { label: '술장 위 창문 옆', x: 152, y: 41 }, { label: '오른쪽 벽 장식 아래', x: 456, y: 128 }, { label: '왼쪽 아래 바 의자 옆', x: 96, y: 238 }];
+    // 11월 12일 사장님: 숨는 곳을 더 기발하게 → 3D 매장에 맞춘 6곳(스크린 화면 screen.html CAT_SPOTS3와 같은 순서)
+    const SPOTS = [{ label: '술장 위스키 병 사이', x: 150, y: 96 }, { label: '대형 스크린 위에서 빼꼼', x: 262, y: 30 }, { label: '오너바 카운터 끝 바닥', x: 110, y: 222 },
+      { label: '오른쪽 포스터 선반 위', x: 456, y: 110 }, { label: '갓등 위', x: 262, y: 74 }, { label: '오너바 위 술잔 옆', x: 140, y: 168 }];
     const DUR = 180000, HRS = [19, 20, 21, 22, 23, 0, 1, 2];
     const kst = ms => new Date(ms + 9 * 3600e3);
     const hsh = s => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 999983, 17);
@@ -3160,6 +3165,6 @@
     lsSet('notsun-owner-live', { who, msg, ms: Date.now() }); ping();
   }
 
-  global.Notsun = { setGuestLeft, findMyGuest, resetDay, watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, horseSprite, raceProg, raceInfo, RACE_T0, BAL_QS, OX_QS, FACE_QS, faceOk, faceInfo, faceSrc, IMG_QS, LIAR_CATS, liarPack, liarOpen, LIAR_MARK, BOMB_CATS, BOMB_ROUNDS, bombMsg, bombRead, CHO_CATS, CHO_QS, chosung, choInfo, choOk, choSec, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, LOOK_THEMES, FITS, COS_DESC, issueLegendCoupon, BOTTOMS, ACCS, HAIR_X, TOPS, EYES, ACC_X, SHOES, PANTS_COLORS, EX_RE, setGuestCos, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
+  global.Notsun = { setGuestLeft, findMyGuest, resetDay, watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, horseSprite, raceProg, raceInfo, RACE_T0, BAL_QS, OX_QS, FACE_QS, faceOk, faceInfo, faceSrc, IMG_QS, LIAR_CATS, liarPack, liarOpen, LIAR_MARK, BOMB_CATS, BOMB_ROUNDS, bombMsg, bombRead, faceMsg, faceRead, isGameMsg, CHO_CATS, CHO_QS, chosung, choInfo, choOk, choSec, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, LOOK_THEMES, FITS, COS_DESC, issueLegendCoupon, BOTTOMS, ACCS, HAIR_X, TOPS, EYES, ACC_X, SHOES, PANTS_COLORS, EX_RE, setGuestCos, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
     CAT_HIDE, shopOpen, STORY, balSet, muteSfx: v => { SFX.mute = !!v; }, BAL_SEC, setCatVisit, watchCatVisit, petCat, safeReload, netErr, newOrderId: () => LIVE ? fs.collection('orders').doc().id : 'o' + Date.now(), watchCatPets, THEMES, resolveTheme, costumeFor, drawCostume, cosSeed, seasonCostume, rollSeason, seasonPool, cosOf, OWNER_COS, ownerCostume, cardAura, AURA_FX, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, saveOff, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, clearUsedCoupons, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, announceServed, drinkColor, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, saveGameEnd, REQ_NEED, reqTally, requestGame, markReqDone, AUTO_ORDER, AUTO_LABEL, autoInfo, autoSpec, saveAuto, notifyOwner, updateLook, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
 })(window);

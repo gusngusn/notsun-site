@@ -82,7 +82,9 @@ const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: LQ <= 1, power
 renderer.setPixelRatio(PR[LQ]);
 const scene = new THREE.Scene(); scene.background = new THREE.Color('#0d090a'); scene.fog = new THREE.Fog('#0d090a', 14, 26);
 const camera = new THREE.PerspectiveCamera(60, 1, .1, 80);
-function fit(){ renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.fov = camera.aspect < .8 ? 78 : 58; camera.updateProjectionMatrix(); }
+function fit(){ renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.fov = camera.aspect < .8 ? 78 : 58;
+  // 11월 12일 사장님(매장 시험): 매장 아래쪽이 너무 내려와 있음 → 그림 전체를 화면 높이의 9%만큼 위로
+  camera.setViewOffset(innerWidth, innerHeight, 0, Math.round(innerHeight * .09), innerWidth, innerHeight); camera.updateProjectionMatrix(); }
 addEventListener('resize', fit); fit();
 // ---------- 재료 ----------
 const M = c => new THREE.MeshLambertMaterial({ color: c });
@@ -149,7 +151,7 @@ const ALLSEATS = STOOLS.concat(SEATS);
 // ---------- 대형 스크린 (뒤벽, 실제 방명록 화면을 그대로 그림) ----------
 var FOCUS = 0;
 const scrCv = document.createElement('canvas'); scrCv.width = 1280; scrCv.height = 720;
-const scrTex = new THREE.CanvasTexture(scrCv); scrTex.magFilter = THREE.NearestFilter;
+const scrTex = new THREE.CanvasTexture(scrCv); scrTex.magFilter = THREE.NearestFilter; scrTex.generateMipmaps = false; scrTex.minFilter = THREE.LinearFilter; scrTex.anisotropy = renderer.capabilities.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 1;
 // 실제 매장 비율: 벽 위쪽에 걸린 스크린(손님 머리와 안 겹치게 높이)
 box(3.1, 1.78, .04, .25, 1.27, -3.22, M('#d8d4cc'));
 const scrMesh = new THREE.Mesh(new THREE.PlaneGeometry(3.0, 1.69), new THREE.MeshBasicMaterial({ map: scrTex })); scrMesh.position.set(.25, 2.16, -3.19); scene.add(scrMesh);
@@ -172,9 +174,11 @@ box(.02, .03, 4.5, 3.06, 1.92, -.7, ME('#ff8a5a', '#ff6a3a'));   // 선반 아�
   const p = new THREE.Mesh(new THREE.PlaneGeometry(.34, .48), new THREE.MeshBasicMaterial({ map: smallPoster(t, bg, fg) })); p.position.set(3.23, 1.4 + (i % 2) * .08, -2.7 + i * .85); p.rotation.y = -Math.PI / 2; p.rotation.x = (i % 2 ? .08 : -.06); scene.add(p); });
 // '낯선' 네온 간판(깜빡이)은 11월 12일 사장님 요청으로 없앰
 // 스크린과 메인바 사이 벽: '- notsun -' 글자 + 위에서 비추는 갓등(2D 스크린과 같은 모습)
-{ const c = document.createElement('canvas'); c.width = 512; c.height = 128; const g = c.getContext('2d'); g.font = '300 64px Georgia, "Times New Roman", serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.shadowColor = '#ffd0c0'; g.shadowBlur = 14; g.fillStyle = '#f4e4dc'; const txt = '- n o t s u n -'; g.fillText(txt, 256, 66);
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(1.45, .36), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true })); m.position.set(-2.1, 1.95, -3.19); scene.add(m);
+// 11월 12일 사장님(매장 시험): 글자가 너무 흐릿함 → 그림을 4배 촘촘하게, 번짐은 줄이고 획을 굵고 밝게
+{ const c = document.createElement('canvas'); c.width = 1024; c.height = 256; const g = c.getContext('2d'); g.font = '600 128px Georgia, "Times New Roman", serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  const txt = '- n o t s u n -'; g.shadowColor = '#ff9a7a'; g.shadowBlur = 18; g.fillStyle = '#ffe6dc'; g.fillText(txt, 512, 132); g.shadowBlur = 0; g.fillStyle = '#fff6f0'; g.fillText(txt, 512, 132);
+  const nt = new THREE.CanvasTexture(c); nt.anisotropy = renderer.capabilities.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 1;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(1.6, .4), new THREE.MeshBasicMaterial({ map: nt, transparent: true })); m.position.set(-2.1, 1.95, -3.185); m.renderOrder = 3; scene.add(m);
   // 갓등: 벽에서 나온 팔 + 줄 + 갓 + 전구
   box(.03, .03, .32, -2.1, 2.88, -3.05, M('#1a1a1e')); box(.012, .16, .012, -2.1, 2.72, -2.9, M('#1a1a1e'));
   const shade = new THREE.Mesh(new THREE.ConeGeometry(.2, .16, 18, 1, true), new THREE.MeshLambertMaterial({ color: '#1e1e22', side: THREE.DoubleSide })); shade.position.set(-2.1, 2.66, -2.9); scene.add(shade);
@@ -205,8 +209,15 @@ scene.add(new THREE.AmbientLight('#ff9a8a', .38)); const hemi = new THREE.Hemisp
 // ---------- 캐릭터 (방명록 캐릭터 그대로, 종이 인형처럼 세움) ----------
 const PXM = .036;   // 캐릭터 1픽셀 = 3.6cm
 function texOf(look, sit, drink, frame){ if (!N || !N.sprite) return null; const c = N.sprite(look, sit, drink, frame, ''); const t = new THREE.CanvasTexture(c); t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; return { t, w: c.width, h: c.height }; }
-function label(text, color){ const c = document.createElement('canvas'); c.width = 256; c.height = 48; const g = c.getContext('2d'); g.font = '30px "Do Hyeon", sans-serif'; g.textAlign = 'center'; g.lineWidth = 6; g.strokeStyle = '#140c0d'; g.strokeText(text, 128, 34); g.fillStyle = color; g.fillText(text, 128, 34);
-  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false })); s.scale.set(1.1, .2, 1); return s; }
+// 멀리(스크린 쪽) 있는 글자·그림이 흐려지지 않게: 줄여 그릴 때 번지는 단계 그림(밉맵)을 끄고 비스듬한 면도 또렷하게(11월 12일 사장님)
+const MAXA = renderer.capabilities.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 1;
+function sharp(t){ t.generateMipmaps = false; t.minFilter = THREE.LinearFilter; t.anisotropy = MAXA; return t; }
+// 이름표: 11월 12일 사장님(매장 시험) '이름이 너무 작아 안 보임' → 글자 크게 + 어두운 바탕 띠
+function label(text, color){ const c = document.createElement('canvas'); c.width = 512; c.height = 96; const g = c.getContext('2d'); g.font = '58px "Do Hyeon", sans-serif'; g.textAlign = 'center';
+  const tw = Math.min(500, g.measureText(text).width + 34); g.fillStyle = 'rgba(20,8,10,.72)'; g.beginPath(); g.roundRect((512 - tw) / 2, 10, tw, 76, 30); g.fill();
+  g.lineWidth = 8; g.strokeStyle = '#140c0d'; g.strokeText(text, 256, 68); g.fillStyle = color; g.fillText(text, 256, 68);
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: sharp(new THREE.CanvasTexture(c)), transparent: true, depthTest: false })); s.scale.set(NAME_W, NAME_W * 96 / 512, 1); s.renderOrder = 9; return s; }
+const NAME_W = 1.15;   // 이름표 기본 폭(예전 .82)
 // ---------- 3D 미니미 캐릭터 (싸이월드 감성: 큰 머리 · 점 눈 · 볼터치 · 짧은 몸) ----------
 const shadeC = (hex, k) => { const c = new THREE.Color(hex); c.multiplyScalar(k); return '#' + c.getHexString(); };
 function vb(g, w, h, d, x, y, z, col, emi){ const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), emi ? new THREE.MeshLambertMaterial({ color: col, emissive: emi, emissiveIntensity: .5 }) : new THREE.MeshLambertMaterial({ color: col })); m.position.set(x, y + h / 2, z); g.add(m); return m; }
@@ -262,9 +273,9 @@ function makeChar(nick, look, drink, sit, me){
   let blinkMesh = null; if (diff.length) { blinkMesh = voxMesh(diff.map(p => { const T = R3.T[p.y * vn.w + p.x] || 2; return { ...p, t: 1.1, z: T / 2 - .5 + .06 }; }), vn.w, vn.maxY); blinkMesh.visible = false; body.add(blinkMesh); }
   // 앉은 손님은 의자 위로(기존 놓는 위치 s.y - .55 기준), 서 있으면 바닥
   body.position.y = 0; const topY = (vn.maxY - vn.minY + 1) * VX;
-  const lb = label(nick, me ? '#ffd36a' : '#e8d8cc'); lb.scale.set(.82, .15, 1); lb.position.y = topY + .1; grp.add(lb);
+  const lb = label(nick, me ? '#ffd36a' : '#e8d8cc'); lb.position.y = topY + .12; grp.add(lb);
   if (!sit) { const sh = new THREE.Mesh(new THREE.CircleGeometry(.22, 14), new THREE.MeshBasicMaterial({ color: '#000', transparent: true, opacity: .3 })); sh.rotation.x = -Math.PI / 2; sh.position.y = .01; grp.add(sh); }
-  scene.add(grp); return { grp, body, blinkMesh, n: { h: (topY - .22) / PXM }, look, drink, nick, sit, me, bubble: null, sayAt: 0, ph: Math.random() * 6 }; }
+  scene.add(grp); return { grp, body, blinkMesh, lb, n: { h: (topY - .22) / PXM }, look, drink, nick, sit, me, bubble: null, sayAt: 0, ph: Math.random() * 6 }; }
 function makeCharBlock(nick, look, drink, sit, me){
   const style =/^[mf]\d{3}$/.test(look.style || '') ? look.style : 'm000', fem = style[0] === 'f', hs = +style[1], ac = +style[3];
   const hair = look.hair || '#1c1416', skin = look.skin || '#f0c4a0', shirt = look.shirt || '#2f3a52', pants = look.pants || '#2a2f45';
@@ -302,9 +313,9 @@ function makeCharBlock(nick, look, drink, sit, me){
   [-.15, .15].forEach(x => vb(head, .08, .035, .01, x, .07, .202, '#ff9aa8'));
   vb(head, .06, .02, .01, 0, .045, .202, '#c0506a');
   // 이름표 · 그림자
-  const top = scaler.position.y + (H + .68) * S, lb = label(nick, me ? '#ffd36a' : '#e8d8cc'); lb.scale.set(.82, .15, 1); lb.position.y = top + .08; grp.add(lb);
+  const top = scaler.position.y + (H + .68) * S, lb = label(nick, me ? '#ffd36a' : '#e8d8cc'); lb.position.y = top + .1; grp.add(lb);
   const sh = new THREE.Mesh(new THREE.CircleGeometry(.24, 14), new THREE.MeshBasicMaterial({ color: '#000', transparent: true, opacity: .3 })); sh.rotation.x = -Math.PI / 2; sh.position.y = sit ? -.0 : .01; if (!sit) grp.add(sh);
-  scene.add(grp); return { grp, body, head, eyes, n: { h: top / PXM - 4 }, look, drink, nick, sit, me, bubble: null, sayAt: 0, ph: Math.random() * 6 }; }
+  scene.add(grp); return { grp, body, head, eyes, lb, n: { h: top / PXM - 4 }, look, drink, nick, sit, me, bubble: null, sayAt: 0, ph: Math.random() * 6 }; }
 const LOOKS = [['혼술고수', 'm001', '#4a2e1f', '#f0c4a0', '#2f3a52', 'whisky'], ['첫혼술', 'f213', '#c99a5b', '#f6d5bb', '#ef9fbf', 'cocktail'], ['야행성', 'm002', '#1c1416', '#e0a97f', '#f2ede6', 'beer'], ['단발머리', 'f110', '#9c3f2a', '#f6d5bb', '#2c4a3a', 'champagne'],
   ['위스키러버', 'm300', '#1c1416', '#c98e66', '#1e1e24', 'whisky'], ['샴페인요정', 'f313', '#e8e2da', '#f6d5bb', '#6b8fd6', 'champagne'], ['교동주민', 'm001', '#c99a5b', '#f0c4a0', '#ffd36a', 'beer'], ['퇴근한곰', 'm002', '#4a2e1f', '#f0c4a0', '#3a5a3a', 'cocktail']];
 const seatTaken = new Set(); const guests = [];
@@ -337,7 +348,7 @@ function say(c, txt, o){ o = o || {}; if (!c || !c.grp) return; if (c.bubble) c.
   const w = Math.max(...lines.map(l => g.measureText(l).width)) + 34, h = 20 + lines.length * 36; cc.width = 400; cc.height = h + 18; g.font = '30px "Do Hyeon", sans-serif';
   const edge = { live: '#ffd36a', order: '#7ee08a', owner: '#ffb27a' }[o.kind] || null; g.fillStyle = '#fff8ec'; g.beginPath(); g.roundRect((400 - w) / 2, 2, w, h, 16); g.fill(); if (edge) { g.lineWidth = 5; g.strokeStyle = edge; g.stroke(); }
   g.fillStyle = '#fff8ec'; g.beginPath(); g.moveTo(190, h + 1); g.lineTo(210, h + 1); g.lineTo(200, h + 16); g.fill(); g.fillStyle = '#2a1012'; g.textAlign = 'center'; lines.forEach((l, i) => g.fillText(l, 200, 36 + i * 36));
-  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cc), transparent: true, depthTest: false })); s.scale.set(1.6, 1.6 * cc.height / 400, 1); s.center.set(.5, 0); s.position.y = c.n.h * PXM + .3; s.renderOrder = 10; c.grp.add(s); c.bubble = s; c.sayAt = performance.now(); c.sayDur = o.dur || 4500; }
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: sharp(new THREE.CanvasTexture(cc)), transparent: true, depthTest: false })); s.userData.b = [2.0, 2.0 * cc.height / 400]; s.scale.set(...s.userData.b, 1); s.center.set(.5, 0); s.position.y = c.n.h * PXM + .38; s.renderOrder = 10; c.grp.add(s); c.bubble = s; c.sayAt = performance.now(); c.sayDur = o.dur || 4500; }
 // ---------- 입력 ----------
 const ray = new THREE.Raycaster(), v2 = new THREE.Vector2();
 const toast = (m, ms) => { const el = document.getElementById('toast'); el.innerHTML = m; el.style.display = 'block'; clearTimeout(toast.h); toast.h = setTimeout(() => el.style.display = 'none', ms || 3800); };
@@ -360,13 +371,17 @@ sitBtn.onclick = () => { if (mySeat >= 0) { standUp(); return; } const free = AL
 refreshMarkers();
 // ---------- 반복 ----------
 let last = performance.now(), scrAt = 0;
-function loop(t){ const dt = Math.min(.05, (t - last) / 1000); last = t;
+const __front = new THREE.Vector3(1.2, .2, 2.3); let NAME_REF = 6;
+function loop(t){ const dt = Math.min(.05, (t - last) / 1000); last = t; NAME_REF = camera.position.distanceTo(__front);
+  try { heartTick(); } catch (e) {} try { JUKE.tick(t); } catch (e) {}
   // 빈 의자 고리 깜빡임
   markers.forEach((m, i) => m.material.opacity = .55 + .45 * Math.sin(t / 260 + i));
   // 깜빡임 · 말풍선
   [...guests, ...(me ? [me] : [])].forEach((c, i) => { const bl = Math.floor((t + i * 777) / 160) % 23 === 0; if (c.blinkMesh) c.blinkMesh.visible = bl;
     // 카메라 쪽을 바라보며 살짝 몸을 흔듦(싸이월드 미니미처럼)
     const p = c.grp.position; c.grp.rotation.y = Math.atan2(camera.position.x - p.x, camera.position.z - p.z) * .85;
+    // 멀리(스크린 벽 쪽) 앉은 손님 이름·말풍선도 앞줄과 비슷한 크기로 보이게(11월 12일 사장님)
+    { const f = Math.min(1.3, Math.max(1, camera.position.distanceTo(p) / NAME_REF)); if (c.lb) c.lb.scale.set(NAME_W * f, NAME_W * f * 96 / 512, 1); if (c.bubble && c.bubble.userData.b) c.bubble.scale.set(c.bubble.userData.b[0] * f, c.bubble.userData.b[1] * f, 1); }
     if (!c.walking) { c.body.position.y = Math.abs(Math.sin(t / 520 + c.ph)) * .012; c.body.rotation.z = Math.sin(t / 900 + c.ph) * .025; } if (c.bubble && t - c.sayAt > (c.sayDur || 4500)) { c.grp.remove(c.bubble); c.bubble = null; } });
   /* 실제 손님에게 지어낸 말풍선은 띄우지 않음(손님 한 줄·사장 멘트만) */
   // 대형 스크린: 방명록 화면 그대로 (0.1초마다)
@@ -380,7 +395,7 @@ function loop(t){ const dt = Math.min(.05, (t - last) / 1000); last = t;
   const OV = ovOn(); ovBox.style.display = OV ? 'block' : 'none';
   if (view && t - scrAt > (FOCUS > .05 || OV ? [30, 50, 70, 100][LQ] : [100, 250, 500, 800][LQ])) { scrAt = t; try { const dm = isDemo(), list = dm ? DEMO : liveGuests;
     let tc = scrCv; if (OV) { const r = ovCv.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1), w = Math.round(r.width * dpr), h = Math.round(w * 9 / 16); if (ovCv.width !== w) { ovCv.width = w; ovCv.height = h; } tc = ovCv; }   // 경마: 화면 위에 띄운 창에 바로 그림(글자 또렷)
-    view.render(tc.getContext('2d'), tc.width, tc.height, list, t, { gameOnly: OV, storyTip: 1, catHost: false, catPets: [], day: N.bizDate(), count: dm ? 0 : presentN, qr: QRC, owners: ownerState.owners, live: ownerState.live, seats: ownerState.seats, order: ownerState.order, served: ownerState.served, auto: (typeof canRunAuto === 'function' && canRunAuto()) ? N.autoInfo(ownerState.auto) : null, reqs: typeof reqList === 'function' ? reqList() : [], bday: ownerState.bday, bdays: ownerState.bdays, lucky: ownerState.lucky, best: ownerState.best, vip: ownerState.vip, q: OV ? '' : ownerState.q, rec: recName, cheers: typeof cheerList !== 'undefined' ? cheerList : [], game: ownerState.game, gameActs: typeof gameActs !== 'undefined' ? gameActs : [], theme: THEME, footer: dm ? '첫 번째 낯선 손님이 되어주세요' : '' }); if (!OV) { try { soloFx(list, t); } catch (e) {} scrTex.needsUpdate = true; } } catch (e) {} }
+    view.render(tc.getContext('2d'), tc.width, tc.height, list, t, { gameOnly: OV, storyTip: 1, catHost: false, catPets: [], day: N.bizDate(), count: dm ? 0 : presentN, qr: QRC, owners: ownerState.owners, live: ownerState.live, seats: ownerState.seats, order: ownerState.order, served: ownerState.served, auto: (typeof canRunAuto === 'function' && canRunAuto()) ? N.autoInfo(ownerState.auto) : null, reqs: typeof reqList === 'function' ? reqList() : [], bday: null, bdays: ownerState.bdays, lucky: null, /* 럭키·생일은 3D 매장에서만(11월 12일 사장님: 뒷벽 2D에서도 같이 돌았음) */ best: ownerState.best, vip: ownerState.vip, q: OV ? '' : ownerState.q, rec: recName, cheers: typeof cheerList !== 'undefined' ? cheerList : [], game: ownerState.game, gameActs: typeof gameActs !== 'undefined' ? gameActs : [], theme: THEME, footer: dm ? '첫 번째 낯선 손님이 되어주세요' : '' }); if (!OV) { try { soloFx(list, t); } catch (e) {} scrTex.needsUpdate = true; } } catch (e) {} }
   // 경마 창이 떠 있는 동안에도 뒷벽 스크린은 평소 방명록 화면(게임 없이 · 1초마다)
   if (view && OV && t - (window.__scr2At || 0) > 1000) { window.__scr2At = t; try { const dm = isDemo(), list = dm ? DEMO : liveGuests; view.render(scrCv.getContext('2d'), scrCv.width, scrCv.height, list, t, { storyTip: 0, catHost: false, catPets: [], day: N.bizDate(), count: dm ? 0 : presentN, qr: QRC, owners: ownerState.owners, seats: ownerState.seats, game: null, gameActs: [], theme: THEME, footer: '' }); scrTex.needsUpdate = true; } catch (e) {} }
   if (window.__neon) window.__neon.material.opacity = (Math.floor(t / 120) % 29) ? 1 : .35;
@@ -416,6 +431,35 @@ const BULBS = []; if (/[?&]oldbulbs/.test(location.search)) for (let i = 0; i < 
 { const c = document.createElement('canvas'); c.width = 160; c.height = 220; const g = c.getContext('2d'); g.fillStyle = '#1a1412'; g.fillRect(0, 0, 160, 220); g.strokeStyle = '#c8a060'; g.lineWidth = 6; g.strokeRect(6, 6, 148, 208); g.fillStyle = '#ffd890'; g.font = '30px "Do Hyeon", sans-serif'; g.textAlign = 'center'; g.fillText('오늘의 메뉴', 80, 46);
   g.fillStyle = '#f2e6d0'; g.font = '22px "Do Hyeon", sans-serif'; ['하이볼', '위스키 한 잔', '샴페인', '생맥주', '칵테일'].forEach((s, i) => g.fillText(s, 80, 90 + i * 26));
   const m = new THREE.Mesh(new THREE.PlaneGeometry(.55, .75), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c) })); m.position.set(-3.2, 1.45, 2.3); m.rotation.y = Math.PI / 2; DETAIL.add(m); }
+// 캣타워(11월 12일 사장님: 화면 왼쪽 아래 빈 곳에) · 말숙이·록이 놀이터 느낌, 매달린 공이 살랑살랑
+const JUKE = (() => { const g = new THREE.Group(), L = c => new THREE.MeshLambertMaterial({ color: c });
+  const add = (geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); g.add(m); return m; };
+  const carpet = L('#cdb48e'), rope = L('#d9c08a'), ropeD = L('#b89a62'), pink = L('#f2a6bc'), cream = L('#f6e8d4'), dark = L('#3a2620');
+  add(new THREE.BoxGeometry(.86, .06, .66), carpet, 0, .03, 0);                                   // 바닥판
+  const post = (x, z, y0, h) => { add(new THREE.CylinderGeometry(.055, .055, h, 10), rope, x, y0 + h / 2, z); for (let y = y0 + .08; y < y0 + h - .04; y += .1) add(new THREE.CylinderGeometry(.058, .058, .012, 10), ropeD, x, y, z); };   // 밧줄 감은 기둥
+  post(-.26, -.16, .06, .56); post(.24, .14, .48, .62); post(-.22, -.12, .66, .74);
+  add(new THREE.BoxGeometry(.44, .4, .4), cream, .2, .26, .1);                                    // 아래 숨숨집
+  const hole = add(new THREE.CylinderGeometry(.11, .11, .02, 18), dark, .2, .24, .305); hole.rotation.x = Math.PI / 2;   // 동그란 입구
+  add(new THREE.BoxGeometry(.46, .03, .42), carpet, .2, .475, .1);                               // 숨숨집 지붕
+  add(new THREE.BoxGeometry(.46, .05, .44), carpet, -.24, .64, -.14);                            // 가운데 판
+  add(new THREE.BoxGeometry(.4, .03, .38), pink, -.24, .675, -.14);                              // 가운데 판 방석
+  add(new THREE.CylinderGeometry(.22, .22, .05, 20), carpet, .24, 1.12, .14);                     // 오른쪽 위 둥근 판
+  add(new THREE.CylinderGeometry(.19, .19, .03, 20), cream, .24, 1.155, .14);
+  add(new THREE.CylinderGeometry(.24, .24, .05, 20), carpet, -.22, 1.42, -.12);                   // 꼭대기 판
+  const bed = add(new THREE.TorusGeometry(.16, .06, 8, 20), pink, -.22, 1.48, -.12); bed.rotation.x = Math.PI / 2;   // 꼭대기 동그란 침대
+  add(new THREE.CylinderGeometry(.15, .15, .03, 18), cream, -.22, 1.46, -.12);
+  // 꼭대기 침대에서 자는 작은 고양이 + Zzz
+  const kit = new THREE.Group(); kit.position.set(-.22, 1.5, -.12); g.add(kit); const fur = L('#e8e2da'), patch = L('#3a3034');
+  [[0, .05, 0, .2, .1, .16, fur], [.1, .08, .02, .1, .09, .1, fur], [.12, .14, -.02, .03, .05, .03, patch], [.08, .14, .06, .03, .05, .03, patch], [-.06, .1, -.02, .06, .04, .06, patch]].forEach(([x, y, z, w, h, d, m]) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y, z); kit.add(b); });
+  const ZT = (() => { const c = document.createElement('canvas'); c.width = 128; c.height = 64; const x = c.getContext('2d'); x.font = 'bold 44px "Do Hyeon", sans-serif'; x.fillStyle = '#e8f0ff'; x.strokeStyle = '#1a1416'; x.lineWidth = 6; x.strokeText('Zzz', 8, 48); x.fillText('Zzz', 8, 48); return new THREE.CanvasTexture(c); })();
+  const zz = new THREE.Sprite(new THREE.SpriteMaterial({ map: ZT, transparent: true, depthWrite: false })); zz.scale.set(.3, .15, 1); g.add(zz);
+  // 가운데 판 끝에 매달린 장난감 공
+  const swing = new THREE.Group(); swing.position.set(-.45, .64, -.02); g.add(swing);
+  const str = new THREE.Mesh(new THREE.BoxGeometry(.01, .26, .01), dark); str.position.y = -.13; swing.add(str);
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(.05, 12, 10), new THREE.MeshLambertMaterial({ color: '#ff5a5a', emissive: '#601010' })); ball.position.y = -.29; swing.add(ball);
+  g.position.set(-2.5, 0, 2.3); g.rotation.y = .5; scene.add(g);
+  return { tick(t){ swing.rotation.z = Math.sin(t / 520) * .35; swing.rotation.x = Math.sin(t / 830) * .15; kit.scale.y = 1 + Math.sin(t / 700) * .04;
+      const k = (t / 2400) % 1; zz.position.set(-.1 + k * .12, 1.75 + k * .25, -.12); zz.material.opacity = k < .7 ? 1 : (1 - k) / .3; } }; })();
 // 손님 테이블 위 잔 · 코스터 (자리에 앉으면 잔이 놓임)
 const GLASS = { whisky: '#c88a30', cocktail: '#e05a7a', beer: '#f0c040', champagne: '#f6e6a0' };
 function putGlass(s, drink){ const g = new THREE.Group(); let tx = -1.85, tz = s.z; if (s.kind !== '오너바') { let bd = 1e9; TABLES.forEach(([x0, z0, x1, z1]) => { const px = Math.min(x1 - .12, Math.max(x0 + .12, s.x)), pz = Math.min(z1 - .12, Math.max(z0 + .12, s.z)), d = Math.hypot(px - s.x, pz - s.z); if (d < bd) { bd = d; tx = px; tz = pz; } }); }   // 가장 가까운 테이블 가장자리에 잔
@@ -487,7 +531,7 @@ function cat3D(ci, x, y, z, poses, name, col){
   const tail = new THREE.Group(); tail.position.set(-.17, .16, 0); R.add(tail); const tsegs = [];
   let parent = tail; for (let i = 0; i < 6; i++) { const s = new THREE.Group(); s.position.set(i ? -.045 : 0, i ? .02 : 0, 0); parent.add(s); const m = new THREE.Mesh(new THREE.SphereGeometry(.03 - i * .002, 9, 7), mat(ci ? (i > 1 ? C.point : C.body) : C.point)); s.add(m); tsegs.push(s); parent = s; }
   const top = .5;
-  const l = label(name, col); l.scale.set(.8, .15, 1); l.position.set(0, top + .14, 0); g.add(l);
+  const l = label(name, col); l.scale.set(NAME_W * .85, NAME_W * .85 * 96 / 512, 1); l.position.set(0, top + .14, 0); g.add(l);
   const zz = sprTxt0('Z z', col); zz.position.set(.16, top * .7, .05); zz.visible = false; g.add(zz);
   const hz = sprTxt0('♥', '#ff7aa8'); hz.scale.set(.22, .11, 1); hz.visible = false; g.add(hz);
   const lamp = new THREE.PointLight('#fff2e4', .55, 1.3); lamp.position.set(.3, top + .35, .5); g.add(lamp);
@@ -888,18 +932,34 @@ function codePos(code){ if (code && code[0] === 's') { const k = Math.max(0, Mat
   const i = CODE_IDX[code]; const s = ALLSEATS[i == null ? 7 : i]; return { x: s.x, y: s.y, z: s.z, sit: true, kind: s.kind, idx: i, seat: s }; }
 let ownerState = { owners: null, live: null, theme: 'auto', seats: {} }, liveGuests = [], recName = '', day = N.bizDate(), stopG = null, firstSync = false, presentN = 0;
 const isDemo = () => !liveGuests.filter(g => !g.left).length;
+// 익명 하트: 받은 손님 머리 위로 3D 하트가 떠오름(11월 12일 사장님: 하트를 보내도 화면에 안 보임)
+// 보낸 사람이 티 나지 않게 20~60초 늦게 띄움 · 받은 사람 이름만 알림(보낸 사람은 절대 표시 안 함)
+const HSEEN = new Map(), HFLOAT = [];
+function heartTrack(g){ const id = g.id; if (!id || g.demo) return; const n = g.noheart ? 0 : (g.hearts | 0);
+  if (HSEEN.has(id) && n > HSEEN.get(id)) for (let k = HSEEN.get(id); k < n; k++) HFLOAT.push({ to: id, nick: g.nick, ms: Date.now() + 20000 + Math.random() * 40000 });
+  HSEEN.set(id, n); }
+const HEART_TEX = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); g.font = 'bold 120px "Segoe UI Symbol", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.shadowColor = '#ff2a6a'; g.shadowBlur = 18; g.fillStyle = '#ff4a8a'; g.fillText('♥', 64, 70); g.shadowBlur = 0; g.fillStyle = '#ff7aa8'; g.fillText('♥', 64, 70); return new THREE.CanvasTexture(c); })();
+function heartTick(){ const now = Date.now();
+  for (let i = HFLOAT.length - 1; i >= 0; i--) { const h = HFLOAT[i], e = now - h.ms; if (e < 0) continue; const c = guests.find(x => x.live && x.key === h.to && !x.leaving);
+    if (!h.sp) { if (!c) { HFLOAT.splice(i, 1); continue; } h.sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: HEART_TEX, transparent: true, depthTest: false })); h.sp.renderOrder = 11; c.grp.add(h.sp);
+      toast(`💘 누군가 <b>${h.nick}</b>님에게 하트를 보냈어요`, 4500); try { pop(c.grp.position.x, 1.2, c.grp.position.z); } catch (er) {} }
+    const k = e / 4000; if (k >= 1 || !c) { if (c) c.grp.remove(h.sp); HFLOAT.splice(i, 1); continue; }
+    const s = .45 + Math.min(1, e / 250) * .35 + Math.sin(e / 140) * .03; h.sp.scale.set(s, s, 1); h.sp.position.y = c.n.h * PXM + .7 + k * .6; h.sp.material.opacity = k > .75 ? (1 - k) / .25 : 1; } }
 function syncGuests(){
   const src = isDemo() ? DEMO : liveGuests; let placed = [];
   try { placed = N.placeGuests(src, ownerState.seats || {}); } catch (e) { placed = src.map((g, i) => ({ g, slot: { code: ['n1', 'g1', 'b1', 'n2', 'g2', 'b2'][i % 6] } })); }
   const want = new Map(); placed.forEach(({ g, slot }) => want.set(g.id || g.nick, { g, code: slot.code }));
   guests.filter(c => c.live && !c.leaving && !want.has(c.key)).forEach(c => c.leaving = performance.now());
+  want.forEach(({ g }) => heartTrack(g));
   want.forEach(({ g, code }, key) => { const lk = [g.style, g.hair, g.skin, g.shirt, g.pants, g.drink, g.nick, g.cos || '', THEME].join('|'); let c = guests.find(x => x.live && x.key === key && !x.leaving);
     if (c && (c.lk !== lk || c.code !== code)) { c.leaving = performance.now(); c = null; }
     if (!c) { const p = codePos(code), nc = makeChar(g.nick, g, g.drink || 'cocktail', p.sit); if (!nc) return;
       Object.assign(nc, { live: 1, key, code, lk, lastMsg: g.msg, seat: p.sit ? p.idx : null }); nc.grp.position.set(p.x, p.sit ? p.y - .55 : 0, p.z + .02);
       if (p.sit) { if (p.idx != null) seatTaken.add(p.idx); nc.glass = putGlass(p.seat, nc.drink); }
+      if (p.sit && p.idx >= 7 && p.idx % 2 && nc.lb) nc.lb.position.y += .17;   // 테이블 옆자리끼리 이름표 높이를 엇갈려 안 겹치게
       guests.push(nc); if (firstSync && !g.demo) { nc.born = performance.now(); nc.grp.scale.setScalar(.01); pop(p.x, p.sit ? p.y : .6, p.z); toast(`🍸 <b>${g.nick}</b>님이 ${p.kind} 자리에 ${p.sit ? '앉았어요' : '왔어요'}`, 3500); setTimeout(() => say(nc, g.msg || '안녕하세요!'), 900); } }
-    else if (g.msg && g.msg !== c.lastMsg) { c.lastMsg = g.msg; say(c, String(g.msg).slice(0, 18)); } });
+    else if (g.msg && g.msg !== c.lastMsg && !(N.isGameMsg && N.isGameMsg(g.msg))) { c.lastMsg = g.msg; say(c, String(g.msg).slice(0, 18)); } });
   firstSync = true; presentN = src.filter(g => !g.left).length; document.getElementById('cnt').textContent = isDemo() ? 0 : presentN; }
 function cnt(){ }
 // 사장님: 리모컨에서 바꾼 모습·이름·휴무가 그대로
@@ -1236,7 +1296,12 @@ function setAns(txt, col){ const c = ANS.userData.cv, g = c.getContext('2d'); g.
 // 화면 위 큰 문제 칸
 const g3Box = document.createElement('div'); g3Box.style.cssText = 'position:fixed;left:50%;top:1.4vw;transform:translateX(-50%);width:min(70vw,1100px);background:#140c0dee;border:.25vw solid #ffb27a;border-radius:1.4vw;padding:.9vw 2vw 1vw;font-family:"Do Hyeon",sans-serif;color:#fff4ea;text-align:center;display:none;z-index:4;box-shadow:0 0 2vw #ff6a3a66';
 g3Box.innerHTML = '<div id="g3t" style="font-size:1.7vw;color:#ffb27a"></div><div id="g3q" style="font-size:3vw;line-height:1.25;margin:.3vw 0"></div><div id="g3s" style="font-size:1.9vw;color:#ffd36a"></div>'; document.body.appendChild(g3Box);
-const g3set = (t, q, s, col) => { const T = document.getElementById('g3t'), Q = document.getElementById('g3q'), S = document.getElementById('g3s'); if (T.textContent !== t) T.textContent = t; if (Q.textContent !== q) Q.textContent = q; Q.style.display = q ? 'block' : 'none'; if (S.textContent !== s) S.textContent = s; S.style.color = col || '#ffd36a'; };
+// 작은 안내창(고양이 숨바꼭질 등): 오른쪽 위 구석에 작게(11월 12일 사장님: 안내창이 화면을 너무 가림)
+let G3MINI = false, g3miniOn = null;
+function g3mini(on){ if (g3miniOn === on) return; g3miniOn = on; const s = g3Box.style, f = (id, v) => { const e = document.getElementById(id); if (e) e.style.fontSize = v; };
+  if (on) { s.left = 'auto'; s.right = '1.2vw'; s.top = '1.2vw'; s.transform = 'none'; s.width = '27vw'; s.padding = '.5vw 1vw .6vw'; f('g3t', '1.15vw'); f('g3q', '1.45vw'); f('g3s', '1.1vw'); }
+  else { s.left = '50%'; s.right = 'auto'; s.top = '1.4vw'; s.transform = 'translateX(-50%)'; s.width = 'min(70vw,1100px)'; s.padding = '.9vw 2vw 1vw'; f('g3t', '1.7vw'); f('g3q', '3vw'); f('g3s', '1.9vw'); } }
+const g3set = (t, q, s, col) => { g3mini(G3MINI); G3MINI = false; const T = document.getElementById('g3t'), Q = document.getElementById('g3q'), S = document.getElementById('g3s'); if (T.textContent !== t) T.textContent = t; if (Q.textContent !== q) Q.textContent = q; Q.style.display = q ? 'block' : 'none'; if (S.textContent !== s) S.textContent = s; S.style.color = col || '#ffd36a'; };
 // 캐릭터 머리 위 작은 표시(✔ · ? · 탈락 · 🏆)
 function iconOf(av, txt, col){ if (av.iconTxt === txt + col) return; av.iconTxt = txt + col; if (av.icon) { av.grp.remove(av.icon); av.icon.material.map.dispose(); av.icon = null; } if (!txt) return;
   const c = document.createElement('canvas'); c.width = 256; c.height = 112; const g = c.getContext('2d'); g.font = '900 76px "Do Hyeon", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 12; g.strokeStyle = '#140c0d'; g.strokeText(txt, 128, 60); g.fillStyle = col; g.fillText(txt, 128, 60);
@@ -1307,7 +1372,7 @@ function faceTick(g, now){ const e = now - G3.pAt, acts = (typeof gameActs !== '
   if (g.phase === 'join') { const ids = [...new Set(acts.filter(a => a.kind === 'join' && a.gid).map(a => a.gid))];
     ids.forEach(gid => { const av = g3spawn(gid, nickOf(gid)); if (av) iconOf(av, '참여!', '#ffb27a'); });
     const ln = g3line(ids.length, Z); ids.forEach((gid, i) => { const av = G3.av.get(gid); if (av && !av.home) g3hop(av, ln[i][0], ln[i][1], 300 + i * 120); });
-    g3set(isC ? '🔤 초성퀴즈 참여자 모집!' : '🧑 인물퀴즈 참여자 모집!', '', `휴대폰에서 '참여' 누르기 · 지금 ${ids.length}명 · ${isC ? '초성 보고 정답 쓰기!' : '사진 보고 5초 안에 이름 쓰기!'}`); return; }
+    g3set(isC ? '🔤 초성퀴즈 참여자 모집!' : '🧑 인물퀴즈 참여자 모집!', '', `휴대폰에서 '참여' 누르기 · 지금 ${ids.length}명 · ${isC ? '초성 보고 정답 쓰기!' : '사진 보고 10초 안에 이름 쓰기!'}`); return; }
   if (g.phase === 'q') { const left = Math.max(0, Math.ceil((g.dur || 5) - e / 1000)), ok = new Set(acts.filter(a => a.kind === 'ox' && a.k === g.round && a.v === 1).map(a => a.gid));
     alive.forEach(gid => g3spawn(gid, nickOf(gid))); G3.av.forEach(av => { if (!alive.includes(av.gid)) g3home(av); });
     const ln = g3line(alive.length, Z); alive.forEach((gid, i) => { const av = G3.av.get(gid); if (!av || av.home) return; av.fall = 0; g3hop(av, ln[i][0], ln[i][1], i * 60); iconOf(av, ok.has(gid) ? '✔' : '?', ok.has(gid) ? '#7ee08a' : '#e0d0c6'); });
@@ -1315,7 +1380,10 @@ function faceTick(g, now){ const e = now - G3.pAt, acts = (typeof gameActs !== '
     g3set(`${isC ? '🔤 초성퀴즈' : '🧑 인물퀴즈'} · ${g.round}번 · 생존 ${alive.length}명 · 맞힌 사람 ${[...ok].filter(x => alive.includes(x)).length}명`, '', isC ? '휴대폰에 정답을 쓰세요!' : '이 사람은 누구? 휴대폰에 이름을 쓰세요!', left <= 2 ? '#ff6a5a' : '#ffd36a'); return; }
   if (g.phase === 'ans') { const info = N.faceInfo(g.img) || [], was = [...new Set(alive.concat(out))];
     cd.style.display = 'none'; nm.style.display = isC ? 'none' : 'block'; nm.textContent = info[1] || '';
-    if (G3.judged !== G3.pk) { G3.judged = G3.pk; alive.forEach(gid => { const av = G3.av.get(gid); if (av) pop(av.x, .3, av.z); }); }
+    if (G3.judged !== G3.pk) { G3.judged = G3.pk; alive.forEach(gid => { const av = G3.av.get(gid); if (av) pop(av.x, .3, av.z); });
+      // 11월 12일 사장님: 정답 공개 때 이번 문제에 쓴 오답을 캐릭터 머리 위 말풍선으로(웃음 포인트)
+      was.forEach((gid, i) => { const gd = (liveGuests || []).find(x => x.id === gid), r = gd && N.faceRead ? N.faceRead(gd.msg) : null, av = G3.av.get(gid);
+        if (r && r.round === g.round && av) setTimeout(() => { try { say(av, '❌ ' + r.txt, { dur: 5200, kind: 'live' }); } catch (er) {} }, 300 + i * 180); }); }
     was.forEach(gid => { const av = G3.av.get(gid); if (!av || av.home) return; if (out.includes(gid)) { av.fall = Math.min(1, av.fall + .06); iconOf(av, '탈락', '#ff6a5a'); if (e > 3000) { g3home(av); G3.gone.add(gid); } } else iconOf(av, g.fast === gid ? '제일 빨라!' : g.redo ? '부활!' : '생존!', g.fast === gid ? '#ffd36a' : '#7ee08a'); });
     g3set(`${isC ? '🔤 초성퀴즈' : '🧑 인물퀴즈'} · ${g.round}번 정답`, '', out.length ? `${out.length}명 탈락 · 생존 ${alive.length}명${g.fastNick ? ' · 제일 빨리 맞힌 사람 ' + g.fastNick + '님' : ''}` : (g.redo ? '모두 못 맞혀서 전원 부활!' : `모두 정답!${g.fastNick ? ' · 제일 빨리 ' + g.fastNick + '님' : ''}`), '#7ee08a'); return; }
   if (g.phase === 'result') { const w = (g.winners || []).map(x => x.gid); G3.av.forEach(av => { if (!w.includes(av.gid)) g3home(av); });
@@ -1413,10 +1481,14 @@ function bombTick(g, now){ const e = now - G3.pAt, acts = (typeof gameActs !== '
     const b = g.board || []; ps.forEach(p => { const av = G3.av.get(p.gid); if (!av) return; const x = b.find(y => y.gid === p.gid); iconOf(av, x ? `💥 ${x.n}번` : '😎 무사', x ? '#ff8a5a' : '#7ee08a'); });
     g3set('💣 폭탄 돌리기 끝!', b[0] ? `오늘의 폭탄 자석: ${b[0].nick}님 (${b[0].n}번 펑)` : '', g.mission ? `미션: ${g.mission}` : '함께해 주셔서 고마워요', '#ff8a5a'); } }
 // ---------- 게임 아닌 이벤트도 3D로(11월 12일 사장님 "다 3D로"): 럭키 손님 추첨 · 생일 축하 · 고양이 숨바꼭질 · 한 줄 이어쓰기 ----------
-const CAT_SPOTS3 = [[-1.25, 2.05, -3.05], [-3.05, 2.62, -1.6], [3.05, 1.05, -.9], [-1.0, 0, 1.55]];   // 공통 숨는 자리 4곳(가운데 조명 옆 · 술장 위 · 오른쪽 벽 장식 아래 · 왼쪽 아래 바 의자 옆)을 3D 자리로
+// 숨는 자리 6곳(common.js CAT_HIDE.SPOTS와 같은 순서, 11월 12일 사장님 '더 기발하게'): 술병 사이 · 스크린 위 빼꼼 · 오너바 카운터 밑 · 포스터 선반 위 · 갓등 위 · 바 위 술잔 옆
+const CAT_SPOTS3 = [[-2.96, 2.0, -.1], [1.2, 3.07, -3.12], [-2.05, .04, 1.66], [3.02, 2.02, -1.55], [-2.1, 2.76, -2.9], [-1.95, .79, -1.95]];
 const EARS = (() => { const g = new THREE.Group(); g.userData.g3 = 1; const m = new THREE.MeshBasicMaterial({ color: '#2a2226' }), p = new THREE.MeshBasicMaterial({ color: '#ff9ab8' });
   [-.09, .09].forEach(x => { const e = new THREE.Mesh(new THREE.ConeGeometry(.07, .16, 4), m); e.position.set(x, .08, 0); g.add(e); const i = new THREE.Mesh(new THREE.ConeGeometry(.035, .09, 4), p); i.position.set(x, .07, .03); g.add(i); });
   const eye = new THREE.MeshBasicMaterial({ color: '#c8ff6a' }); [-.05, .05].forEach(x => { const s = new THREE.Mesh(new THREE.BoxGeometry(.03, .025, .01), eye); s.position.set(x, -.02, .06); g.add(s); });
+  // 살랑거리는 꼬리(귀와 반대쪽으로 쏙 삐져나옴)
+  const tail = new THREE.Group(); tail.position.set(.2, -.06, -.02); for (let i = 0; i < 6; i++) { const b = new THREE.Mesh(new THREE.BoxGeometry(.035, .05, .035), m); b.position.set(i * .028, i * .03 + Math.pow(i, 2) * .004, 0); tail.add(b); }
+  g.add(tail); g.userData.tail = tail;
   g.visible = false; G3ROOT.add(g); return g; })();
 const EV = { lk: '', bd: '', story: 0 };
 function evTick(now){ const st = ownerState || {}, ms = Date.now(), real = guests.filter(c => c.live && !c.leaving && c.grp.visible), Z = 2.8;
@@ -1436,9 +1508,12 @@ function evTick(now){ const st = ownerState || {}, ms = Date.now(), real = guest
   let r = null; try { r = N.CAT_HIDE.now(ms); } catch (e) {}
   const realG = (liveGuests || []).filter(x => !x.demo && !x.left);
   if (r && r.on && realG.length) { const sp = CAT_SPOTS3[r.spot] || CAT_SPOTS3[0], cat = CATS[r.cat]; if (cat) { cat.visible = false; cat.userData.__hid = true; }
-    EARS.visible = true; EARS.position.set(sp[0], sp[1] + Math.abs(Math.sin(now / 400)) * .04, sp[2]); EARS.rotation.y = Math.atan2(camera.position.x - sp[0], camera.position.z - sp[2]); EARS.scale.setScalar(1.4);
+    // 빼꼼: 몇 초마다 귀가 쏙 올라왔다 내려감 · 꼬리는 계속 살랑
+    const pk = (now % 4200) / 4200, up = pk < .55 ? 1 : pk < .65 ? 1 - (pk - .55) / .1 : pk < .9 ? 0 : (pk - .9) / .1;
+    EARS.visible = true; EARS.position.set(sp[0], sp[1] - .06 + up * (.08 + Math.abs(Math.sin(now / 300)) * .02), sp[2]); EARS.rotation.y = Math.atan2(camera.position.x - sp[0], camera.position.z - sp[2]); EARS.scale.setScalar(1.5);
+    if (EARS.userData.tail) EARS.userData.tail.rotation.z = Math.sin(now / 260) * .5;
     const found = realG.filter(x => typeof x.msg === 'string' && x.msg.startsWith('🐱') && (x.ms || 0) >= r.start).map(x => x.nick);
-    G3.av.forEach(av => g3home(av)); g3set(`🐱 숨바꼭질! ${r.name}가 매장 어딘가에 숨었어요`, '귀만 쏙 내밀고 있어요. 어디일까요?', found.length ? `찾은 손님: ${found.slice(0, 6).join(', ')}${found.length > 6 ? ' 외 ' + (found.length - 6) + '명' : ''}` : `휴대폰 '혼자서도 놀거리'에서 맞혀 보세요 · ${Math.max(0, Math.ceil((r.end - ms) / 60000))}분 남음`, '#ffb0cc'); return true; }
+    G3.av.forEach(av => g3home(av)); G3MINI = true; g3set(`🐱 숨바꼭질! ${r.name}가 매장 어딘가에 숨었어요`, '귀만 쏙 내밀고 있어요. 어디일까요?', found.length ? `찾은 손님: ${found.slice(0, 6).join(', ')}${found.length > 6 ? ' 외 ' + (found.length - 6) + '명' : ''}` : `휴대폰 '혼자서도 놀거리'에서 맞혀 보세요 · ${Math.max(0, Math.ceil((r.end - ms) / 60000))}분 남음`, '#ffb0cc'); return true; }
   let so = ''; try { so = soloState(isDemo() ? DEMO : liveGuests); } catch (e) {}
   if (so === 'story') { const lines = realG.filter(x => typeof x.msg === 'string' && x.msg.startsWith('📖 ')).sort((a, b) => (a.ms || 0) - (b.ms || 0));
     lines.slice(-4).forEach(x => { const c = guests.find(y => y.live && y.key === x.id); if (c && EV.story !== x.ms + x.id && x.id === (lines[lines.length - 1] || {}).id) { EV.story = x.ms + x.id; say(c, x.msg.slice(3), { dur: 9000, kind: 'live' }); } });
@@ -1542,9 +1617,11 @@ function applyLights(){ try { const keep = [99, 10, 6, 4][LQ], all = []; scene.t
 function applyLite(){ try { const nF = [1e9, 140, 70, 40][LQ]; OFALL.forEach((f, i) => { f.visible = i < nF; }); EXA.forEach((m, i) => { m.userData.lite = LQ >= 2 && i % 2 === 1; if (m.userData.lite) m.visible = false; }); } catch (e) {} }
 applyLights(); applyLite(); setInterval(() => { applyLights(); applyLite(); }, 5000);
 /* 버벅임 자동 조절: 4초마다 초당 장수를 재서 22장 미만이면 한 단계 가볍게. 가장 가벼운 단계에서도 초당 8장 미만이 20초 이어지면 그때만 2D로 */
-{ let n = 0, t0 = performance.now() + 3000, low = 0; (function fq(){ const now = performance.now(); if (now < t0) { n = 0; return requestAnimationFrame(fq); } n++; const el = now - t0;
+{ let n = 0, t0 = performance.now() + 3000, low = 0, up = 0; (function fq(){ const now = performance.now(); if (now < t0) { n = 0; return requestAnimationFrame(fq); } n++; const el = now - t0;
   if (el >= 4000) { const fps = n / (el / 1000); n = 0; t0 = now; window.__fps = Math.round(fps);
-    if (fps < 18 && LQ < 3 && !QFIX) { LQ++; renderer.setPixelRatio(PR[LQ]); fit(); applyLights(); applyLite(); try { localStorage.setItem('notsun3dQ2', LQ); } catch (e) {} }
+    if (fps < 18 && LQ < 3 && !QFIX) { LQ++; up = 0; renderer.setPixelRatio(PR[LQ]); fit(); applyLights(); applyLite(); try { localStorage.setItem('notsun3dQ2', LQ); } catch (e) {} }
+    // 다시 빨라지면 화질도 되돌림(11월 12일: 한 번 낮아지면 계속 흐릿하던 문제) · 초당 40장 이상이 12초 이어지면 한 단계 위로
+    else if (fps >= 40 && LQ > 0 && !QFIX) { if (++up >= 3) { up = 0; LQ--; renderer.setPixelRatio(PR[LQ]); fit(); applyLights(); applyLite(); try { localStorage.setItem('notsun3dQ2', LQ); } catch (e) {} } } else up = 0;
     low = (fps < 8 && LQ >= 3) ? low + 1 : 0;
     if (low >= 5 && !/keep3d/.test(location.hash) && !(ownerState && ownerState.game)) { location.replace('screen2d.html' + location.hash); return; } }
   requestAnimationFrame(fq); })(); }
