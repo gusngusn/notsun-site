@@ -414,7 +414,7 @@ const GLASS = { whisky: '#c88a30', cocktail: '#e05a7a', beer: '#f0c040', champag
 function putGlass(s, drink){ const g = new THREE.Group(); let tx = -1.85, tz = s.z; if (s.kind !== '오너바') { let bd = 1e9; TABLES.forEach(([x0, z0, x1, z1]) => { const px = Math.min(x1 - .12, Math.max(x0 + .12, s.x)), pz = Math.min(z1 - .12, Math.max(z0 + .12, s.z)), d = Math.hypot(px - s.x, pz - s.z); if (d < bd) { bd = d; tx = px; tz = pz; } }); }   // 가장 가까운 테이블 가장자리에 잔
   bx(g, .12, .01, .12, tx, s.kind === '오너바' ? .78 : .67, tz, '#e8dcc8'); bx(g, .06, .1, .06, tx, s.kind === '오너바' ? .79 : .68, tz, GLASS[drink] || '#ccc', GLASS[drink] || '#888'); DETAIL.add(g); return g; }
 // 화분 · 스피커 · 우산꽂이 · 옷걸이
-bx(DETAIL, .3, .3, .3, 3.0, 0, -3.0, '#4a2a1a'); for (let i = 0; i < 6; i++) bx(DETAIL, .1, .4 + (i % 3) * .15, .1, 3.0 + Math.sin(i) * .1, .3, -3.0 + Math.cos(i) * .1, '#3a7a40');
+/* 구석 화분(선인장처럼 보임)은 11월 12일 사장님 요청으로 없앰 */
 /* 스피커 두 개는 11월 12일 사장님 요청으로 없앰 */
 bx(DETAIL, .3, .5, .3, 2.95, 0, 2.95, '#2a2a30'); bx(DETAIL, .04, 1.6, .04, -2.9, 0, 2.9, '#2a1a12'); bx(DETAIL, .5, .04, .04, -2.9, 1.6, 2.9, '#2a1a12');
 // 고양이 두 마리: 말숙이(러시안블루·빨간 목줄) · 록이(샴·파란 목줄)
@@ -566,7 +566,7 @@ function setTheme(k){ THEME = k; while (DECO.children.length) DECO.remove(DECO.c
   // (11월 12일 사장님: 왼쪽·오른쪽 벽 위 장식 줄은 없앰 — 가볍게)
   if (k === 'christmas') {
     // 크리스마스는 매장 스크린 오른쪽 빈 곳에 트리 하나만(11월 12일 사장님 "느낌은 내면서 가볍게")
-    const TX = 2.35, TZ = -2.85; for (let i = 0; i < 4; i++) bx(DECO, .78 - i * .17, .34, .78 - i * .17, TX, .3 + i * .3, TZ, i % 2 ? '#1f6a34' : '#24783c');
+    const TX = 2.82, TZ = -2.82;   /* 오른쪽 뒤 구석에 붙임(11월 12일) */ for (let i = 0; i < 4; i++) bx(DECO, .78 - i * .17, .34, .78 - i * .17, TX, .3 + i * .3, TZ, i % 2 ? '#1f6a34' : '#24783c');
     bx(DECO, .14, .3, .14, TX, 0, TZ, '#5a3a20'); bx(DECO, .2, .2, .07, TX, 1.52, TZ, '#ffd23a', '#ffd23a');
     [[.3, .45, '#ff3a3a'], [-.25, .6, '#ffd23a'], [.18, .95, '#5ab0ff'], [-.15, 1.15, '#ffffff'], [.28, .75, '#ffd23a'], [-.3, .4, '#5ab0ff'], [.05, .55, '#ff3a3a']].forEach(([dx, y, c]) => bx(DECO, .07, .07, .07, TX + dx, y, TZ + .3, c, c));
   } else if (k === 'halloween') {
