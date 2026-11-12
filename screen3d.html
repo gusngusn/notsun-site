@@ -122,7 +122,7 @@ function whisky(x, y, z, s){ const kind = s % 4, a = matOf(AMB[s % AMB.length], 
   else if (kind === 1) { cylM(.048, .22, x, y, z, a); box(.005, .08, .06, x + .049, y + .06, z, lb); cylM(.016, .07, x, y + .22, z, a); cylM(.02, .03, x, y + .29, z, cp); }
   else if (kind === 2) { cylM(.035, .3, x, y, z, a); box(.005, .1, .05, x + .036, y + .08, z, lb); cylM(.013, .06, x, y + .3, z, a); cylM(.016, .025, x, y + .36, z, cp); }
   else { const m = new THREE.Mesh(new THREE.SphereGeometry(.07, 10, 8), a); m.position.set(x, y + .08, z); scene.add(m); cylM(.02, .08, x, y + .14, z, a); const st = new THREE.Mesh(new THREE.SphereGeometry(.03, 8, 6), matOf('#e8f4ff', .2)); st.position.set(x, y + .25, z); scene.add(st); } }
-for (let c = 0; c < CN; c++) for (let r = 0; r < CR; r++) for (let k = 0; k < 6; k++) whisky(-3.13, CY0 + r * CRh + .02, CZ0 + c * CWd + .12 + k * (CWd - .24) / 5, c * 31 + r * 7 + k * 3);
+for (let c = 0; c < CN; c++) for (let r = 0; r < CR; r++) for (let k = 0; k < 3; k++) whisky(-3.13, CY0 + r * CRh + .02, CZ0 + c * CWd + .2 + k * (CWd - .4) / 2, c * 31 + r * 7 + k * 5);   // 술장 한 칸 6병 → 3병(11월 12일 사장님: 덜 빡빡하게·가볍게)
 box(.6, .72, 4.2, -2.05, 0, -.6, M('#4a2a1a'), true);   // 오너바 카운터
 box(.7, .3, 4.4, -2.68, 0, -.6, M('#2a1a14'));   // 바 안쪽 발판(사장님이 잘 보이게)
 box(.75, .06, 4.3, -2.0, .72, -.6, M('#7a5038'));
@@ -403,9 +403,9 @@ const DETAIL = new THREE.Group(); scene.add(DETAIL);
 // (위에서 내려다보는 고정 화면이라 천장 보는 생략) 벽 윗부분을 따라 작은 전구 줄
 const BULBS = []; if (/[?&]oldbulbs/.test(location.search)) for (let i = 0; i < 17; i++) {   /* 11월 12일 사장님: 양쪽 벽 위 전구 줄 없앰 */ const z = -3.0 + i * .38, y = RH - .25 - Math.abs(Math.sin(i * .9)) * .12; BULBS.push(bx(DETAIL, .07, .09, .07, -3.18, y, z, '#ffd890', '#ffb050'), bx(DETAIL, .07, .09, .07, 3.18, y, z, '#ffd890', '#ffb050')); }
 // 오너바 위: 술병 · 칵테일 도구 · 계산대 · 메뉴판
-[['#d8a040', -2.3], ['#3a7a40', -1.1], ['#c8c8c8', .2], ['#7a3020', .9]].forEach(([c, z]) => { bx(DETAIL, .09, .26, .09, -2.2, .78, z, c); bx(DETAIL, .04, .06, .04, -2.2, 1.04, z, '#222'); });
-bx(DETAIL, .12, .2, .12, -2.05, .78, -1.7, '#c8c8d0'); bx(DETAIL, .3, .02, .5, -2.1, .78, -.3, '#2a1a12');   // 셰이커 · 칼판
-bx(DETAIL, .32, .22, .26, -2.15, .78, 1.25, '#1a1a1e'); bx(DETAIL, .02, .14, .2, -2.0, .87, 1.25, '#3a6aa0', '#2a4a80');   // 주문 단말기
+/* 오너바 위 술병 4개는 11월 12일 사장님 요청으로 없앰 */
+/* 셰이커·칼판도 없앰(11월 12일) */
+/* 계산 단말기는 11월 12일 사장님 요청으로 없앰 */
 { const c = document.createElement('canvas'); c.width = 160; c.height = 220; const g = c.getContext('2d'); g.fillStyle = '#1a1412'; g.fillRect(0, 0, 160, 220); g.strokeStyle = '#c8a060'; g.lineWidth = 6; g.strokeRect(6, 6, 148, 208); g.fillStyle = '#ffd890'; g.font = '30px "Do Hyeon", sans-serif'; g.textAlign = 'center'; g.fillText('오늘의 메뉴', 80, 46);
   g.fillStyle = '#f2e6d0'; g.font = '22px "Do Hyeon", sans-serif'; ['하이볼', '위스키 한 잔', '샴페인', '생맥주', '칵테일'].forEach((s, i) => g.fillText(s, 80, 90 + i * 26));
   const m = new THREE.Mesh(new THREE.PlaneGeometry(.55, .75), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c) })); m.position.set(-3.2, 1.45, 2.3); m.rotation.y = Math.PI / 2; DETAIL.add(m); }
