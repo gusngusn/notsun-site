@@ -950,7 +950,7 @@ function renderGame(g){
     gOpen(`<h3>${iWin ? '🎉 승리!' : '😵 패배…'}</h3><p>라이어: <b>${escH(g.liarNick || '')}</b> · 제시어: <b>${escH(g.word || '')}</b></p><p>${cw ? '시민 승리!' : g.guess ? '라이어가 제시어를 맞혀서 역전승!' : '라이어가 끝까지 안 들켰어요!'}</p>`); return; }
   if (g.type === 'face' || g.type === 'cho') {   // 인물퀴즈·초성퀴즈(11월 12일): 스크린을 보고 정답을 시간 안에 쓰기 · 입력칸은 문제가 바뀌어도 그대로 두어 키보드가 안 닫히게
     const isC = g.type === 'cho', NM = isC ? '🔤 초성퀴즈' : '🧑 인물퀴즈';
-    if (g.phase === 'join') { joinUI(NM, (isC ? '스크린에 주제와 초성이 크게 떠요. 10초 안에(명대사는 15초) 휴대폰에 정답을 쓰면 생존!' : '스크린에 인물 사진이 크게 떠요. 10초 안에 휴대폰에 이름을 맞게 쓰면 생존!') + ' 끝까지 남으면 1등' + (g.reward ? ` · 상품: ${escH(g.reward)}` : '')); return; }
+    if (g.phase === 'join') { joinUI(NM, (isC ? '스크린에 주제와 초성이 크게 떠요. 10초 안에(명대사는 25초) 휴대폰에 정답을 쓰면 생존!' : '스크린에 인물 사진이 크게 떠요. 10초 안에 휴대폰에 이름을 맞게 쓰면 생존!') + ' 끝까지 남으면 1등' + (g.reward ? ` · 상품: ${escH(g.reward)}` : '')); return; }
     if (!inP) { gOpen(`<h3>${NM} 중</h3><p>스크린을 보고 같이 맞혀 보세요!</p>`); return; }
     const alive = (g.alive || []).includes(me.id), outMe = (g.out || []).includes(me.id), key = 'f' + g.round, ci = isC ? N.choInfo(g.img) : null, info = isC ? ['', ci ? ci.ans + (ci.src ? ' (' + ci.src + ')' : '') : ''] : (N.faceInfo(g.img) || []);
     if (g.phase === 'result') { const win = (g.winners || []).some(w => w.gid === me.id); gOpen(win ? `<h3>🏆 1등!</h3><p>${g.reward ? '🎁 상품 쿠폰이 나오면 바로 화면에 떠요.' : '축하해요!'}</p>` : `<h3>🧑 인물퀴즈 끝</h3><p>${(g.winners || []).length ? escH(g.winners[0].nick) + '님 1등!' : '1등 없음'}</p>`); return; }

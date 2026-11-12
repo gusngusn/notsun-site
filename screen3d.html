@@ -75,10 +75,10 @@ var LQ = 0, QFIX = false;
 /* 움직임 계산도 그리는 장수에 맞춤: 가벼운 단계에선 1초 60번 대신 30·24·20번만 계산 */
 (function(){ const nat = window.requestAnimationFrame.bind(window); let q = [], last = 0, on = false;
   function tick(t){ on = false; const gap = [0, 31, 39, 47][window.LQ | 0] || 0; if (gap && t - last < gap) { on = true; nat(tick); return; } last = t; const run = q; q = []; run.forEach(f => { try { f(t); } catch (e) { console.error(e); } }); }
-  window.requestAnimationFrame = f => { q.push(f); if (!on) { on = true; nat(tick); } return q.length; }; })(); try { const m = location.search.match(/[?&]q=(\d)/); QFIX = !!m; LQ = m ? +m[1] : +(localStorage.getItem('notsun3dQ2') || 0); } catch (e) {} LQ = Math.max(0, Math.min(3, LQ | 0));
+  window.requestAnimationFrame = f => { q.push(f); if (!on) { on = true; nat(tick); } return q.length; }; })(); try { const m = location.search.match(/[?&]q=(\d)/); QFIX = !!m; LQ = m ? +m[1] : +(localStorage.getItem('notsun3dQ3') || 0); } catch (e) {} LQ = Math.max(0, Math.min(3, LQ | 0));
 /* 해상도는 깎지 않음(11월 12일 사장님: 흐릿함) — 단계가 내려가면 초당 장수·하늘·뒷벽 스크린 갱신만 줄임 */
 const PR = [Math.min(2, Math.max(1.25, devicePixelRatio || 1)),   /* 가장 좋은 단계는 1.25배 촘촘하게(버벅이면 자동으로 내려감) */ Math.max(1, Math.min(1.5, devicePixelRatio || 1)), 1, 1];
-const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: LQ <= 1, powerPreference: 'high-performance' });
+const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, /* 가장자리 다듬기 항상(11월 12일 매장 사진: 계단 현상) */ powerPreference: 'high-performance' });
 renderer.setPixelRatio(PR[LQ]);
 const scene = new THREE.Scene(); scene.background = new THREE.Color('#0d090a'); scene.fog = new THREE.Fog('#0d090a', 14, 26);
 const camera = new THREE.PerspectiveCamera(60, 1, .1, 80);
@@ -935,8 +935,9 @@ const DEMO = [
 // 자리 번호(지금 스크린·리모컨과 같은 번호) → 3D 의자
 const CODE_IDX = { n1: 7, n2: 8, n3: 9, n4: 10, n5: 11, n6: 12, n7: 13, n8: 14, n9: 15, n10: 16, g1: 24, g2: 25, g3: 26, g4: 17, g5: 21, g6: 22, g7: 23, g8: 18, g9: 19, g10: 20 };
 for (let i = 1; i <= 7; i++) CODE_IDX['b' + i] = i - 1;
-const STAND = [[-1.6, 2.95], [-.9, 2.95], [-.2, 2.95], [.5, 3.0], [1.2, 3.0], [1.9, 3.0], [2.6, 2.95], [-1.0, -2.95], [-.45, -2.95], [2.65, -2.95], [3.05, -2.95], [-.7, -1.9], [-.7, 2.2]];
-function codePos(code){ if (code && code[0] === 's') { const k = Math.max(0, Math.min(12, (+code.slice(1) || 1) - 1)); return { x: STAND[k][0], z: STAND[k][1], sit: false, kind: '스탠딩' }; }
+const STAND = [[-1.6, 2.68], [-.9, 2.68], [-.2, 2.68], [.5, 2.72], [1.2, 2.72], [1.9, 2.72], [2.6, 2.68], [-1.0, -2.95], [-.45, -2.95], [2.65, -2.95], [3.05, -2.95], [-.7, -1.9], [-.7, 2.2]];
+// 스탠딩 자리 손님도 동그란 방석에 앉음(11월 12일 매장 사진: 입구 쪽에 꼿꼿이 서 있어 어색)
+function codePos(code){ if (code && code[0] === 's') { const k = Math.max(0, Math.min(12, (+code.slice(1) || 1) - 1)); return { x: STAND[k][0], z: STAND[k][1], y: .44, sit: true, cushion: true, kind: '스탠딩' }; }
   const i = CODE_IDX[code]; const s = ALLSEATS[i == null ? 7 : i]; return { x: s.x, y: s.y, z: s.z, sit: true, kind: s.kind, idx: i, seat: s }; }
 let ownerState = { owners: null, live: null, theme: 'auto', seats: {} }, liveGuests = [], recName = '', day = N.bizDate(), stopG = null, firstSync = false, presentN = 0;
 const isDemo = () => !liveGuests.filter(g => !g.left).length;
@@ -964,7 +965,8 @@ function syncGuests(){
     if (c && (c.lk !== lk || c.code !== code)) { c.leaving = performance.now(); c = null; }
     if (!c) { const p = codePos(code), nc = makeChar(g.nick, g, g.drink || 'cocktail', p.sit); if (!nc) return;
       Object.assign(nc, { live: 1, key, code, lk, lastMsg: g.msg, seat: p.sit ? p.idx : null }); nc.grp.position.set(p.x, p.sit ? p.y - .55 : 0, p.z + .02);
-      if (p.sit) { if (p.idx != null) seatTaken.add(p.idx); nc.glass = putGlass(p.seat, nc.drink); }
+      if (p.sit && !p.cushion) { if (p.idx != null) seatTaken.add(p.idx); nc.glass = putGlass(p.seat, nc.drink); }
+      if (p.cushion) { const cu = new THREE.Mesh(new THREE.CylinderGeometry(.24, .26, .1, 18), new THREE.MeshLambertMaterial({ color: ['#e86a8a', '#f2b24a', '#6aa8e0', '#8ad08a'][(nc.nick || '').length % 4] })); cu.position.set(0, .05 + .11, .03); nc.grp.add(cu); }
       if (p.sit && p.idx >= 7 && p.idx % 2 && nc.lb) nc.lb.position.y += .17;   // 테이블 옆자리끼리 이름표 높이를 엇갈려 안 겹치게
       guests.push(nc); if (firstSync && !g.demo) { nc.born = performance.now(); nc.grp.scale.setScalar(.01); pop(p.x, p.sit ? p.y : .6, p.z); toast(`🍸 <b>${g.nick}</b>님이 ${p.kind} 자리에 ${p.sit ? '앉았어요' : '왔어요'}`, 3500); setTimeout(() => say(nc, g.msg || '안녕하세요!'), 900); } }
     else if (g.msg && g.msg !== c.lastMsg && !(N.isGameMsg && N.isGameMsg(g.msg))) { c.lastMsg = g.msg; say(c, String(g.msg).slice(0, 18)); } });
@@ -1627,13 +1629,19 @@ applyLights(); applyLite(); setInterval(() => { applyLights(); applyLite(); }, 5
 /* 버벅임 자동 조절: 4초마다 초당 장수를 재서 22장 미만이면 한 단계 가볍게. 가장 가벼운 단계에서도 초당 8장 미만이 20초 이어지면 그때만 2D로 */
 { let n = 0, t0 = performance.now() + 3000, low = 0, up = 0, downAt = 0; (function fq(){ const now = performance.now(); if (now < t0) { n = 0; return requestAnimationFrame(fq); } n++; const el = now - t0;
   if (el >= 4000) { const fps = n / (el / 1000); n = 0; t0 = now; window.__fps = Math.round(fps);
-    if (fps < 18 && LQ < 3 && !QFIX) { LQ++; up = 0; downAt = now; renderer.setPixelRatio(PR[LQ]); fit(); applyLights(); applyLite(); try { localStorage.setItem('notsun3dQ2', LQ); } catch (e) {} }
+    if (fps < 18 && LQ < 3 && !QFIX) { LQ++; up = 0; downAt = now; renderer.setPixelRatio(PR[LQ]); fit(); applyLights(); applyLite(); try { localStorage.setItem('notsun3dQ3', LQ); } catch (e) {} }
     // 다시 빨라지면 화질도 되돌림(11월 12일: 한 번 낮아지면 계속 흐릿하던 문제) · 초당 40장 이상이 12초 이어지면 한 단계 위로
-    else if (fps >= 40 && LQ > 0 && !QFIX && now - downAt > 300000) { if (++up >= 3) { up = 0; LQ--; renderer.setPixelRatio(PR[LQ]); fit(); applyLights(); applyLite(); try { localStorage.setItem('notsun3dQ2', LQ); } catch (e) {} } } else up = 0;
+    else if (fps >= 40 && LQ > 0 && !QFIX && now - downAt > 300000) { if (++up >= 3) { up = 0; LQ--; renderer.setPixelRatio(PR[LQ]); fit(); applyLights(); applyLite(); try { localStorage.setItem('notsun3dQ3', LQ); } catch (e) {} } } else up = 0;
     low = (fps < 8 && LQ >= 3) ? low + 1 : 0;
     if (low >= 5 && !/keep3d/.test(location.hash) && !(ownerState && ownerState.game)) { location.replace('screen2d.html' + location.hash); return; } }
   requestAnimationFrame(fq); })(); }
 try { navigator.wakeLock && navigator.wakeLock.request('screen').catch(() => {}); } catch (e) {}
+// 화질 점검 표시(11월 12일 사장님 '여전히 흐림'): 켠 뒤 40초 동안 왼쪽 아래 작게 · 주소 끝 #info면 계속
+{ const el = document.createElement('div'); el.style.cssText = 'position:fixed;left:.6vw;bottom:.6vw;z-index:9;font:13px sans-serif;color:#ffd36a;background:#000a;padding:4px 8px;border-radius:6px;pointer-events:none';
+  document.body.appendChild(el); const t0 = performance.now();
+  setInterval(() => { const keep = /info/.test(location.hash); if (!keep && performance.now() - t0 > 40000) { el.remove(); return; }
+    const gl = renderer.getContext(), db = renderer.getDrawingBufferSize(new THREE.Vector2());
+    el.textContent = `화질 단계 ${LQ} · 창 ${innerWidth}×${innerHeight} · 기기배율 ${(devicePixelRatio || 1).toFixed(2)} · 그리는 크기 ${db.x}×${db.y} · 초당 ${window.__fps || '-'}장 · 다듬기 ${gl.getContextAttributes().antialias ? '켬' : '끔'}`; }, 1000); }
 function unlock3d(){ const d = document.documentElement; d.requestFullscreen && d.requestFullscreen().catch(() => {}); try { N.enableSound && N.enableSound(); } catch (e) {} }
 addEventListener('click', unlock3d); addEventListener('keydown', e => { if (['Enter', ' ', 'NumpadEnter'].includes(e.key) || e.keyCode === 23) unlock3d(); });
 
