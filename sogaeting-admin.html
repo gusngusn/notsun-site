@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>소개팅 지원서 관리</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root { --bg:#160a0d; --card:#24121a; --line:#3d2230; --pink:#ff6e96; --red:#e82846; --gold:#ffe178; --text:#f6eef1; --sub:#c9aab6; --ok:#4fd18b; --wait:#ffc35a; --no:#8a7680; }
+* { box-sizing:border-box; }
+html,body { margin:0; background:var(--bg); color:var(--text); font-family:Pretendard,-apple-system,'Apple SD Gothic Neo',sans-serif; }
+.wrap { max-width:760px; margin:0 auto; padding:18px 14px 60px; }
+h1 { font-size:20px; margin:4px 0 14px; display:flex; justify-content:space-between; align-items:center; }
+h1 button { font-size:12px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:12px; }
+.card h2 { font-size:15px; margin:0 0 10px; }
+input, select, textarea { background:#140a0e; color:var(--text); border:1px solid var(--line); border-radius:10px; padding:10px; font-size:15px; font-family:inherit; }
+button { background:#140a0e; color:var(--text); border:1px solid var(--line); border-radius:10px; padding:9px 12px; font-size:14px; font-family:inherit; cursor:pointer; }
+button.main { background:linear-gradient(90deg,var(--red),var(--pink)); border:0; font-weight:700; }
+.row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.tabs { display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; }
+.tabs button { white-space:nowrap; }
+.tabs button.on { border-color:var(--pink); background:#3a1222; }
+.stat { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:10px 0; }
+.stat div { background:#140a0e; border-radius:10px; padding:8px; text-align:center; font-size:12px; color:var(--sub); }
+.stat b { display:block; font-size:18px; color:var(--text); }
+.stat .full b { color:var(--gold); }
+.filter { display:flex; gap:6px; margin:6px 0 10px; flex-wrap:wrap; }
+.filter button.on { border-color:var(--pink); background:#3a1222; }
+.list { display:grid; gap:8px; }
+.app { display:grid; grid-template-columns:76px 1fr; gap:10px; background:#140a0e; border:1px solid var(--line); border-radius:12px; padding:10px; }
+.app.st-ok { border-color:var(--ok); } .app.st-wait { border-color:var(--wait); } .app.st-no { opacity:.55; }
+.ph { width:76px; height:96px; border-radius:10px; background:#24121a center/cover no-repeat; cursor:zoom-in; display:flex; align-items:center; justify-content:center; color:var(--sub); font-size:11px; }
+.nm { font-weight:700; font-size:16px; }
+.meta { color:var(--sub); font-size:13px; margin:3px 0 6px; line-height:1.5; }
+.meta a { color:var(--pink); text-decoration:none; white-space:nowrap; }
+.btns { display:flex; gap:5px; flex-wrap:wrap; }
+.btns button { padding:6px 9px; font-size:13px; }
+.btns button.on.ok { background:var(--ok); color:#0b2016; border-color:var(--ok); }
+.btns button.on.wait { background:var(--wait); color:#2b1d00; border-color:var(--wait); }
+.btns button.on.paid { background:var(--gold); color:#2b1d00; border-color:var(--gold); }
+.btns button.on.no { background:var(--no); color:#1a1015; border-color:var(--no); }
+.memo { width:100%; margin-top:6px; font-size:13px; padding:7px; }
+.badge { font-size:11px; padding:2px 7px; border-radius:999px; margin-left:6px; vertical-align:2px; }
+.b-m { background:#1f3550; color:#9cc7ff; } .b-f { background:#4a1c32; color:#ffa8c6; }
+.login { max-width:340px; margin:80px auto; text-align:center; }
+.login input { width:100%; margin:12px 0; }
+.err { color:#ff8fa8; font-size:13px; min-height:18px; }
+.sub { color:var(--sub); font-size:12px; line-height:1.6; }
+.zoom { position:fixed; inset:0; background:rgba(0,0,0,.85); display:flex; align-items:center; justify-content:center; z-index:9; }
+.zoom img { max-width:92vw; max-height:88vh; border-radius:12px; }
+.demo { background:#3a2a00; color:var(--gold); text-align:center; font-size:12px; padding:6px; }
+.rlist { display:grid; gap:6px; margin-top:10px; }
+.rlist .row { justify-content:space-between; background:#140a0e; border-radius:10px; padding:8px 10px; }
+</style>
+</head>
+<body>
+<div id="demoBar" class="demo" hidden>연습 모드 · 이 기기 저장소만 씀</div>
+
+<div class="login" id="loginBox" hidden>
+  <div style="font-size:34px;color:var(--pink)">♥</div>
+  <h1 style="justify-content:center">소개팅 지원서 관리</h1>
+  <div class="sub">사장 계정(owner@notsun.bar) 비밀번호로 들어와요</div>
+  <input id="pw" type="password" placeholder="비밀번호" autocomplete="current-password">
+  <button class="main" id="loginBtn" style="width:100%">들어가기</button>
+  <div class="err" id="loginErr"></div>
+</div>
+
+<div class="wrap" id="app" hidden>
+  <h1>♥ 소개팅 지원서 관리 <button id="logout">나가기</button></h1>
+
+  <div class="card">
+    <h2>회차(수요일) 열기·닫기</h2>
+    <div class="row">
+      <input id="newDate" type="date">
+      <input id="newNote" type="text" placeholder="안내 한 줄(선택)" style="flex:1;min-width:140px" maxlength="30">
+      <button class="main" id="addRound">회차 열기</button>
+    </div>
+    <div class="sub" style="margin-top:6px">연 회차만 지원서 화면에 날짜로 나와요. 닫으면 지원서 화면에서 사라지고, 받은 지원서는 그대로 남아요.</div>
+    <div class="rlist" id="rlist"></div>
+  </div>
+
+  <div class="card">
+    <h2>지원자 보기</h2>
+    <div class="tabs" id="tabs"></div>
+    <div class="stat" id="stat"></div>
+    <div class="filter" id="filter">
+      <button data-f="all" class="on">전체</button><button data-f="m">남자</button><button data-f="f">여자</button>
+      <button data-f="new">새 지원</button><button data-f="ok">확정</button><button data-f="wait">대기</button><button data-f="no">탈락</button><button data-f="unpaid">입금 전</button>
+    </div>
+    <div class="list" id="list"></div>
+    <div class="row" style="margin-top:12px;justify-content:space-between">
+      <button id="csv">확정자 명단 복사</button>
+      <span class="sub">회차가 끝나고 30일 안에 지원서를 지워 주세요(개인정보 보관 기간).</span>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="config.js" onerror="window.FIREBASE_CONFIG=null"></script>
+<script src="sgt-common.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ST = { new: '새 지원', ok: '확정', wait: '대기', no: '탈락' };
+let rounds = [], cur = null, apps = [], filt = 'all';
+if (SGT.DEMO) $('demoBar').hidden = false;
+
+SGT.onAuth(u => { $('loginBox').hidden = !!u; $('app').hidden = !u; if (u) loadRounds(); });
+$('loginBtn').onclick = async () => {
+  $('loginErr').textContent = '';
+  try { await SGT.login($('pw').value); $('pw').value = ''; if (SGT.DEMO) location.reload(); }
+  catch (e) { $('loginErr').textContent = '비밀번호가 맞지 않아요.'; }
+};
+$('pw').onkeydown = e => { if (e.key === 'Enter') $('loginBtn').click(); };
+$('logout').onclick = async () => { await SGT.logout(); location.reload(); };
+
+// 다음 수요일을 기본값으로
+(() => { const d = new Date(); d.setDate(d.getDate() + ((3 - d.getDay() + 7) % 7 || 7)); $('newDate').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })();   // 한국 시간 기준(새벽에 하루 밀리지 않게)
+
+async function loadRounds() {
+  rounds = await SGT.allRounds();
+  $('rlist').innerHTML = rounds.map(r => `<div class="row"><span>${SGT.dateLabel(r.date)} ${r.open ? '<b style="color:var(--ok)">모집 중</b>' : '<span class="sub">닫힘</span>'} ${r.note ? '<span class="sub">· ' + esc(r.note) + '</span>' : ''}</span>
+    <span class="row" style="background:none;padding:0"><button data-t="${r.date}">${r.open ? '닫기' : '다시 열기'}</button></span></div>`).join('') || '<div class="sub">아직 연 회차가 없어요.</div>';
+  $('rlist').querySelectorAll('[data-t]').forEach(b => b.onclick = async () => { const r = rounds.find(x => x.date === b.dataset.t); r.open = !r.open; await SGT.saveRound(r); loadRounds(); });
+  $('tabs').innerHTML = rounds.map(r => `<button data-d="${r.date}">${SGT.dateLabel(r.date)}</button>`).join('');
+  $('tabs').querySelectorAll('button').forEach(b => b.onclick = () => pick(b.dataset.d));
+  // 처음엔 가장 가까운 다가오는 회차(없으면 가장 최근 회차)
+  const td = new Date(); const today = `${td.getFullYear()}-${String(td.getMonth() + 1).padStart(2, '0')}-${String(td.getDate()).padStart(2, '0')}`;
+  const next = rounds.filter(r => r.date >= today).sort((a, b) => a.date.localeCompare(b.date))[0];
+  if (rounds.length) pick(cur && rounds.some(r => r.date === cur) ? cur : (next || rounds[0]).date); else { $('list').innerHTML = ''; $('stat').innerHTML = ''; }
+}
+$('addRound').onclick = async () => {
+  const d = $('newDate').value; if (!d) return;
+  if (new Date(d + 'T00:00:00').getDay() !== 3 && !confirm('수요일이 아니에요. 그래도 열까요?')) return;
+  const old = rounds.find(r => r.date === d);
+  await SGT.saveRound({ date: d, open: true, capM: 10, capF: 10, note: $('newNote').value.trim() || (old ? old.note : '') });
+  $('newNote').value = ''; cur = d; loadRounds();
+};
+
+async function pick(d) {
+  cur = d; $('tabs').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.d === d));
+  $('list').innerHTML = '<div class="sub">불러오는 중…</div>';
+  apps = await SGT.apps(d); render();
+}
+function render() {
+  const r = rounds.find(x => x.date === cur) || { capM: 10, capF: 10 };
+  const c = (g, s) => apps.filter(a => a.gender === g && (!s || a.status === s)).length;
+  const okM = c('m', 'ok'), okF = c('f', 'ok');
+  $('stat').innerHTML = `<div>남자 지원<b>${c('m')}</b></div><div>여자 지원<b>${c('f')}</b></div>
+    <div class="${okM >= r.capM ? 'full' : ''}">남자 확정<b>${okM} / ${r.capM}</b></div><div class="${okF >= r.capF ? 'full' : ''}">여자 확정<b>${okF} / ${r.capF}</b></div>`;
+  const list = apps.filter(a => filt === 'all' || a.gender === filt || a.status === filt || (filt === 'unpaid' && !a.paid));
+  $('list').innerHTML = list.map((a, i) => `<div class="app st-${a.status}" data-id="${a.id}">
+      <div class="ph" data-ph="${a.id}">${a.hasPhoto ? '사진…' : '사진 없음'}</div>
+      <div>
+        <div class="nm">${esc(a.name)}<span class="badge b-${a.gender}">${a.gender === 'm' ? '남' : '여'}</span><span class="badge" style="background:#2a1a22;color:var(--sub)">${ST[a.status] || a.status}</span></div>
+        <div class="meta"><b style="color:var(--text)">${esc(a.age)}세 · ${esc(a.height)}cm · ${esc(a.mbti)}</b><br><a href="tel:${esc(a.phone)}">${esc(a.phone)}</a> · <a href="sms:${esc(a.phone)}">문자 보내기</a><br>${a.ts ? new Date(a.ts).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' 지원' : ''} · ${apps.indexOf(a) + 1}번째</div>
+        <div class="btns">${['ok', 'wait', 'no'].map(s => `<button class="${s} ${a.status === s ? 'on' : ''}" data-s="${s}">${ST[s]}</button>`).join('')}<button class="paid ${a.paid ? 'on' : ''}" data-paid>${a.paid ? '💰 입금 확인됨' : '입금 확인'}</button><button data-del>삭제</button></div>
+        <input class="memo" data-memo placeholder="메모(사장님만 보임)" value="${esc(a.memo || '')}" maxlength="100">
+      </div></div>`).join('') || '<div class="sub">이 조건의 지원자가 없어요.</div>';
+  $('list').querySelectorAll('.app').forEach(el => {
+    const id = el.dataset.id, a = apps.find(x => x.id === id);
+    el.querySelectorAll('[data-s]').forEach(b => b.onclick = async () => {
+      const s = a.status === b.dataset.s ? 'new' : b.dataset.s;
+      if (s === 'ok') { const cap = a.gender === 'm' ? r.capM : r.capF; if (c(a.gender, 'ok') >= cap && !confirm(`${a.gender === 'm' ? '남자' : '여자'} 확정이 이미 ${cap}명이에요. 그래도 확정할까요?`)) return; }
+      await SGT.setStatus(id, s); a.status = s; render();
+    });
+    el.querySelector('[data-paid]').onclick = async () => { const v = !a.paid; await SGT.update(id, { paid: v }); a.paid = v; render(); };
+    el.querySelector('[data-del]').onclick = async () => { if (!confirm(`${a.name} 님 지원서와 사진을 지울까요? 되돌릴 수 없어요.`)) return; await SGT.removeApp(id); apps = apps.filter(x => x.id !== id); render(); };
+    el.querySelector('[data-memo]').onchange = async e => { await SGT.setStatus(id, a.status, e.target.value.trim()); a.memo = e.target.value.trim(); };
+    const ph = el.querySelector('[data-ph]');
+    if (a.hasPhoto) SGT.photo(id).then(d => { if (d) { ph.style.backgroundImage = `url(${d})`; ph.textContent = ''; ph.onclick = () => { const z = document.createElement('div'); z.className = 'zoom'; z.innerHTML = `<img src="${d}">`; z.onclick = () => z.remove(); document.body.appendChild(z); }; } else ph.textContent = '사진 없음'; });
+  });
+}
+$('filter').querySelectorAll('button').forEach(b => b.onclick = () => { filt = b.dataset.f; $('filter').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); render(); });
+$('csv').onclick = async () => {
+  const ok = apps.filter(a => a.status === 'ok');
+  const t = `${SGT.dateLabel(cur)} 확정 ${ok.length}명\n` + ok.map(a => `${a.gender === 'm' ? '남' : '여'}\t${a.name}\t${a.age}세\t${a.height}cm\t${a.mbti}\t${a.phone}\t${a.paid ? '입금O' : '입금X'}`).join('\n');
+  try { await navigator.clipboard.writeText(t); alert('확정자 명단을 복사했어요.'); } catch (e) { prompt('아래 내용을 복사하세요', t); }
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>낯선 반짝 소개팅 지원서</title>
+<meta name="description" content="대구 교동 혼술바 낯선 · 수요일 밤 반짝 소개팅 지원서">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root { --bg:#160a0d; --card:#24121a; --line:#3d2230; --pink:#ff6e96; --red:#e82846; --gold:#ffe178; --text:#f6eef1; --sub:#c9aab6; }
+* { box-sizing:border-box; }
+html,body { margin:0; background:var(--bg); color:var(--text); font-family:Pretendard,-apple-system,'Apple SD Gothic Neo',sans-serif; -webkit-font-smoothing:antialiased; }
+body { background:radial-gradient(1200px 500px at 50% -120px,#4a1424 0%,var(--bg) 60%) no-repeat, var(--bg); min-height:100vh; }
+.wrap { max-width:480px; margin:0 auto; padding:28px 18px 60px; }
+.hero { text-align:center; padding:12px 0 18px; }
+.heart { font-size:34px; color:var(--pink); line-height:1; }
+.hero h1 { margin:10px 0 4px; font-size:30px; font-weight:800; letter-spacing:-0.5px; }
+.hero .when { color:var(--gold); font-weight:700; font-size:17px; }
+.hero p { color:var(--sub); font-size:14px; line-height:1.6; margin:12px 0 0; }
+.chips { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-top:14px; }
+.chip { border:1px solid var(--line); background:#1d0e14; color:var(--text); border-radius:999px; padding:6px 11px; font-size:13px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px 16px; margin-top:16px; }
+.card h2 { font-size:16px; margin:0 0 12px; }
+label.f { display:block; font-size:13px; color:var(--sub); margin:14px 0 6px; }
+label.f b { color:var(--pink); }
+input[type=text], input[type=tel], select, textarea { width:100%; background:#140a0e; color:var(--text); border:1px solid var(--line); border-radius:12px; padding:13px 12px; font-size:16px; font-family:inherit; outline:none; }
+input:focus, select:focus { border-color:var(--pink); }
+.seg { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.seg button, .round { background:#140a0e; color:var(--text); border:1px solid var(--line); border-radius:12px; padding:13px 10px; font-size:15px; font-family:inherit; cursor:pointer; }
+.seg button.on, .round.on { border-color:var(--pink); background:#3a1222; box-shadow:0 0 0 1px var(--pink) inset; }
+.rounds { display:grid; gap:8px; }
+.round { text-align:left; display:flex; justify-content:space-between; align-items:center; }
+.round small { color:var(--sub); font-size:12px; }
+.photo { display:flex; gap:12px; align-items:center; }
+.photo .prev { width:84px; height:104px; border-radius:12px; background:#140a0e center/cover no-repeat; border:1px dashed var(--line); flex:none; display:flex; align-items:center; justify-content:center; color:var(--sub); font-size:24px; }
+.photo .btn2 { background:#140a0e; border:1px solid var(--line); color:var(--text); border-radius:12px; padding:11px 14px; font-size:14px; cursor:pointer; }
+.hint { color:var(--sub); font-size:12px; line-height:1.55; margin-top:6px; }
+.agree { display:flex; gap:10px; align-items:flex-start; margin-top:4px; font-size:14px; line-height:1.5; }
+.agree input { width:22px; height:22px; accent-color:var(--pink); flex:none; margin-top:1px; }
+details { margin-top:10px; background:#140a0e; border-radius:12px; padding:10px 12px; font-size:12.5px; color:var(--sub); line-height:1.65; }
+details summary { cursor:pointer; color:var(--text); font-size:13px; }
+.submit { width:100%; margin-top:20px; background:linear-gradient(90deg,var(--red),var(--pink)); color:#fff; border:0; border-radius:14px; padding:16px; font-size:17px; font-weight:800; font-family:inherit; cursor:pointer; }
+.submit:disabled { opacity:.5; }
+.err { color:#ff8fa8; font-size:13px; margin-top:10px; min-height:18px; text-align:center; }
+.done { text-align:center; padding:40px 10px; }
+.done .big { font-size:46px; }
+.done h2 { margin:14px 0 8px; }
+.done p { color:var(--sub); line-height:1.7; font-size:14px; }
+.foot { text-align:center; color:var(--sub); font-size:12px; margin-top:26px; line-height:1.7; }
+.foot a { color:var(--pink); text-decoration:none; }
+.deposit { margin-top:6px; border:2px solid var(--pink); background:linear-gradient(160deg,#4a1426,#2a0f18); box-shadow:0 6px 24px rgba(255,110,150,.18); }
+.deposit .dtitle { font-size:22px; font-weight:800; color:#fff; text-align:center; }
+.deposit p { text-align:center; font-size:15px; line-height:1.6; margin:8px 0 10px; }
+.deposit p b, .deposit li b { color:var(--gold); }
+.deposit ul { margin:0; padding:0; list-style:none; font-size:14.5px; line-height:1.9; }
+.acct { display:flex; justify-content:space-between; align-items:center; gap:10px; background:#140a0e; border-radius:12px; padding:12px; margin-top:10px; }
+.acct small { display:block; color:var(--sub); font-size:12px; }
+.acct b { display:block; font-size:15px; letter-spacing:-.2px; white-space:nowrap; }
+.acct > div { min-width:0; }
+.acct span { color:var(--gold); font-size:13px; }
+.acct button { background:var(--pink); color:#fff; border:0; border-radius:10px; padding:10px 12px; font-size:14px; font-weight:700; font-family:inherit; white-space:nowrap; cursor:pointer; }
+.notice { margin-top:6px; }
+.ni { display:flex; gap:10px; align-items:flex-start; padding:9px 0; border-top:1px solid var(--line); font-size:14.5px; line-height:1.55; }
+.ni:first-of-type { border-top:0; }
+.ni span { font-size:20px; width:26px; text-align:center; flex:none; }
+.ni b { color:var(--gold); font-size:13px; }
+.two { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.demo { background:#3a2a00; color:var(--gold); text-align:center; font-size:12px; padding:6px; }
+.empty { color:var(--sub); font-size:14px; text-align:center; padding:8px 0; line-height:1.6; }
+</style>
+</head>
+<body>
+<div id="demoBar" class="demo" hidden>연습 모드 · 이 기기에만 저장되고 실제로 접수되지 않아요</div>
+<div class="wrap">
+  <div class="hero">
+    <div class="heart">♥</div>
+    <h1>낯선 반짝 소개팅</h1>
+    <div class="when">매주 수요일 밤 8시 ~ 10시</div>
+  </div>
+
+  <div class="card deposit">
+    <div class="dtitle">🚫 노쇼는 안 돼요!</div>
+    <p>단체 소개팅인 만큼 노쇼 방지를 위해<br><b>참가비 25,000원</b>을 예약금으로 받고 있어요!</p>
+    <ul>
+      <li>🍸 칵테일 계산은 참가비에서 차감돼요!</li>
+      <li>↩️ 환불은 소개팅 일정 <b>5일 전 취소 시에만</b> 가능합니다!</li>
+    </ul>
+    <div class="acct">
+      <div><small>참가비 계좌</small><b>기업은행 153-137823-04-011</b><span>김승국 · 25,000원</span></div>
+      <button type="button" id="copyAcct">계좌 복사</button>
+    </div>
+  </div>
+
+  <div class="card notice">
+    <h2>📢 공지</h2>
+    <div class="ni"><span>📍</span><div><b>장소</b><br>대구광역시 중구 교동4길 33-20 1층, 혼술바 낯선</div></div>
+    <div class="ni"><span>🕗</span><div><b>시간</b><br>매주 수요일 오후 8시 ~ 오후 10시</div></div>
+    <div class="ni"><span>👥</span><div><b>인원</b><br>남 10명, 여 10명</div></div>
+    <div class="ni"><span>🍸</span><div><b>가격</b><br>참가비(예약금) 25,000원! 자기가 마신 칵테일은 참가비에서 차감!<br>대신 1시간에 1잔은 필수!</div></div>
+    <div class="ni"><span>💌</span><div>소개팅 승인 나신 분들은 개인적으로 <b>문자</b>로 알려드릴게요!</div></div>
+  </div>
+
+  <form id="form" novalidate>
+    <div class="card">
+      <h2>1. 참가 날짜</h2>
+      <div id="rounds" class="rounds"><div class="empty">날짜를 불러오는 중…</div></div>
+    </div>
+
+    <div class="card">
+      <h2>2. 기본 정보</h2>
+      <label class="f" for="name">이름 <b>*</b></label>
+      <input id="name" type="text" maxlength="20" autocomplete="name" placeholder="실명 또는 불리고 싶은 이름">
+      <label class="f">성별 <b>*</b></label>
+      <div class="seg" id="gender"><button type="button" data-v="m">남자</button><button type="button" data-v="f">여자</button></div>
+      <div class="two">
+        <div><label class="f" for="age">나이(만 나이) <b>*</b></label>
+          <input id="age" type="text" inputmode="numeric" maxlength="2" placeholder="예) 28"></div>
+        <div><label class="f" for="height">키(cm) <b>*</b></label>
+          <input id="height" type="text" inputmode="numeric" maxlength="3" placeholder="예) 170"></div>
+      </div>
+      <div class="hint">만 19세 이상만 참가할 수 있어요(주류 판매 매장).</div>
+      <label class="f" for="mbti">MBTI <b>*</b></label>
+      <select id="mbti"></select>
+      <label class="f" for="phone">연락처 <b>*</b></label>
+      <input id="phone" type="tel" inputmode="numeric" maxlength="13" autocomplete="tel" placeholder="010-0000-0000">
+      <div class="hint">승인 안내 문자를 이 번호로 보내드려요.</div>
+    </div>
+
+    <div class="card">
+      <h2>3. 본인 사진 <span style="font-weight:400;color:var(--sub);font-size:13px">(잘 나온 사진으로 부탁드려요!)</span></h2>
+      <div class="photo">
+        <div class="prev" id="prev">＋</div>
+        <div>
+          <button type="button" class="btn2" id="pick">사진 고르기</button>
+          <div class="hint">얼굴이 잘 보이는 사진이면 좋아요.<br>사장님만 보고, 다른 참가자에게는 보이지 않아요.</div>
+        </div>
+      </div>
+      <input id="file" type="file" accept="image/*" hidden>
+    </div>
+
+    <div class="card">
+      <h2>4. 개인정보 수집·이용 동의서</h2>
+      <details open>
+        <summary>동의서 내용</summary>
+        혼술바 낯선(이하 '낯선')은 평일 소개팅 참가 신청을 받기 위해 아래와 같이 개인정보를 수집·이용합니다.<br><br>
+        1. 수집 목적: 소개팅 참가자 선정, 참가 승인 안내(문자 발송)<br>
+        2. 수집 항목: 이름, 성별, 나이, 키, MBTI, 연락처, 본인 사진<br>
+        3. 보관 기간: 해당 회차 종료 후 30일 이내 파기(승인되지 않은 지원서도 같은 기간 안에 파기)<br>
+        4. 동의 거부 권리: 동의하지 않을 수 있으며, 이 경우 소개팅에 지원할 수 없습니다.<br>
+        5. 제3자 제공: 수집한 정보는 다른 참가자나 외부에 제공하지 않습니다.<br>
+        6. 촬영·게시: 소개팅 현장의 영상·사진이 낯선 인스타그램 등 홍보에 게시될 수 있으며, 참가자 얼굴은 모자이크 처리합니다.<br>
+        7. 문의·삭제 요청: 인스타그램 @_notsun_daegu 로 연락 주시면 바로 삭제해 드립니다.
+      </details>
+      <label class="agree" style="margin-top:12px"><input id="agree" type="checkbox"><span>위 내용(촬영·게시 포함)을 확인했으며 개인정보 수집·이용에 동의합니다. <b style="color:var(--pink)">(필수)</b></span></label>
+      <label class="agree" style="margin-top:10px"><input id="agreeRule" type="checkbox"><span>참가비(예약금) 25,000원과 환불 규정(5일 전 취소 시에만 환불)을 확인했어요. <b style="color:var(--pink)">(필수)</b></span></label>
+    </div>
+
+    <button class="submit" id="submit" type="submit">지원서 보내기</button>
+    <div class="err" id="err"></div>
+  </form>
+
+  <div class="done" id="done" hidden>
+    <div class="big">💌</div>
+    <h2>지원서가 접수됐어요</h2>
+    <p id="doneMsg"></p>
+    <p>참가비(예약금) 25,000원 입금을 잊지 마세요!<br><b style="color:var(--gold)">기업은행 153-137823-04-011 김승국</b></p>
+    <p>승인 나시면 남겨 주신 번호로 문자 드릴게요!<br>궁금한 건 인스타 <a href="https://www.instagram.com/_notsun_daegu/" style="color:var(--pink)">@_notsun_daegu</a> 로 물어봐 주세요.</p>
+  </div>
+
+  <div class="foot">낯선 · 대구 중구 교동4길 33-20 1층<br><a href="https://www.instagram.com/_notsun_daegu/">instagram @_notsun_daegu</a></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="config.js" onerror="window.FIREBASE_CONFIG=null"></script>
+<script src="sgt-common.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const S = { round: null, gender: null, photo: null };
+if (SGT.DEMO) $('demoBar').hidden = false;
+
+const MBTI = ['ISTJ', 'ISFJ', 'INFJ', 'INTJ', 'ISTP', 'ISFP', 'INFP', 'INTP', 'ESTP', 'ESFP', 'ENFP', 'ENTP', 'ESTJ', 'ESFJ', 'ENFJ', 'ENTJ'];
+$('mbti').innerHTML = '<option value="">선택해 주세요</option>' + MBTI.map(m => `<option>${m}</option>`).join('') + '<option value="모름">잘 몰라요</option>';
+['age', 'height'].forEach(k => $(k).addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, ''); }));
+
+// 날짜
+(async () => {
+  try {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const rs = (await SGT.openRounds()).filter(r => new Date(r.date + 'T00:00:00') >= today);
+    if (!rs.length) { $('rounds').innerHTML = '<div class="empty">지금 모집 중인 날짜가 없어요.<br>인스타 공지를 확인해 주세요.</div>'; $('submit').disabled = true; return; }
+    $('rounds').innerHTML = rs.map(r => `<button type="button" class="round" data-d="${r.date}"><span>${SGT.dateLabel(r.date)} 밤 8시</span><small>${r.note ? r.note : ''}</small></button>`).join('');
+    $('rounds').querySelectorAll('.round').forEach(b => b.onclick = () => { S.round = b.dataset.d; $('rounds').querySelectorAll('.round').forEach(x => x.classList.toggle('on', x === b)); });
+    if (rs.length === 1) $('rounds').querySelector('.round').click();
+  } catch (e) { $('rounds').innerHTML = '<div class="empty">날짜를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</div>'; }
+})();
+
+$('gender').querySelectorAll('button').forEach(b => b.onclick = () => { S.gender = b.dataset.v; $('gender').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); });
+
+$('copyAcct').onclick = async () => {
+  const t = '기업은행 153-137823-04-011 김승국';
+  try { await navigator.clipboard.writeText(t); $('copyAcct').textContent = '복사됨!'; setTimeout(() => $('copyAcct').textContent = '계좌 복사', 1500); } catch (e) { prompt('계좌번호를 복사하세요', t); }
+};
+
+// 연락처 자동 하이픈
+$('phone').addEventListener('input', e => {
+  const d = e.target.value.replace(/\D/g, '').slice(0, 11);
+  e.target.value = d.length < 4 ? d : d.length < 8 ? d.slice(0, 3) + '-' + d.slice(3) : d.slice(0, 3) + '-' + d.slice(3, d.length - 4) + '-' + d.slice(-4);
+});
+
+// 사진: 폰에서 긴 변 720px JPEG로 줄여 저장(약 100KB 안팎)
+$('pick').onclick = () => $('file').click();
+$('prev').onclick = () => $('file').click();
+$('file').onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const img = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = URL.createObjectURL(f); });
+    const sc = Math.min(1, 720 / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * sc); c.height = Math.round(img.naturalHeight * sc);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    let q = 0.82, data = c.toDataURL('image/jpeg', q);
+    while (data.length > 280000 && q > 0.4) { q -= 0.08; data = c.toDataURL('image/jpeg', q); }
+    S.photo = data; $('prev').style.backgroundImage = `url(${data})`; $('prev').textContent = ''; $('pick').textContent = '다른 사진으로';
+  } catch (err) { $('err').textContent = '이 사진은 열 수 없어요. 다른 사진을 골라 주세요.'; }
+};
+
+$('form').onsubmit = async e => {
+  e.preventDefault(); $('err').textContent = '';
+  const name = $('name').value.trim(), age = +$('age').value, height = +$('height').value, mbti = $('mbti').value, phone = $('phone').value.trim();
+  const miss = [];
+  if (!S.round) miss.push('참가 날짜');
+  if (!name) miss.push('이름');
+  if (!S.gender) miss.push('성별');
+  if (!age) miss.push('나이');
+  if (!(height >= 130 && height <= 220)) miss.push('키');
+  if (!mbti) miss.push('MBTI');
+  if (!/^01[016789]-\d{3,4}-\d{4}$/.test(phone)) miss.push('연락처');
+  if (!S.photo) miss.push('사진');
+  if (miss.length) { $('err').textContent = miss.join(', ') + '을(를) 확인해 주세요.'; return; }
+  if (age < 19 || age > 60) { $('err').textContent = age < 19 ? '만 19세 이상만 참가할 수 있어요.' : '나이를 다시 확인해 주세요.'; return; }
+  if (!$('agree').checked) { $('err').textContent = '개인정보 수집·이용에 동의해야 지원할 수 있어요.'; return; }
+  if (!$('agreeRule').checked) { $('err').textContent = '참가비(예약금)·환불 규정 확인에 체크해 주세요.'; return; }
+  $('submit').disabled = true; $('submit').textContent = '보내는 중…';
+  try {
+    await SGT.submit({ round: S.round, name, gender: S.gender, age, height, mbti, phone, agree: true, agreeRule: true }, S.photo);
+    $('form').hidden = true; $('done').hidden = false;
+    $('doneMsg').textContent = `${SGT.dateLabel(S.round)} 밤 8시 회차로 지원하셨어요.`;
+    window.scrollTo(0, 0);
+  } catch (err) {
+    console.error(err);
+    $('err').textContent = '보내지 못했어요. 잠시 뒤 다시 눌러 주세요.';
+    $('submit').disabled = false; $('submit').textContent = '지원서 보내기';
+  }
+};
+</script>
+</body>
+</html>
