@@ -6,7 +6,9 @@
 (function (global) {
   function createGameHost(N, opts) {
     const LIAR_MAX = 8;   // 라이어게임 최대 인원(11월 12일 사장님)
-    const bombFuse = () => 15000 + Math.random() * 30000;   // 폭탄: 안 보이는 도화선 15~45초(11월 12일)
+    const LIAR_HINT = 30;   // 라이어 힌트 쓰는 시간(초) · 11월 14일 사장님 "휴대폰으로 쓰니 30초는 돼야" (전 20초)
+    const bombFuse = () => 30000 + Math.random() * 40000;   // 폭탄: 안 보이는 도화선 30~70초(11월 14일 사장님 "쓰는 시간 짧다", 전 15~45초)
+    const BOMB_IDLE = 30000, BOMB_GRACE = 8000;   // 30초 동안 안 쓰면 자동 넘김(전 20초) · 폭탄 받고 8초 안에는 안 터짐(쓰기 시작할 여유)
     const FACE_SEC = 10, FACE_GRACE   /* 11월 12일 사장님(매장 시험): 5초는 너무 짧음 → 10초 */ = 1500, FACE_MS = FACE_SEC * 1000 + FACE_GRACE;
     const qSec = id => (G && G.type === 'cho' && N.choSec) ? N.choSec(id) : FACE_SEC, qMs = id => qSec(id) * 1000 + FACE_GRACE;   // 초성퀴즈는 10초(명대사 15초)   // 인물퀴즈: 5초 + 인터넷으로 답이 도착하는 여유 1.5초
     const ID = opts.id, IS_SCREEN = /^screen/.test(ID), TAKEOVER = IS_SCREEN ? 9000 : 12000, HB_EVERY = 3000, SLEEP_GAP = 8000, TX_LIMIT = 8000;
@@ -144,7 +146,8 @@
     if (G.phase === 'q') {
       const ok = {}; gActs.filter(a => a.kind === 'ox' && a.k === H.round && a.v === 1 && H.alive.includes(a.gid)).forEach(a => { const t = tsOf(a); if (!(a.gid in ok) || t < ok[a.gid]) ok[a.gid] = t; });
       gState(`🧑 ${H.round}번 인물 · 맞힌 사람 ${Object.keys(ok).length}/${H.alive.length}명 · ${Math.max(0, Math.ceil((H.until - FACE_GRACE - now) / 1000))}초`);
-      if (now < H.until && Object.keys(ok).length < H.alive.length) return;
+      const sent = new Set(gActs.filter(a => a.kind === 'ox' && a.k === H.round && H.alive.includes(a.gid)).map(a => a.gid));   // 맞든 틀리든 낸 사람(한 번만 쓰니까 다 내면 바로 끝 · 11월 14일 사장님)
+      if (now < H.until && sent.size < H.alive.length) return;
       const ts = Object.values(ok), t0 = ts.length ? Math.min(...ts) : 0; Object.entries(ok).forEach(([gid, t]) => { H.tsum[gid] = (H.tsum[gid] || 0) + (t - t0); });
       let out = H.alive.filter(gid => !(gid in ok)), redo = false; if (out.length === H.alive.length && H.alive.length > 1) { out = []; redo = true; }
       H.alive = H.alive.filter(gid => !out.includes(gid)); H.until = now + 4500;
@@ -189,11 +192,11 @@
       if (now < H.joinUntil && j.length < LIAR_MAX) return; if (j.length < 3) { await gEnd('참여자가 3명보다 적어서 라이어게임을 취소했어요.'); return; }
       H.players = shuffle(j); const liar = H.players[Math.floor(Math.random() * H.players.length)].gid; H.liar = liar; H.until = now + 9000;
       await gSet({ ...G, phase: 'word', players: H.players, cat: H.cat, sec: N.liarPack({ w: H.word, l: liar }), turn: -1, k: 1, dur: 9 }); gState(`🕵️ 제시어 확인 중 · ${H.players.length}명 (라이어·제시어는 끝나면 공개)`); return; }
-    if (G.phase === 'word' && now >= H.until) { H.turn = 0; H.until = now + 20000; await gSet({ ...G, phase: 'hint', turn: 0, k: 100, dur: 20 }); gState(`🕵️ ${ps[0].nick}님 힌트 차례`); return; }
+    if (G.phase === 'word' && now >= H.until) { H.turn = 0; H.until = now + LIAR_HINT * 1000; await gSet({ ...G, phase: 'hint', turn: 0, k: 100, dur: LIAR_HINT }); gState(`🕵️ ${ps[0].nick}님 힌트 차례`); return; }
     if (G.phase === 'hint') { const done = gActs.some(a => a.kind === 'vote' && a.k === 100 + H.turn && a.gid === ps[H.turn].gid);
       gState(`🕵️ ${ps[H.turn].nick}님 힌트 차례 · ${Math.max(0, Math.ceil((H.until - now) / 1000))}초`);
       if (now < H.until && !done) return;
-      if (H.turn + 1 < ps.length) { H.turn++; H.until = now + (done ? 20000 : 20000); await gSet({ ...G, turn: H.turn, k: 100 + H.turn, dur: 20 }); gState(`🕵️ ${ps[H.turn].nick}님 힌트 차례`); return; }
+      if (H.turn + 1 < ps.length) { H.turn++; H.until = now + LIAR_HINT * 1000; await gSet({ ...G, turn: H.turn, k: 100 + H.turn, dur: LIAR_HINT }); gState(`🕵️ ${ps[H.turn].nick}님 힌트 차례`); return; }
       H.until = now + 30000; await gSet({ ...G, phase: 'vote', turn: -1, k: 1, dur: 30 }); gState('🕵️ 라이어 투표 시작'); return; }
     if (G.phase === 'vote') { const m = voteMap(1), n = Object.keys(m).length; gState(`🕵️ 라이어 투표 · ${n}/${ps.length}명 · ${Math.max(0, Math.ceil((H.until - now) / 1000))}초`);
       if (now < H.until && n < ps.length) return;
@@ -222,8 +225,9 @@
               await gSet({ ...G, phase: 'play', players: ps, holder: h.gid, holderNick: h.nick, k: 0, startMs: now, round: 1, rounds: H.cats.length, cat: H.cats[0] }); gState(`💣 1판 시작! 주제 '${H.cats[0]}' · 폭탄 → ${h.nick}님`); } } }
         else if (G.phase === 'play') {
           const passed = gActs.find(a => a.kind === 'pass' && a.gid === G.holder && a.k === (G.k || 0));
+          if (now >= H.boomAt && now - H.lastPass < BOMB_GRACE) H.boomAt = H.lastPass + BOMB_GRACE;   // 막 받은 사람은 8초 여유
           if (now >= H.boomAt) { H.doneAt = now + 9000; H.board = H.board || {}; H.board[G.holder] = (H.board[G.holder] || 0) + 1; await gSet({ ...G, phase: 'boom', loser: G.holder, loserNick: G.holderNick }); gState(`💥 펑! ${G.holderNick}님 당첨 · 미션: ${G.mission || '-'}`); }
-          else if (passed || now - H.lastPass > 20000) await gPass(); }   // 답을 쓰면 넘어감 · 20초 동안 아무것도 안 하면(자리 비움) 자동으로 넘김
+          else if (passed || now - H.lastPass > BOMB_IDLE) await gPass(); }   // 답을 쓰면 넘어감 · 30초 동안 아무것도 안 하면(자리 비움) 자동으로 넘김
         else if (G.phase === 'boom' && now >= H.doneAt) {
           const rounds = G.rounds || 1, round = G.round || 1;
           if (round < rounds) { const cats = H.cats || shuffle(N.BOMB_CATS || ['아무거나']), cat = cats[round] || cats[0]; H.boomAt = now + bombFuse(); H.lastPass = now;   // 다음 판: 터진 사람부터 · 새 주제

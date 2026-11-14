@@ -145,6 +145,13 @@ setInterval(async () => { if (!ownerState || !canRunAuto()) { autoPrev = null; r
   if (rq && rq.n >= N.REQ_NEED && !ownerState.game && (ownerState.auto || {}).req !== false && !(a && a.left < 300000) && !autoDone('r' + rq.type + rq.at)) { autoMark('r' + rq.type + rq.at);
     const sp = N.autoSpec(rq.type); try { if (await gameHost.start(rq.type, { ...sp[0], req: 1 }, sp[1], sp[2])) await N.markReqDone(rq.type, ownerState.rqdone, rq.last); } catch (e) {} } }, 1000);
 const bootDay = N.bizDate(); setInterval(() => { if (N.bizDate() !== bootDay && !(ownerState && ownerState.game)) N.safeReload('screen.html'); }, 60000);
+// 라스트오더 안내(11월 14일 사장님, 3D 스크린 screen.html과 같은 시간표): 일~목 0:00·0:10·0:20(라스트오더 12시 30분) / 금·토 2:00·2:10·2:20(라스트오더 2시 30분), 25초씩 · 시험 ?lo
+(() => { const el = document.createElement('div'); el.style.cssText = 'position:fixed;left:50%;bottom:6vh;transform:translateX(-50%);z-index:30;display:none;text-align:center;background:linear-gradient(180deg,#3a1418,#24100f);border:.25vw solid #ffb27a;border-radius:1.4vw;padding:1.4vw 3vw;color:#ffe2c4;font-family:"Do Hyeon",sans-serif;max-width:80vw'; document.body.appendChild(el);
+  const t0 = Date.now(), force = /[?&#]lo\b/.test(location.search + location.hash);
+  setInterval(() => { const ms = Date.now(), k = new Date(ms + 9 * 3600e3), h = k.getUTCHours(), m = k.getUTCMinutes(); let dow = k.getUTCDay(); if (h < 6) dow = (dow + 6) % 7;
+    const late = dow === 5 || dow === 6, startH = late ? 2 : 0, show = (force && ms - t0 < 25000) || (h === startH && m < 30 && m % 10 === 0 && k.getUTCSeconds() < 25 && N.shopOpen(ms).open);
+    if (show && el.style.display !== 'block') el.innerHTML = `<div style="font-size:3.1vw;color:#ffd36a;white-space:nowrap">🔔 오늘 라스트오더는 ${late ? '2시 30분' : '12시 30분'}까지예요</div><div style="font-size:1.9vw;margin-top:.6vw">마감은 ${late ? '새벽 3시' : '새벽 1시'} · 마지막 한 잔, 미리 주문해 주세요 🍸</div>`;
+    el.style.display = show ? 'block' : 'none'; }, 1000); })();
 
 // QR: 같은 주소의 index.html (손님 등록 페이지)
 let qr = null;
@@ -193,7 +200,7 @@ function soloFx(list, t){
   const sig = lines.map(g => g.id + ':' + (g.ms || 0)).join('|');
   if (SOLO.storySeen === null) SOLO.storySeen = sig;
   else if (sig !== SOLO.storySeen) { const was = SOLO.storySeen; SOLO.storySeen = sig; const add = lines.filter(g => !was.includes(g.id + ':' + (g.ms || 0))); if (add.length) { SOLO.storyShow = now + 10000; SOLO.storyNew = add[add.length - 1].id; } }
-  const cyc = now % 1200000, show = !busy && lines.length && (now < SOLO.storyShow || (lines.length >= 2 && cyc > 300000 && cyc < 315000));
+  const cyc = now % 1200000, show = !busy && lines.length && (now < SOLO.storyShow || (lines.length >= 2 && cyc > 600000 && cyc < 615000 /* 20분마다 10분째(고양이 숨바꼭질 5·15·25…분과 안 겹치게, 11월 14일) */));
   if (!show) return;
   const L = lines.slice(-4), fs = 6.2, lh = 9.5;
   ctx.save(); ctx.textBaseline = 'middle'; ctx.textAlign = 'left'; ctx.font = `${fs * s}px "Do Hyeon", sans-serif`;

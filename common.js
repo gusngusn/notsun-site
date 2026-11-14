@@ -2747,7 +2747,9 @@
     const out = []; [['a', A], ['b', B], ['c', C]].forEach(([p, L]) => L.forEach((s, i) => { if (s) out.push([p + String(i + 1).padStart(2, '0'), ...s.split('|')]); })); return out; })();
   const faceNorm = s => String(s || '').toUpperCase().replace(/[^0-9A-Z가-힣]/g, '');
   const faceInfo = img => FACE_QS.find(q => q[0] === img) || null;
-  const faceOk = (img, txt) => { const q = faceInfo(img), v = faceNorm(txt); return !!(q && v && q.slice(1).some(a => faceNorm(a) === v)); };
+  // 소리가 같아 헷갈리는 모음은 같게 봄(11월 14일 사장님 "케이트를 캐이트로 써도 정답"): ㅔ=ㅐ, ㅖ=ㅒ, ㅙ=ㅚ=ㅞ · 받침·자음·성은 그대로 엄격
+  const faceLoose = s => [...faceNorm(s)].map(ch => { const c = ch.charCodeAt(0) - 0xAC00; if (c < 0 || c >= 11172) return ch; const ini = Math.floor(c / 588), med0 = Math.floor(c % 588 / 28), fin = c % 28; const med = ({ 5: 1, 7: 3, 10: 11, 15: 11 })[med0] ?? med0; return String.fromCharCode(0xAC00 + ini * 588 + med * 28 + fin); }).join('');
+  const faceOk = (img, txt) => { const q = faceInfo(img), v = faceLoose(txt); return !!(q && v && q.slice(1).some(a => faceLoose(a) === v)); };
   const faceSrc = img => 'pq/' + img + '.jpg';
   // ---------- 초성퀴즈(11월 12일 사장님: 영화·드라마·라면·음식·명대사 등 여러 주제) — 초성은 정답에서 자동으로 뽑음 ----------
   //  [정답, 같이 인정하는 답…] · 명대사는 [대사, 나온 작품]
@@ -2763,8 +2765,19 @@
   const CHOS = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
   const chosung = s => [...String(s)].map(ch => { const c = ch.charCodeAt(0) - 0xAC00; return c >= 0 && c < 11172 ? CHOS[Math.floor(c / 588)] : ch; }).join('');
   const choInfo = id => CHO_QS.find(q => q.id === id) || null;
-  const choOk = (id, txt) => { const q = choInfo(id), v = faceNorm(txt); return !!(q && v && q.alt.some(a => faceNorm(a) === v)); };
-  const choSec = id => { const q = choInfo(id); return q && q.cat === '명대사' ? 25 : 10; };   // 한 문제 시간: 보통 10초, 명대사 25초(11월 12일 사장님: 문장이라 더 길게)
+  // 같은 초성인 다른 답도 정답(11월 14일 사장님: "ㄴㅁ이면 냉면도 나물도 될 수 있잖아") — 같은 주제 안에서, 초성이 같고, 아래 목록(또는 문제 목록)에 있는 진짜 이름이면 인정 · 명대사는 그대로 엄격
+  const CHO_EXTRA = {
+    음식: '나물 나초 냉채 냉국 누룽지 누룽지탕 낙지 낙지볶음 낙지덮밥 낙곱새 난자완스 너비아니 녹두전 나박김치 닭강정 닭발 닭볶음탕 닭한마리 닭죽 닭꼬치 도토리묵 동태찌개 동치미 동그랑땡 돈가스 돈까스 두부김치 두루치기 된장국 딤섬 떡국 떡갈비 떡꼬치 떡만둣국 라멘 라면 라조기 마라탕 마라샹궈 마파두부 막국수 만두 만둣국 매운탕 메밀국수 메밀전병 멸치볶음 모둠전 모듬전 무생채 묵사발 문어숙회 물회 물냉면 물만두 군만두 미역국 미트볼 밀면 백숙 볶음밥 북엇국 불닭 비빔국수 비빔냉면 비빔만두 빈대떡 빙수 팥빙수 뼈해장국 산낙지 삼계탕 샤브샤브 설렁탕 소불고기 소머리국밥 생선구이 수육 수육국밥 수제비 순댓국 순대국 스시 초밥 스테이크 시래기국 쌀국수 쌈밥 아귀찜 어묵 오뎅 오징어볶음 오삼불고기 오징어순대 양꼬치 양장피 양념치킨 양념게장 간장게장 우동 우거지국 유린기 육회 육전 육개장 잔치국수 장어구이 장조림 장칼국수 전복죽 전골 제육덮밥 조개구이 주먹밥 주꾸미 쭈꾸미 짜글이 쫄면 찐빵 차돌박이 참치김밥 청국장 춘권 추어탕 카레 콩국수 콩나물국밥 국밥 돼지국밥 굴국밥 파스타 피자 햄버거 핫도그 해장국 해물탕 해물찜 호떡 회덮밥 회냉면 훠궈 황태국 홍합탕 홍어 김치볶음밥 김치전 감자전 계란말이 계란찜 고등어구이 곱창전골 갈비찜 갈비 꼬막비빔밥 꽃게탕 깐풍기 꿔바로우 대게 대패삼겹살 도시락 마카롱 약과 와플 크로플 탕후루 텐동 통닭 파닭 팥죽 토스트 튀김 파전 팟타이 편육 타코 김치 깍두기 비빔냉면 쟁반국수 칼제비 코다리 연어 육사시미 우삼겹 잡채밥 치즈돈가스 후라이드치킨 반반치킨',
+    라면: '짜짜로니 팔도비빔면 컵누들 육개장사발면 튀김우동 새우탕 김치라면 까르보불닭 신라면블랙 짜파구리 진진짜라 해물라면 감자면 둥지냉면 생생우동 쌀국수 매운콩 나가사키짬뽕 사천짜파게티 진짜장 짜슐랭 삼선짬뽕 앵그리너구리 볶음너구리 팔도도시락 도시락 컵라면 일품짜장 공화춘 배홍동 칼빔면 맛짬뽕 불짬뽕 해피라면 쇠고기면 우육탕면 마라탕면 사발면 쇠고기라면 오동통면 사천짬뽕 꼬꼬면 짜왕 열라면 진라면 신라면 삼양라면'
+  };
+  // 영화·드라마 제목은 띄어쓰기를 없애고 | 로 나눔
+  CHO_EXTRA.영화 = '미나리|마더|박쥐|아가씨|헤어질결심|밀정|변호인|택시운전사|군함도|터널|신세계|친구|실미도|태극기휘날리며|광해|강철비|공조|히말라야|검사외전|외계인|한산|노량|모가디슈|엑시트|기적|남산의부장들|헌트|콘크리트유토피아|밀수|범죄와의전쟁|추격자|황해|마녀|부당거래|달콤한인생|말모이|국가대표|클래식|비긴어게인|노트북|어바웃타임|코코|토이스토리|인사이드아웃|주토피아|모아나|라푼젤|미녀와야수|라이온킹|매트릭스|터미네이터|아이언맨|스파이더맨|배트맨|조커|다크나이트|인셉션|테넷|오펜하이머|듄|탑건|미션임파서블|트랜스포머|쥬라기공원|반지의제왕|캐리비안의해적|쇼생크탈출|포레스트검프|레옹|아마겟돈|맘마미아|위대한쇼맨|보헤미안랩소디|귀멸의칼날|너의이름은|이웃집토토로|슬램덩크';
+  CHO_EXTRA.드라마 = '허준|올인|가을동화|겨울연가|풀하우스|궁|해를품은달|상속자들|피노키오|시그널|비밀의숲|킹덤|스위트홈|지옥|미스터션샤인|갯마을차차차|스물다섯스물하나|나의해방일지|우리들의블루스|환혼|작은아씨들|카지노|닥터차정숙|킹더랜드|마스크걸|연인|경성크리처|정년이|엄마친구아들|지금우리학교는|수리남|약한영웅|모범택시|빈센조|부부의세계|낭만닥터김사부|하이에나|응답하라1997|응답하라1994|슬기로운감빵생활|동이|선덕여왕|태조왕건|야인시대|하얀거탑|거침없이하이킥|지붕뚫고하이킥|미남이시네요|쌈마이웨이|김비서가왜그럴까|커피프린스|사랑의불시착';
+  const choPool = cat => { const own = (CHO_DATA[cat] || []).flatMap(x => Array.isArray(x) ? [] : String(x).split('|')); return own.concat(String(CHO_EXTRA[cat] || '').split(/[ |]/)).filter(Boolean); };
+  const choKey = s => chosung(faceNorm(s));
+  const choOk = (id, txt) => { const q = choInfo(id), v = faceLoose(txt); if (!(q && v)) return false; if (q.alt.some(a => faceLoose(a) === v)) return true;
+    if (q.cat === '명대사') return false; const k = choKey(q.ans); return choKey(txt) === k && choPool(q.cat).some(w => choKey(w) === k && faceLoose(w) === v); };
+  const choSec = id => { const q = choInfo(id); return q && q.cat === '명대사' ? 40 : 10; };   // 한 문제 시간: 보통 10초, 명대사 40초(11월 14일 사장님: 문장이라 휴대폰으로 쓰는 데 오래 걸림, 전 25초)
   // ---------- 이미지게임(11월 12일 사장님 · 가벼운 칭찬·웃긴 질문): '여기서 가장 ~할 것 같은 사람은?' → 참여자 중 한 명 몰래 뽑기 ----------
   const IMG_QS = ['술이 제일 셀 것 같은 사람', '연애하면 제일 다정할 것 같은 사람', '숨은 직업이 아이돌일 것 같은 사람', '노래방 가면 마이크 안 놓을 것 같은 사람', '어릴 때 반장 했을 것 같은 사람', '오늘 제일 늦게 집에 갈 것 같은 사람', '요리를 제일 잘할 것 같은 사람', '고양이를 키울 것 같은 사람', '여행 가면 계획표를 짜 올 것 같은 사람', '알고 보면 반전 매력이 있을 것 같은 사람', '단톡방에서 제일 말 많을 것 같은 사람', '아침형 인간일 것 같은 사람', '길에서 캐스팅 당해 봤을 것 같은 사람', '돈 관리를 제일 잘할 것 같은 사람', '춤을 제일 잘 출 것 같은 사람', '좀비 세상에서 끝까지 살아남을 것 같은 사람', '사진을 제일 잘 찍어 줄 것 같은 사람', '부탁을 거절 못 할 것 같은 사람', '혼술 고수일 것 같은 사람', '알고 보면 운동 마니아일 것 같은 사람', '웃음소리가 제일 클 것 같은 사람', '사진첩에 음식 사진이 제일 많을 것 같은 사람', '드라마 보다가 제일 잘 울 것 같은 사람', '복권 당첨되면 조용히 사라질 것 같은 사람', '해장 맛집을 제일 많이 알 것 같은 사람', '외국어를 잘할 것 같은 사람', '게임에서 지고는 못 살 것 같은 사람', '오늘 처음 봤지만 친해지고 싶은 사람', '이 가게 단골이 될 것 같은 사람', '첫사랑이랑 결혼할 것 같은 사람'];
   // ---------- 라이어게임(11월 12일 사장님 · 휴대폰에 한 줄씩): 시민은 주제+제시어, 라이어는 주제만 ----------
@@ -3136,7 +3149,7 @@
   const STORY = { tag: '#낯선아바타', offer: '이 카드를 인스타 스토리에 올리고 직원에게 보여주시면 서비스를 드려요 🍸', note: '계정 태그는 안 해도 괜찮아요 · 친한 친구 공개 스토리도 인정돼요', screen: '캐릭터 카드를 스토리에 올리고 직원에게 보여주시면 작은 서비스를 드려요', on: false };   // 2026-11-08 사장님: 스토리 인증 무료 한 잔 이벤트 종료 (손님 화면 안내 · 스크린 안내 모두 꺼짐)
   // 영업시간 (한국 시간): 금·토 19:00~03:00, 그 외 19:00~01:00 · 앞뒤 30분 여유 (새벽 6시 전은 전날 영업으로 봄)
   const SHOP_HOURS_TEXT = '오후 7시 ~ 새벽 1시 (금·토는 새벽 3시까지)';
-  // 고양이 숨바꼭질 시간표 (손님 폰 · 스크린 공용, 2026-11-08): 영업시간(19~03시) 매시 10분·40분에 3분 동안, 숨는 곳은 영업일+회차로 정해짐
+  // 고양이 숨바꼭질 시간표 (손님 폰 · 스크린 공용, 2026-11-08): 영업시간(19~03시) 10분마다(매시 5·15·25·35·45·55분) 3분 동안, 숨는 곳은 영업일+회차로 정해짐
   const CAT_HIDE = (() => {
     // 11월 12일 사장님: 숨는 곳을 더 기발하게 → 3D 매장에 맞춘 6곳(스크린 화면 screen.html CAT_SPOTS3와 같은 순서)
     const SPOTS = [{ label: '술장 위스키 병 사이', x: 150, y: 96 }, { label: '대형 스크린 위에서 빼꼼', x: 262, y: 30 }, { label: '오너바 카운터 끝 바닥', x: 110, y: 222 },
@@ -3144,9 +3157,9 @@
     const DUR = 180000, HRS = [19, 20, 21, 22, 23, 0, 1, 2];
     const kst = ms => new Date(ms + 9 * 3600e3);
     const hsh = s => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 999983, 17);
-    function slotAt(start){ const d = new Date(start + 3 * 3600e3).toISOString().slice(0, 10), k = hsh(d + '|' + start), spot = k % SPOTS.length, cat = (Math.floor(start / 1800000)) % 2;
+    function slotAt(start){ const d = new Date(start + 3 * 3600e3).toISOString().slice(0, 10), k = hsh(d + '|' + start), spot = k % SPOTS.length, cat = (Math.floor(start / 600000)) % 2;
       return { start, end: start + DUR, spot, cat, name: cat ? '록이' : '말숙이', k }; }
-    function nextStart(now){ for (let t = Math.floor((now - DUR - 600000) / 1800000) * 1800000 + 600000; t < now + 26 * 3600e3; t += 1800000) { const k = kst(t); if (HRS.includes(k.getUTCHours()) && t + DUR > now && shopOpen(t).open) return t; } return now + 3600e3; }   // 매시 10분·40분
+    function nextStart(now){ for (let t = Math.floor((now - DUR - 300000) / 600000) * 600000 + 300000; t < now + 26 * 3600e3; t += 600000) { const k = kst(t); if (HRS.includes(k.getUTCHours()) && t + DUR > now && shopOpen(t).open) return t; } return now + 3600e3; }   // 10분마다: 매시 5·15·25·35·45·55분(11월 14일 사장님 "10분에 한 번", 전엔 10분·40분) · 정각 자동 게임과 안 겹침
     function now(ms){ ms = ms || Date.now(); const s = nextStart(ms), r = slotAt(s); r.on = ms >= s && ms < s + DUR; r.next = r.on ? nextStart(s + DUR) : s; return r; }
     function order(r){ return SPOTS.map((_, i) => i).sort((a, b) => hsh(r.k + 'o' + a) - hsh(r.k + 'o' + b)); }
     return { SPOTS, DUR, now, order };

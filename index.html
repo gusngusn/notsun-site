@@ -150,7 +150,10 @@ details.fold{border:1.5px solid var(--glow);background:linear-gradient(180deg,#2
 .storybox{width:100%;box-sizing:border-box;border:1px solid #7a2a26;background:linear-gradient(180deg,#2a0f10,#1a0b0c);border-radius:14px;padding:14px;display:grid;gap:8px;justify-items:center;text-align:center}.storybox p{margin:0;color:#f3d6c8;font-size:15px;line-height:1.5}.storybox .tg b{font-weight:400;color:#ff9f86;font-family:"Do Hyeon",sans-serif;font-size:18px}.storybox small{color:#b89a90;font-size:12.5px;line-height:1.5}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:8;display:grid;grid-template-columns:repeat(4,1fr);background:#140d0e;border-top:1px solid #3a2a26;padding:4px max(8px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));box-shadow:0 -6px 20px #0008}.bnav[hidden]{display:none}
 .bnav button{background:none;border:0;color:#bfaea6;display:grid;justify-items:center;gap:1px;font-size:21px;padding:6px 0 4px;min-height:54px;font-family:inherit}.bnav button span{font-size:12.5px}.bnav button.on{color:#ffd36a}.bnav button.on span{font-weight:700}
-.solo3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.sbtn{display:grid;justify-items:center;gap:2px;padding:12px 4px;border-radius:12px;border:1px solid var(--line);background:#1e1416;color:var(--ink);font:24px "Do Hyeon",sans-serif;cursor:pointer}.sbtn b{font-weight:400;font-size:16px}.sbtn small{font-size:11.5px;color:var(--muted)}.sbtn.live{border-color:#ffd36a;animation:wcPulse 1.8s ease-in-out infinite}.sbtn.live small{color:#ffd36a}
+.solo3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.sbtn{display:grid;justify-items:center;gap:2px;padding:12px 4px;border-radius:12px;border:1px solid var(--line);background:#1e1416;color:var(--ink);font:24px "Do Hyeon",sans-serif;cursor:pointer}.sbtn b{font-weight:400;font-size:16px}.sbtn small{font-size:11.5px;color:var(--muted)}.sbtn.live{border-color:#ffd36a;animation:wcPulse 1.8s ease-in-out infinite}.sbtn.live small{color:#ffd36a}.solo4{grid-template-columns:repeat(4,1fr);margin-top:6px}.solo4 .sbtn{padding:10px 2px}.solo4 .sbtn b{font-size:14.5px}.solo4 .sbtn small{font-size:10.5px}
+.tcards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}.tcard{aspect-ratio:2/3;border-radius:12px;border:2px solid #ffd36a88;background:repeating-linear-gradient(45deg,#2a1838 0 8px,#22122e 8px 16px);color:#ffd36a;font-size:34px;cursor:pointer;display:grid;place-items:center}.tcard:active{transform:scale(.96)}
+.cookie{font-size:96px;background:none;border:0;cursor:pointer;display:block;margin:10px auto;transition:transform .12s}.cookie.k1{transform:rotate(-12deg)}.cookie.k2{transform:rotate(12deg) scale(1.08)}
+.bgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}.bcell{min-height:84px;border-radius:12px;border:1px solid var(--line);background:#1e1416;color:var(--ink);font:14px/1.3 "Do Hyeon",sans-serif;padding:6px 4px;cursor:pointer;display:grid;place-items:center;text-align:center}.bcell.on{border-color:#ffd36a;background:#3a2a12;color:#ffe08a}.bcell.line{box-shadow:0 0 0 2px #ff8ad0 inset}.bcell i{font-style:normal;font-size:22px;display:block}
 .sdim{position:fixed;inset:0;z-index:14;background:#000a}.solop{z-index:16;max-height:88vh;overflow-y:auto}.solop .gopt.on{border-color:var(--glow);background:#2a1d1f;color:#ffe2c4}.sstep{font:12px "DotGothic16",monospace;color:#ff8f7a;letter-spacing:.1em}
 .sres{border:1px solid #ffd36a66;border-radius:12px;padding:12px;background:#1f1710;display:grid;gap:4px}.sres small{color:#ffcf9e;font-size:13px}.sres b{font-weight:400;font-size:30px;color:#ffd36a}.sres span{color:#f2e6dc;font-size:15px;line-height:1.45}
 .stl{text-align:left;display:grid;gap:6px}.stl div{border-left:3px solid #7a2a26;padding:5px 10px;color:#f3d6c8;font-size:16px;background:#20110f}.stl div small{color:#b89a90;margin-left:6px;font-size:12px}.stl .me{border-color:var(--glow)}
@@ -292,6 +295,7 @@ body:has(.catcard) .toast{top:104px}
     <section class="card solocard" id="soloCard">
       <h2>🎲 혼자서도 놀거리</h2>
       <div class="solo3"><button type="button" class="sbtn" data-solo="drink">🍸<b>오늘의 한 잔</b><small>질문 3개로 추천</small></button><button type="button" class="sbtn" data-solo="cat">🐱<b>고양이 찾기</b><small id="catWhen">스크린 숨바꼭질</small></button><button type="button" class="sbtn" data-solo="story">📖<b>한 줄 이어쓰기</b><small>오늘 밤 이야기</small></button></div>
+      <div class="solo3 solo4"><button type="button" class="sbtn" data-solo="tarot">🔮<b>타로 한 장</b><small>오늘 밤 운세</small></button><button type="button" class="sbtn" data-solo="cookie">🥠<b>포춘쿠키</b><small>톡톡 깨기</small></button><button type="button" class="sbtn" data-solo="sbti">🧪<b>술BTI</b><small>내 술 성향</small></button><button type="button" class="sbtn" data-solo="bingo">🎯<b>혼술 빙고</b><small id="bingoWhen">9칸 채우기</small></button></div>
     </section>
     <div class="reqcard" id="reqCard"><div class="rqh"><b>🎮 하고 싶은 게임 신청</b><small>3명이 모이면 바로 시작해요</small></div><div id="reqList"></div><button class="btn small" id="reqOpen" type="button">+ 게임 고르기</button><div class="rqpick" id="reqPick" hidden></div></div>
     <div class="autocard" id="autoCard" hidden><b id="autoTxt"></b><small>📱 이 화면을 켜두면 게임이 시작될 때 바로 참여할 수 있어요. 화면이 꺼지면 알림을 못 받아요.</small><button class="btn small" id="keepOn" type="button">🔆 화면 켜두기</button></div>
@@ -966,19 +970,20 @@ function renderGame(g){
     gOpen(`<h3>${iWin ? '🎉 승리!' : '😵 패배…'}</h3><p>라이어: <b>${escH(g.liarNick || '')}</b> · 제시어: <b>${escH(g.word || '')}</b></p><p>${cw ? '시민 승리!' : g.guess ? '라이어가 제시어를 맞혀서 역전승!' : '라이어가 끝까지 안 들켰어요!'}</p>`); return; }
   if (g.type === 'face' || g.type === 'cho') {   // 인물퀴즈·초성퀴즈(11월 12일): 스크린을 보고 정답을 시간 안에 쓰기 · 입력칸은 문제가 바뀌어도 그대로 두어 키보드가 안 닫히게
     const isC = g.type === 'cho', NM = isC ? '🔤 초성퀴즈' : '🧑 인물퀴즈';
-    if (g.phase === 'join') { joinUI(NM, (isC ? '스크린에 주제와 초성이 크게 떠요. 10초 안에(명대사는 25초) 휴대폰에 정답을 쓰면 생존!' : '스크린에 인물 사진이 크게 떠요. 10초 안에 휴대폰에 이름을 맞게 쓰면 생존!') + ' 끝까지 남으면 1등' + (g.reward ? ` · 상품: ${escH(g.reward)}` : '')); return; }
+    if (g.phase === 'join') { joinUI(NM, (isC ? '스크린에 주제와 초성이 크게 떠요. 10초 안에(명대사는 40초) 휴대폰에 정답을 쓰면 생존!' : '스크린에 인물 사진이 크게 떠요. 10초 안에 휴대폰에 이름을 맞게 쓰면 생존!') + ' 한 문제에 한 번만 쓸 수 있어요.' + ' 끝까지 남으면 1등' + (g.reward ? ` · 상품: ${escH(g.reward)}` : '')); return; }
     if (!inP) { gOpen(`<h3>${NM} 중</h3><p>스크린을 보고 같이 맞혀 보세요!</p>`); return; }
     const alive = (g.alive || []).includes(me.id), outMe = (g.out || []).includes(me.id), key = 'f' + g.round, ci = isC ? N.choInfo(g.img) : null, info = isC ? ['', ci ? ci.ans + (ci.src ? ' (' + ci.src + ')' : '') : ''] : (N.faceInfo(g.img) || []);
     if (g.phase === 'result') { const win = (g.winners || []).some(w => w.gid === me.id); gOpen(win ? `<h3>🏆 1등!</h3><p>${g.reward ? '🎁 상품 쿠폰이 나오면 바로 화면에 떠요.' : '축하해요!'}</p>` : `<h3>🧑 인물퀴즈 끝</h3><p>${(g.winners || []).length ? escH(g.winners[0].nick) + '님 1등!' : '1등 없음'}</p>`); return; }
     if (!alive && !outMe) { gOpen('<h3>😵 탈락</h3><p>남은 사람들을 응원해 주세요!</p>'); return; }
     let box = gq('gFaceIn'); if (!box || $('gPanel').hidden) { gOpen('<h3 id="gFaceH"></h3><p id="gFaceP"></p><form id="gFaceF" autocomplete="off" style="display:grid;gap:8px"><input id="gFaceIn" type="text" maxlength="20" enterkeyhint="send" placeholder="이름 쓰고 보내기" style="font-size:22px;padding:12px;border-radius:12px;border:2px solid #ffb27a;background:#140c0d;color:#fff4ea;text-align:center"><button class="gbig" type="submit">보내기</button></form>'); box = gq('gFaceIn');
-      gq('gFaceF').onsubmit = async ev => { ev.preventDefault(); const G2 = GM; if (!G2 || (G2.type !== 'face' && G2.type !== 'cho') || G2.phase !== 'q') return; const k2 = 'f' + G2.round; if (L[k2]) return; const v = box.value; if (!v.trim()) return;
+      gq('gFaceF').onsubmit = async ev => { ev.preventDefault(); const G2 = GM; if (!G2 || (G2.type !== 'face' && G2.type !== 'cho') || G2.phase !== 'q') return; const k2 = 'f' + G2.round; let fx2 = ''; try { fx2 = localStorage.getItem('notsun-facex') || ''; } catch (e) {} if (L[k2] || L['x' + G2.round] || fx2 === G2.n + '|' + G2.round) return; const v = box.value; if (!v.trim()) return;   // 한 문제에 한 번만(11월 14일 사장님)
         if ((G2.type === 'cho' ? N.choOk : N.faceOk)(G2.img, v)) { L[k2] = 1; box.value = ''; try { navigator.vibrate && navigator.vibrate(40); } catch (e) {} gBeep([990, 1320], .07); renderGame(GM); try { await gDo('ox', { v: 1, k: G2.round }); } catch (e) { L[k2] = 0; toast('보내지 못했어요. 다시 보내 주세요.'); renderGame(GM); } }
-        else { box.value = ''; gq('gFaceP').innerHTML = '<b style="color:#ff6a5a">땡! 다시 써 보세요</b>';
+        else { L['x' + G2.round] = 1; try { localStorage.setItem('notsun-facex', G2.n + '|' + G2.round); } catch (e) {} /* 새로고침해도 다시 못 씀 */ box.value = ''; gDo('ox', { v: 0, k: G2.round }).catch(() => {});   /* 틀린 것도 '냈음'으로 알림 → 다 내면 바로 다음(11월 14일 사장님) */ renderGame(GM);
           { const m0 = loadMe(); if (m0 && N.faceMsg) { const m = N.faceMsg(G2.round, v.trim()); N.updateMsg(m0.day, m0.id, m).then(() => saveMe({ ...m0, msg: m })).catch(() => {}); } }   /* 오답은 정답 공개 때 스크린 캐릭터 머리 위에 */ try { navigator.vibrate && navigator.vibrate([60, 40, 60]); } catch (e) {} } }; }
     const H3 = gq('gFaceH'), P = gq('gFaceP');
     if (g.phase === 'q') { if (L.fq !== g.k) { L.fq = g.k; box.value = ''; }   // 새 문제가 뜨면 전에 쓴 답을 자동으로 지움(11월 12일 사장님)
-      box.readOnly = !!L[key]; H3.textContent = L[key] ? '⭕ 정답! 다음 문제 기다리는 중' : isC ? `🔤 ${g.round}번 · 주제: ${ci ? ci.cat : ''}` : `🧑 ${g.round}번 · 스크린 속 이 사람은?`; P.innerHTML = L[key] ? '살아남았어요!' : isC ? `초성 <b style="font-size:22px;color:#ffd36a">${escH(ci ? N.chosung(ci.ans) : '')}</b> · 정답을 쓰고 보내기` : '이름을 쓰고 보내기 (띄어쓰기 상관없어요)'; if (!L[key]) try { box.focus(); } catch (e) {} return; }
+      let fx = ''; try { fx = localStorage.getItem('notsun-facex') || ''; } catch (e) {} if (fx === g.n + '|' + g.round) L['x' + g.round] = 1;
+      const xk = L['x' + g.round]; box.readOnly = !!(L[key] || xk); H3.textContent = L[key] ? '⭕ 정답! 다음 문제 기다리는 중' : xk ? '❌ 땡! 이번 문제는 기회 끝' : isC ? `🔤 ${g.round}번 · 주제: ${ci ? ci.cat : ''}` : `🧑 ${g.round}번 · 스크린 속 이 사람은?`; P.innerHTML = L[key] ? '살아남았어요!' : xk ? '정답 공개를 기다려요 · 모두 틀리면 다 같이 살아나요' : isC ? `초성 <b style="font-size:22px;color:#ffd36a">${escH(ci ? N.chosung(ci.ans) : '')}</b> · 정답을 쓰고 보내기 (한 번만!)` : '이름을 쓰고 보내기 · 한 번만! (띄어쓰기 상관없어요)'; if (!L[key] && !xk) try { box.focus(); } catch (e) {} return; }
     box.readOnly = true; H3.textContent = outMe ? '😵 탈락!' : g.redo ? '😅 모두 못 맞혀서 전원 부활!' : '⭕ 생존!'; P.innerHTML = `정답: <b style="color:#ffd36a">${escH(info[1] || '')}</b>${g.fastNick ? ` · 제일 빨리 맞힌 사람 ${escH(g.fastNick)}님` : ''}`;
     if (L.fk !== g.k) { L.fk = g.k; try { navigator.vibrate && navigator.vibrate(outMe ? [160, 70, 160] : [40]); } catch (e) {} if (outMe) gBeep([330, 220], .14); }
     if (outMe) { setTimeout(() => { if (GM && GM.k === g.k && gq('gFaceIn')) { gOpen('<h3>😵 탈락</h3><p>정답: ' + escH(info[1] || '') + '<br>남은 사람들을 응원해 주세요!</p>'); } }, 2500); }
@@ -1299,17 +1304,18 @@ if (loadMe()) showEdit(); else { offerLast(); const lv = loadLast(); if (lv) { a
       sb.innerHTML = `<span class="sstep">오늘의 한 잔</span><div class="sres"><small>${escH(MOOD[ans[0]])}</small><b>${escH(it.name)}</b><span>${it.abv ? escH(it.abv) + ' · ' : ''}${it.price.toLocaleString()}원${it.desc ? '<br>' + escH(it.desc) : ''}</span></div>
         <button class="btn primary" type="button" id="sdAdd">🍸 이걸로 담기</button><button class="btn" type="button" id="sdShow">💬 스크린 말풍선에 띄우기</button><button class="btn ghost" type="button" id="sdAgain">다시 해보기</button>`;
       $('sdAdd').onclick = () => { if (it.whisky) addCart(it.id + '잔', it.name + ' (잔)', it.price, 'whisky'); else addCart(it.id, it.name, it.price, c.icon); close(); showMenu('edit', `🍸 ${it.name}을(를) 담았어요. 아래 주문 버튼을 눌러주세요.`); };
+      soloMark('drink');
       $('sdShow').onclick = () => putBtn($('sdShow'), line, '✅ 스크린에 떴어요');
       $('sdAgain').onclick = () => { ans.length = 0; step = 0; draw(); }; };
     draw(); open(); }
 
-  // ② 고양이 찾기 (30분마다 3분, 스크린과 같은 시간표)
+  // ② 고양이 찾기 (10분마다 3분, 스크린과 같은 시간표)
   const catKey = r => 'notsun-cat-' + r.start;
   const catGot = () => { try { return JSON.parse(localStorage.getItem('notsun-cat-found') || '{}')[N.bizDate()] || 0; } catch (e) { return 0; } };
   const catAdd = () => { try { const v = JSON.parse(localStorage.getItem('notsun-cat-found') || '{}'), d = N.bizDate(); localStorage.setItem('notsun-cat-found', JSON.stringify({ [d]: (v[d] || 0) + 1 })); } catch (e) {} };
   function catGame(){
     const draw = () => { const r = CAT.now(Date.now()), done = r.on ? (() => { try { return localStorage.getItem(catKey(r)); } catch (e) { return null; } })() : null;
-      if (!r.on) { sb.innerHTML = `<span class="sstep">숨바꼭질</span><h3>🐱 다음 숨바꼭질은 ${hhmm(r.next)}</h3><p>30분마다 록이나 말숙이가 스크린 어딘가에 3분 동안 숨어요.<br>그때 스크린을 보고 맞혀 주세요.</p>${catGot() ? `<div class="sres"><small>오늘 찾은 횟수</small><b>🐾 ${catGot()}번</b></div>` : ''}`; return; }
+      if (!r.on) { sb.innerHTML = `<span class="sstep">숨바꼭질</span><h3>🐱 다음 숨바꼭질은 ${hhmm(r.next)}</h3><p>10분마다 록이나 말숙이가 스크린 어딘가에 3분 동안 숨어요.<br>그때 스크린을 보고 맞혀 주세요.</p>${catGot() ? `<div class="sres"><small>오늘 찾은 횟수</small><b>🐾 ${catGot()}번</b></div>` : ''}`; return; }
       const left = Math.max(0, Math.ceil((r.end - Date.now()) / 1000));
       if (done) { sb.innerHTML = `<span class="sstep">숨바꼭질</span>${done === 'ok' ? `<div class="sres"><small>정답!</small><b>🐱 ${r.name} 찾았다</b><span>스크린에 찾은 손님으로 이름이 떠요</span></div>` : `<h3>아쉬워요!</h3><p>${r.name}는 다른 곳에 있었어요. 다음 숨바꼭질은 ${hhmm(r.next)}</p>`}`; return; }
       sb.innerHTML = `<span class="sstep">숨바꼭질 · ${left}초 남음</span><h3>${r.name}가 스크린 어딘가에 숨었어요!</h3><p>스크린을 보고 골라 주세요 · 한 번만 고를 수 있어요</p><div class="gopts">${CAT.order(r).map(i => `<button type="button" class="gopt" data-i="${i}">${CAT.SPOTS[i].label}</button>`).join('')}</div>`;
@@ -1330,10 +1336,127 @@ if (loadMe()) showEdit(); else { offerLast(); const lv = loadLast(); if (lv) { a
         <input type="text" id="stIn" maxlength="${STORY_MAX}" placeholder="${l.length ? '다음 줄을 이어 주세요' : '예: 비 오는 교동 골목에 누군가 들어왔다'}" aria-label="이어 쓸 한 줄"><p class="note" style="margin:0">${STORY_MAX}자까지 · 말풍선을 다른 말로 바꾸면 이야기에서 빠져요</p>
         <button class="btn primary" type="button" id="stGo">한 줄 남기기</button>`;
       $('stGo').onclick = async () => { const v = $('stIn').value.trim(); if (!v) { toast('이어 쓸 한 줄을 적어주세요.'); return; }
-        if (await putBtn($('stGo'), STORY_MARK + v.slice(0, STORY_MAX), '✅ 이야기에 이어졌어요')) setTimeout(draw, 800); }; };
+        if (await putBtn($('stGo'), STORY_MARK + v.slice(0, STORY_MAX), '✅ 이야기에 이어졌어요')) { soloMark('story'); setTimeout(draw, 800); } }; };
     draw(); open(); }
 
-  document.querySelectorAll('[data-solo]').forEach(b => b.onclick = () => { const k = b.dataset.solo; if (k === 'drink') drinkGame(); if (k === 'cat') catGame(); if (k === 'story') storyGame(); });
+  // ---------- 혼자서도 놀거리 2탄 (11월 14일 사장님): 타로 한 장 · 포춘쿠키 · 술BTI · 혼술 빙고 ----------
+  // 저장은 이 휴대폰(localStorage)에만 · 스크린에는 내 말풍선 한 줄만 → 파이어베이스 규칙 변경 없음 · 타로·포춘쿠키는 하루 한 번(영업일 기준)
+  const SK = 'notsun-solo2';
+  const soloGet = () => { try { const v = JSON.parse(localStorage.getItem(SK) || '{}'); return v.day === N.bizDate() ? v : { day: N.bizDate() }; } catch (e) { return { day: N.bizDate() }; } };
+  const soloSet = (k, val) => { const v = soloGet(); v[k] = val; try { localStorage.setItem(SK, JSON.stringify(v)); } catch (e) {} return v; };
+  function soloMark(k){ const v = soloGet(); if (!v['m_' + k]) soloSet('m_' + k, 1); }
+  const hseed = s => [...String(s)].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) % 999983, 7);
+  const recBox = ans => { const r = pickDrink(ans); if (!r) return ''; const { it } = r; return `<div class="sres"><small>어울리는 한 잔</small><b style="font-size:24px">${escH(it.name)}</b><span>${it.abv ? escH(it.abv) + ' · ' : ''}${it.price.toLocaleString()}원</span></div><button class="btn" type="button" id="soAdd">🍸 이걸로 담기</button>`; };
+  const recWire = ans => { const b = $('soAdd'); if (!b) return; const r = pickDrink(ans); if (!r) return; const { it, c } = r; b.onclick = () => { if (it.whisky) addCart(it.id + '잔', it.name + ' (잔)', it.price, 'whisky'); else addCart(it.id, it.name, it.price, c.icon); close(); showMenu('edit', `🍸 ${it.name}을(를) 담았어요. 아래 주문 버튼을 눌러주세요.`); }; };
+
+  // ④ 타로 한 장: 뒤집힌 카드 3장 중 하나 → 오늘 밤 한 줄 + 어울리는 술 (하루 한 번, 다시 열면 같은 카드)
+  const TAROT = [
+    ['바보', '🃏', '계획 없이 들어온 오늘, 의외로 제일 재밌는 밤이 돼요', ['up', 'mid', 'fresh']],
+    ['마법사', '🪄', '말 한마디로 분위기가 바뀌는 날. 먼저 인사해 보세요', ['up', 'mid', 'sweet']],
+    ['여사제', '🌙', '조용히 있을수록 좋은 생각이 떠오르는 밤', ['calm', 'mild', 'bitter']],
+    ['여황제', '👑', '오늘은 나한테 잘해 주는 날. 좋아하는 걸 시키세요', ['party', 'mid', 'sweet']],
+    ['황제', '🏛️', '고민하던 일, 오늘 마음먹으면 그대로 가요', ['calm', 'strong', 'bitter']],
+    ['교황', '📜', '누군가의 이야기에서 답을 얻는 밤', ['calm', 'mid', 'bitter']],
+    ['연인', '💞', '옆자리 사람과 말이 잘 통하는 날', ['up', 'mild', 'sweet']],
+    ['전차', '🏇', '밀어붙이면 되는 날. 망설이지 마세요', ['party', 'strong', 'fresh']],
+    ['힘', '🦁', '오늘 버틴 나, 충분히 잘했어요', ['rest', 'mid', 'bitter']],
+    ['은둔자', '🏮', '혼자만의 시간이 제일 필요한 밤', ['calm', 'strong', 'bitter']],
+    ['운명의 수레바퀴', '🎡', '흐름이 바뀌는 중이에요. 좋은 쪽으로', ['up', 'mid', 'fresh']],
+    ['정의', '⚖️', '오늘은 딱 적당히가 정답', ['calm', 'mild', 'fresh']],
+    ['매달린 사람', '🙃', '잠깐 멈추면 다르게 보여요', ['rest', 'mild', 'sweet']],
+    ['죽음', '🦋', '끝은 새 시작. 오늘 털어 버릴 것 하나 정해 보세요', ['calm', 'mid', 'bitter']],
+    ['절제', '🫗', '물 한 잔 같이 마시면 오늘 밤이 더 길어져요', ['rest', 'mild', 'fresh']],
+    ['악마', '😈', '한 잔 더의 유혹… 오늘은 넘어가도 괜찮아요', ['party', 'strong', 'sweet']],
+    ['탑', '⚡', '예상 못 한 일이 생겨도 웃고 넘길 수 있는 날', ['up', 'strong', 'bitter']],
+    ['별', '⭐', '바라던 게 조금씩 다가오는 중', ['calm', 'mild', 'sweet']],
+    ['달', '🌕', '애매한 건 오늘 결정하지 말기', ['calm', 'mid', 'bitter']],
+    ['태양', '☀️', '오늘은 뭘 해도 잘 풀리는 날', ['party', 'mid', 'fresh']],
+    ['심판', '📯', '미뤄 둔 연락, 오늘 해 보면 좋아요', ['up', 'mid', 'fresh']],
+    ['세계', '🌍', '한 바퀴 잘 마무리한 당신, 축하해요', ['party', 'mid', 'sweet']]];
+  function tarotGame(){
+    const draw = () => { const v = soloGet();
+      if (v.tarot == null) {
+        sb.innerHTML = `<span class="sstep">오늘 밤 타로</span><h3>🔮 마음 가는 카드 한 장을 고르세요</h3><p>하루에 한 장만 뽑을 수 있어요</p><div class="tcards">${[0, 1, 2].map(i => `<button type="button" class="tcard" data-t="${i}">✦</button>`).join('')}</div>`;
+        sb.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { const me = loadMe() || {}; soloSet('tarot', hseed((me.id || me.nick || '') + N.bizDate() + 't' + b.dataset.t) % TAROT.length); soloMark('tarot'); try { navigator.vibrate && navigator.vibrate(30); } catch (e) {} draw(); }); return; }
+      const [nm, em, txt, ans] = TAROT[v.tarot], line = `🔮 오늘의 카드: ${nm}`;
+      sb.innerHTML = `<span class="sstep">오늘 밤 타로</span><div class="sres"><small>오늘 뽑은 카드</small><b>${em} ${escH(nm)}</b><span>${escH(txt)}</span></div>${recBox(ans)}<button class="btn" type="button" id="soShow">💬 스크린 말풍선에 띄우기</button><p class="note" style="margin:0">재미로 보는 운세예요 · 내일 다시 뽑을 수 있어요</p>`;
+      recWire(ans); $('soShow').onclick = () => putBtn($('soShow'), line, '✅ 스크린에 떴어요'); };
+    draw(); open(); }
+
+  // ⑤ 포춘쿠키: 세 번 두드리면 깨짐 → 오늘의 ○○운 한 줄 (하루 한 번)
+  const COOKIE = [
+    ['연애운', '대길', '오늘 처음 눈 마주친 사람, 한 번 더 보게 될지도'], ['연애운', '길', '먼저 건넨 말 한마디가 좋은 인연이 돼요'], ['연애운', '반짝', '오늘은 나를 더 좋아하는 날. 그게 제일 매력적이에요'], ['연애운', '길', '연락 올 것 같은 그 사람, 생각보다 빨리 와요'],
+    ['술운', '대길', '오늘 고른 첫 잔이 인생 술이 될 수 있어요'], ['술운', '길', '두 번째 잔부터 더 맛있어지는 밤'], ['술운', '반짝', '오늘은 천천히 마실수록 행운이 따라와요'], ['술운', '길', '처음 시켜 보는 메뉴에 행운이 숨어 있어요'],
+    ['내일운', '대길', '내일 아침, 생각보다 개운하게 일어나요'], ['내일운', '길', '오늘 미룬 일이 내일은 술술 풀려요'], ['내일운', '반짝', '내일 작은 선물 같은 일이 생겨요'], ['내일운', '길', '오늘 들은 말 하나가 내일 힘이 돼요'],
+    ['금전운', '대길', '잊고 있던 돈이 돌아올 기미가 보여요'], ['금전운', '길', '오늘 아낀 만큼 다음 주에 좋은 일이 생겨요'], ['금전운', '반짝', '쓸 땐 쓰는 게 운을 부르는 날'],
+    ['인간관계운', '대길', '오늘 만난 낯선 사람이 오래 갈 친구가 돼요'], ['인간관계운', '길', '옆자리에 먼저 웃어 주면 하루가 바뀌어요'], ['인간관계운', '반짝', '오래 연락 못 한 친구가 나를 떠올리고 있어요'],
+    ['건강운', '길', '물 한 잔 챙기면 내일이 달라져요'], ['건강운', '반짝', '오늘은 푹 자는 게 최고의 행운'],
+    ['소원운', '대길', '오늘 밤 빈 소원, 생각보다 가까이 있어요'], ['소원운', '길', '작게 바란 것부터 하나씩 이뤄지는 중']];
+  function cookieGame(){ let taps = 0;
+    const draw = () => { const v = soloGet();
+      if (v.cookie == null) {
+        sb.innerHTML = `<span class="sstep">포춘쿠키</span><h3>🥠 쿠키를 톡톡 두드려 깨 보세요</h3><p>세 번 두드리면 깨져요 · 하루에 한 번</p><button type="button" class="cookie" id="ckBtn" aria-label="포춘쿠키 두드리기">🥠</button>`;
+        $('ckBtn').onclick = () => { taps++; const b = $('ckBtn'); b.className = 'cookie k' + (taps % 2 + 1); try { navigator.vibrate && navigator.vibrate(25); } catch (e) {}
+          if (taps >= 3) { const me = loadMe() || {}; soloSet('cookie', hseed((me.id || me.nick || '') + N.bizDate() + 'c') % COOKIE.length); soloMark('cookie'); b.textContent = '✨'; setTimeout(draw, 350); } }; return; }
+      const [cat, lv, txt] = COOKIE[v.cookie], line = `🥠 오늘의 ${cat}: ${lv}`;
+      sb.innerHTML = `<span class="sstep">포춘쿠키</span><div class="sres"><small>오늘의 ${escH(cat)} · ${escH(lv)}</small><b style="font-size:22px;line-height:1.35">${escH(txt)}</b></div><button class="btn" type="button" id="soShow">💬 스크린 말풍선에 띄우기</button><p class="note" style="margin:0">재미로 보는 글귀예요 · 내일 또 깰 수 있어요</p>`;
+      $('soShow').onclick = () => putBtn($('soShow'), line, '✅ 스크린에 떴어요'); };
+    draw(); open(); }
+
+  // ⑥ 술BTI: 질문 4개로 네 글자 → 술 성향 + 어울리는 자리(I=오너바·E=긴 바) + 메뉴판에서 한 잔 추천
+  const SBTI_Q = [
+    { q: '혼술 바에 들어왔다. 나는?', o: [['E', '옆 사람과 말 트고 싶다'], ['I', '내 자리에서 조용히 즐긴다']] },
+    { q: '메뉴판을 펼쳤다', o: [['S', '늘 마시던 걸로'], ['N', '처음 보는 이름이 끌린다']] },
+    { q: '술을 고르는 기준은?', o: [['T', '도수·맛·가격을 따져 본다'], ['F', '오늘 기분에 맞는 걸로']] },
+    { q: '오늘 밤 계획은?', o: [['J', '몇 잔, 몇 시까지 정해 둠'], ['P', '흘러가는 대로']] }];
+  const SBTI = {
+    ESTJ: ['🍺', '맥주 반장형', '첫 잔은 무조건 시원하게. 오늘도 정해진 대로 깔끔하게', ['up', 'mild', 'bitter']],
+    ESTP: ['🔥', '샷 한 방형', '일단 세게 시작하고 보는 분위기 메이커', ['party', 'strong', 'fresh']],
+    ESFJ: ['🥂', '건배 담당형', '다 같이 한 잔! 모두가 즐거워야 나도 즐거워요', ['party', 'mid', 'sweet']],
+    ESFP: ['🎉', '반짝 파티형', '오늘이 축제. 반짝이는 잔이 어울려요', ['party', 'mid', 'fresh']],
+    ENTJ: ['🥃', '위스키 보스형', '센 술도 우아하게, 오늘 밤도 주도권은 나', ['up', 'strong', 'bitter']],
+    ENTP: ['🧪', '신메뉴 실험가형', '처음 보는 칵테일부터 시켜 보는 호기심 대장', ['up', 'mid', 'fresh']],
+    ENFJ: ['🍹', '분위기 메이커형', '옆 사람 잔까지 챙기는 다정한 술친구', ['up', 'mid', 'sweet']],
+    ENFP: ['🍸', '칵테일 요정형', '색 예쁘고 이름 귀여운 잔에 끌려요', ['up', 'mild', 'sweet']],
+    ISTJ: ['🥃', '늘 그 잔형', '마시던 걸 마시던 만큼. 흔들림 없는 단골', ['calm', 'strong', 'bitter']],
+    ISTP: ['🧊', '온더락 장인형', '말없이 얼음 소리 들으며 한 모금', ['rest', 'strong', 'bitter']],
+    ISFJ: ['🫖', '순한 하이볼형', '부담 없이 길게, 오래 머무는 편안한 한 잔', ['rest', 'mild', 'fresh']],
+    ISFP: ['🍑', '무드 칵테일형', '조명·음악·잔 색까지, 분위기에 취하는 타입', ['calm', 'mild', 'sweet']],
+    INTJ: ['📚', '향 연구가형', '향과 맛을 하나하나 따져 보는 혼술 고수', ['calm', 'strong', 'bitter']],
+    INTP: ['🌀', '한 잔 오래형', '한 잔 놓고 생각 정리, 시간 가는 줄 몰라요', ['calm', 'mid', 'bitter']],
+    INFJ: ['🌙', '혼자 음미형', '말은 적어도 깊게. 오늘 마음에 맞는 한 잔', ['calm', 'mid', 'sweet']],
+    INFP: ['🌸', '감성 한 잔형', '노래 한 곡에 잔 하나, 생각이 많은 밤', ['rest', 'mild', 'sweet']] };
+  function sbtiGame(){ const ans = []; let step = 0; const v0 = soloGet(); if (v0.sbti) step = 9;
+    const draw = () => {
+      if (step < SBTI_Q.length) { const Q = SBTI_Q[step];
+        sb.innerHTML = `<span class="sstep">술BTI · ${step + 1} / ${SBTI_Q.length}</span><h3>${Q.q}</h3><div class="gopts">${Q.o.map(([k, t]) => `<button type="button" class="gopt" data-k="${k}">${t}</button>`).join('')}</div>`;
+        sb.querySelectorAll('[data-k]').forEach(b => b.onclick = () => { ans[step] = b.dataset.k; step++; if (step === SBTI_Q.length) { soloSet('sbti', ans.join('')); soloMark('sbti'); } draw(); }); return; }
+      const t = soloGet().sbti || ans.join(''), [em, nm, txt, dans] = SBTI[t] || SBTI.INFP, line = `🧪 술BTI ${t} ${nm}`;
+      sb.innerHTML = `<span class="sstep">술BTI</span><div class="sres"><small>나의 술BTI · ${t}</small><b>${em} ${escH(nm)}</b><span>${escH(txt)}<br>${t[0] === 'I' ? '어울리는 자리: 오너바 (사장님 앞, 조용히)' : '어울리는 자리: 긴 바 (다 같이)'}</span></div>${recBox(dans)}<button class="btn" type="button" id="soShow">💬 스크린 말풍선에 띄우기</button><button class="btn ghost" type="button" id="soAgain">다시 해보기</button>`;
+      recWire(dans); $('soShow').onclick = () => putBtn($('soShow'), line, '✅ 스크린에 떴어요'); $('soAgain').onclick = () => { ans.length = 0; step = 0; draw(); }; };
+    draw(); open(); }
+
+  // ⑦ 혼술 빙고: 9칸 · 놀거리 칸은 해 보면 저절로 체크, 나머지는 직접 눌러 체크 · 한 줄 채우면 스크린 말풍선
+  const BINGO = [['drink', '🍸', '오늘의 한 잔 해 보기'], ['cat', '🐱', '고양이 찾기'], ['story', '📖', '이야기 한 줄 잇기'],
+    ['tarot', '🔮', '타로 한 장'], ['order', '🍹', '한 잔 주문하기', 1], ['cookie', '🥠', '포춘쿠키 깨기'],
+    ['sbti', '🧪', '술BTI 해 보기'], ['game', '🎮', '게임 한 판 참여', 1], ['hello', '👋', '사장님께 인사하기', 1]];
+  const LINES = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+  const bingoOn = () => { const v = soloGet(); return BINGO.map(([k]) => !!(v['m_' + k] || (k === 'cat' && catGot() > 0))); };
+  const bingoLines = on => LINES.filter(l => l.every(i => on[i]));
+  function bingoGame(){
+    const draw = () => { const on = bingoOn(), ln = bingoLines(on), inLine = new Set(ln.flat()), n = on.filter(Boolean).length, v = soloGet();
+      sb.innerHTML = `<span class="sstep">혼술 빙고 · ${n} / 9칸 · ${ln.length}줄</span><h3>🎯 한 줄을 채우면 스크린에 떠요</h3><p>놀거리 칸은 해 보면 저절로 체크돼요 · 나머지는 하고 나서 눌러 주세요</p>
+        <div class="bgrid">${BINGO.map(([k, em, t, man], i) => `<button type="button" class="bcell${on[i] ? ' on' : ''}${inLine.has(i) ? ' line' : ''}" data-b="${i}"><span><i>${on[i] ? '✅' : em}</i>${t}${man && !on[i] ? '<br><small style="color:var(--muted)">눌러서 체크</small>' : ''}</span></button>`).join('')}</div>
+        ${ln.length ? `<button class="btn primary" type="button" id="soShow">💬 '빙고 ${ln.length}줄' 스크린에 띄우기</button>` : ''}`;
+      sb.querySelectorAll('[data-b]').forEach(b => b.onclick = () => { const [k, , t, man] = BINGO[+b.dataset.b];
+        if (on[+b.dataset.b]) return;
+        if (!man) { close(); const go = { drink: drinkGame, cat: catGame, story: storyGame, tarot: tarotGame, cookie: cookieGame, sbti: sbtiGame }[k]; if (go) go(); return; }
+        soloMark(k); const before = ln.length; draw(); const after = bingoLines(bingoOn()).length; if (after > before) { try { navigator.vibrate && navigator.vibrate([40, 40, 80]); } catch (e) {} toast(`🎯 빙고 ${after}줄!`); } });
+      if ($('soShow')) $('soShow').onclick = () => putBtn($('soShow'), `🎯 혼술 빙고 ${ln.length}줄 완성!`, '✅ 스크린에 떴어요'); };
+    draw(); open(); }
+  setInterval(() => { const el = $('bingoWhen'); if (!el) return; const on = bingoOn(), ln = bingoLines(on).length; el.textContent = ln ? `빙고 ${ln}줄!` : `${on.filter(Boolean).length} / 9칸`; }, 2000);
+
+  document.querySelectorAll('[data-solo]').forEach(b => b.onclick = () => { const k = b.dataset.solo; ({ drink: drinkGame, cat: catGame, story: storyGame, tarot: tarotGame, cookie: cookieGame, sbti: sbtiGame, bingo: bingoGame })[k]?.(); });
 })();
 </script>
 </body>
