@@ -71,7 +71,7 @@ button.main { background:linear-gradient(90deg,var(--red),var(--pink)); border:0
   <h1>♥ 소개팅 지원서 관리 <button id="logout">나가기</button></h1>
 
   <div class="card">
-    <h2>회차(수요일) 열기·닫기</h2>
+    <h2>회차(수·목요일) 열기·닫기</h2>
     <div class="row">
       <input id="newDate" type="date">
       <input id="newNote" type="text" placeholder="안내 한 줄(선택)" style="flex:1;min-width:140px" maxlength="30">
@@ -135,7 +135,7 @@ async function loadRounds() {
 }
 $('addRound').onclick = async () => {
   const d = $('newDate').value; if (!d) return;
-  if (new Date(d + 'T00:00:00').getDay() !== 3 && !confirm('수요일이 아니에요. 그래도 열까요?')) return;
+  if (![3, 4].includes(new Date(d + 'T00:00:00').getDay()) && !confirm('수요일·목요일이 아니에요. 그래도 열까요?')) return;
   const old = rounds.find(r => r.date === d);
   await SGT.saveRound({ date: d, open: true, capM: 10, capF: 10, note: $('newNote').value.trim() || (old ? old.note : '') });
   $('newNote').value = ''; cur = d; loadRounds();
