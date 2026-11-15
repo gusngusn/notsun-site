@@ -49,7 +49,21 @@
       b.set(fs.collection('sgt_apps').doc(id), Object.assign(doc, { ts: firebase.firestore.FieldValue.serverTimestamp() }));
       if (photoData) b.set(fs.collection('sgt_photos').doc(id), { data: photoData, ts: firebase.firestore.FieldValue.serverTimestamp() });
       await b.commit();
+      SGT.notifyOwner(app).catch(() => {});   // 알림 실패해도 접수는 그대로
       return id;
+    },
+    // 사장님 폰 잠금화면 알림(방명록과 같은 ntfy 채널, 리모컨에서 설정한 owner/settings.ntfy)
+    // 외부 알림 서버를 거치므로 이름·연락처 등 개인정보는 넣지 않고 날짜·성별만
+    async notifyOwner(app) {
+      if (DEMO) return;
+      const s = await fs.collection('owner').doc('settings').get();
+      const topic = s.exists && typeof s.data().ntfy === 'string' ? s.data().ntfy : '';
+      if (!topic) return;
+      await fetch('https://ntfy.sh/', { method: 'POST', body: JSON.stringify({
+        topic, title: '💌 소개팅 지원서 도착', priority: 4, tags: ['love_letter'],
+        message: `${SGT.dateLabel(app.round)} 회차 · ${app.gender === 'm' ? '남자' : '여자'} 1명 지원했어요. 눌러서 확인하세요.`,
+        click: location.origin + '/sogaeting-admin.html'
+      }) });
     },
     // ---- 사장 전용 ----
     async apps(date) {
