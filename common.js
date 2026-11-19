@@ -2305,7 +2305,10 @@
   let auth = null;
   // App Check: 우리 사이트에서 온 요청만 받도록 (Fraud Defense = reCAPTCHA Enterprise 사이트 키 · 공개용 값)
   const APPCHECK_SITE_KEY = '6LdEMf4tAAAAAJ5Lnj8ZboMJtRatnzw51W_-CRkc';
-  if (LIVE) { if (!firebase.apps.length) firebase.initializeApp(cfg); try { if (APPCHECK_SITE_KEY && firebase.appCheck && location.protocol === 'https:' && !/^(localhost|127\.|192\.168\.|10\.)/.test(location.hostname)) firebase.appCheck().activate(new firebase.appCheck.ReCaptchaEnterpriseProvider(APPCHECK_SITE_KEY), true); } catch (e) {} fs = firebase.firestore(); auth = firebase.auth ? firebase.auth() : null; }
+  if (LIVE) { if (!firebase.apps.length) firebase.initializeApp(cfg); try { if (APPCHECK_SITE_KEY && firebase.appCheck && location.protocol === 'https:' && !/^(localhost|127\.|192\.168\.|10\.)/.test(location.hostname)) firebase.appCheck().activate(new firebase.appCheck.ReCaptchaEnterpriseProvider(APPCHECK_SITE_KEY), true); } catch (e) {} fs = firebase.firestore();
+    // 11월 18일: 아이폰(사파리 계열)은 실시간 연결이 가끔 끊기거나 게임 전송이 멈춤 → 아이폰·아이패드·맥 사파리만 '긴 폴링' 방식으로 연결(안드로이드·PC 크롬은 그대로)
+    try { const ua = (global.navigator && navigator.userAgent) || '', ios = /iP(hone|ad|od)/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1), saf = /Safari/.test(ua) && !/Chrome|Chromium|Android/.test(ua); if (ios || saf) fs.settings({ experimentalForceLongPolling: true, experimentalAutoDetectLongPolling: false, merge: true }); } catch (e) {}
+    auth = firebase.auth ? firebase.auth() : null; }
   // 손님 휴대폰 익명 로그인: 내 캐릭터의 메시지만 고칠 수 있게 하는 열쇠 (실패해도 등록은 됨)
   let authReady = null;
   const withTimeout = (p, ms, what) => Promise.race([p, new Promise((_, rej) => setTimeout(() => { const e = new Error('timeout'); e.code = 'timeout'; e.what = what; rej(e); }, ms))]);
