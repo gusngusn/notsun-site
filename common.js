@@ -1868,6 +1868,7 @@
         if (GS.hb !== hk) { GS.hb = hk; sfxBeat(); if (c <= 3) tone(c === 1 ? 1320 : 990, .09, .05, 'square', .02); }
         ctx.save(); const gr = ctx.createRadialGradient(240 * s, 135 * s, 95 * s, 240 * s, 135 * s, 290 * s); gr.addColorStop(0, 'rgba(255,40,40,0)'); gr.addColorStop(1, `rgba(255,40,40,${(.1 + pu * .28 + (5 - c) * .04).toFixed(3)})`); ctx.fillStyle = gr; ctx.fillRect(0, 0, W * s, H * s);
         ctx.font = `${(24 + pu * 14) * s}px "Do Hyeon", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineWidth = 4 * s; ctx.lineJoin = 'round'; ctx.strokeStyle = '#1a0f10'; ctx.strokeText(String(c), 40 * s, 40 * s); ctx.fillStyle = c <= 3 ? '#ff5a4a' : (col || '#ffd36a'); ctx.fillText(String(c), 40 * s, 40 * s); ctx.restore(); };
+      if (PEN_TYPES.includes(g.type)) { const p = penInfo(g); banner(ctx, s, t, p.t, [p.q, p.s].filter(Boolean).join(' · '), p.col || '#ffd36a'); if (g.phase !== 'result' && g.type !== 'react') clutch(); return; }   // 벌칙 게임(11월 21일): 2D 예비 화면은 안내 띠만
       // 참여 모집 중에는 QR을 반짝이게: 아직 접속 안 한 손님도 바로 찍고 참여
       if (qr && (g.phase === 'join' || (g.type === 'race' && g.phase === 'pick') || (g.type === 'bal' && g.phase === 'play'))) { const q = 62 * s, qx = 392 * s, qy = 44 * s, gl = .55 + Math.sin(t / 220) * .45;
         ctx.save(); ctx.strokeStyle = `rgba(255,211,106,${gl})`; ctx.lineWidth = 2.4 * s; ctx.strokeRect(qx - 5 * s, qy - 5 * s, q + 10 * s, q + 10 * s);
@@ -2361,12 +2362,15 @@
     return { day, id, editable: true };
   }
   // 이 기기(uid)로 오늘 이미 앉은 캐릭터 찾기 (있으면 새로 만들지 않고 이어서 쓰기)
-  async function findMyGuest() {
+  async function findMyGuest(localId) {
     const day = bizDate();
     if (LIVE) {
       const uid = await guestUid(); if (!uid) return null;
       const snap = await withTimeout(fs.collection('days').doc(day).collection('guests').where('uid', '==', uid).get(), 8000, 'get');
       const l = snap.docs.map(d => ({ ...d.data(), id: d.id })).filter(g => !g.left).sort((a, b) => (b.ts && b.ts.toMillis ? b.ts.toMillis() : 0) - (a.ts && a.ts.toMillis ? a.ts.toMillis() : 0));
+      // 11월 21일: 사장 계정(이메일 로그인)은 여러 폰이 같은 계정 → '로그인 계정'이라고 표시해서 손님 앱이 아무 폰에서나 사장 캐릭터로 이어가지 않게
+      const signed = !!(auth && auth.currentUser && auth.currentUser.uid === uid && !auth.currentUser.isAnonymous);
+      if (signed) { const m = l.find(g => g.id === localId); return m ? { ...m, day } : null; }   // 사장 계정 폰은 이 폰에 저장된 캐릭터만 이어감 → 두 폰이 각자 따로(11월 7일 전처럼)
       return l[0] ? { ...l[0], day } : null;
     }
     const uid = demoUid(), l = lsGet(DEMO_KEY(day), []).filter(g => g.uid === uid && !g.left);
@@ -2405,7 +2409,8 @@
   async function safeReload(page) { try { const r = await fetch((page || location.pathname.split('/').pop() || 'index.html') + '?ping=' + Date.now(), { cache: 'no-store' }); const t = r.ok ? await r.text() : ''; if (r.ok && /common\.js/.test(t)) { location.reload(); return true; } } catch (e) {} return false; }
   function watchGuests(day, cb, all) {
     // 같은 기기(uid)가 오늘 여러 번 앉았으면 스크린에는 가장 최근 캐릭터 하나만 (기록은 그대로, 리모컨에선 전부 보임)
-    const oneEach = l => { const last = new Map(); l.forEach(g => { if (g.uid && !g.left) last.set(g.uid, g); }); return l.filter(g => !g.uid || g.left || last.get(g.uid) === g); };
+    // 11월 21일: 사장 계정(이메일 로그인)은 사장님 두 분 폰이 같은 계정 → 스크린이 사장 계정으로 로그인돼 있으면 그 계정 캐릭터는 묶지 않고 다 보여줌
+    const oneEach = l => { const su = auth && auth.currentUser && !auth.currentUser.isAnonymous ? auth.currentUser.uid : ''; const last = new Map(); l.forEach(g => { if (g.uid && !g.left) last.set(g.uid, g); }); return l.filter(g => !g.uid || g.left || g.uid === su || last.get(g.uid) === g); };
     const keep = l => all ? l : oneEach(l.filter(g => valid(g) && clean(g.nick) && clean(g.msg)));
     if (LIVE) {
       return relisten((err, ok) => fs.collection('days').doc(day).collection('guests').orderBy('ts').limit(300).onSnapshot(snap => { ok();
@@ -2608,10 +2613,10 @@
   const setBest = id => saveEvent('best', { day: bizDate(), id: id || '' });
   const setVip = ids => saveEvent('vip', { day: bizDate(), ids: (ids || []).slice(0, 40) });
   // ---------- 게임 데이터 ----------
-  const GAME_TYPES = ['bomb', 'ten', 'toast', 'bal', 'nun', 'rou', 'race', 'rps', 'ox', 'face', 'img', 'liar', 'cho'];
+  const GAME_TYPES = ['bomb', 'ten', 'toast', 'bal', 'nun', 'rou', 'race', 'rps', 'ox', 'face', 'img', 'liar', 'cho', 'react', 'minor', 'updown', 'cup', 'n31', 'catw'];
   // 매시 정각 자동 게임: 스크린이 진행 · 사장님이 리모컨에서 다음 게임을 고를 수 있음 (안 고르면 순서대로)
-  const AUTO_ORDER = ['race', 'bal', 'rou', 'ox', 'rps', 'bomb', 'nun', 'ten'];   // 다 같이 건배는 뺌 (2026-10-26)
-  const AUTO_LABEL = { race: '🏇 픽셀 경마', bal: '⚖️ 밸런스 게임', rou: '🎡 행운의 룰렛', ox: '⭕ OX 서바이벌', toast: '🥂 다 같이 건배', rps: '✊ 사장님과 가위바위보', bomb: '💣 폭탄 돌리기', nun: '🙊 눈치게임', ten: '⏱ 10초 맞추기' };
+  const AUTO_ORDER = ['race', 'bal', 'rou', 'ox', 'bomb', 'ten'];   // 다 같이 건배는 뺌 (2026-10-26) · 사장님과 가위바위보·눈치게임 뺌 (2026-11-21 사장님)
+  const AUTO_LABEL = { race: '🏇 픽셀 경마', bal: '⚖️ 밸런스 게임', rou: '🎡 행운의 룰렛', ox: '⭕ OX 서바이벌', toast: '🥂 다 같이 건배', rps: '✊ 사장님과 가위바위보', bomb: '💣 폭탄 돌리기', nun: '🙊 눈치게임', ten: '⏱ 10초 맞추기', react: '🚦 꼴찌 반응속도', minor: '🙈 소수의 선택', updown: '🔢 업다운 숫자', cup: '🍺 술잔 룰렛', n31: '🔟 31 게임', catw: '😺 고양이 깨우기' };
   const HOUR = 3600000;
   function autoInfo(auto, now) {
     if (auto && auto.on === false) return null; now = now || Date.now();
@@ -2624,6 +2629,7 @@
   const BAL_N = 3, BAL_SEC = 20;
   function balSet(first){ const pool = BAL_QS.filter(q => !first || q[0] !== first[0]), out = first ? [first] : []; const a = pool.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } while (out.length < BAL_N && a.length) out.push(a.pop()); return out.map(q => [String(q[0]).slice(0, 16), String(q[1]).slice(0, 16)]); }
   function autoSpec(type) {
+    if (['react', 'minor', 'updown', 'cup', 'n31', 'catw'].includes(type)) return [{ phase: 'join', mission: '', dur: 20 }, n => ({ joinUntil: n + 20000 }), `${AUTO_LABEL[type]} 참여자 모집 (20초)…`];   // 벌칙 게임(11월 21일)
     const sh = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
     const q = BAL_QS[Math.floor(Math.random() * BAL_QS.length)];
     return ({
@@ -2796,7 +2802,28 @@
   // 인물·초성퀴즈 오답: 정답 공개 때 캐릭터 머리 위에 띄워 웃음 포인트로(11월 12일 사장님) · 손님 한 줄 칸에 '🙈번호 답'으로 실어 보냄
   const faceMsg = (round, txt) => '🙈' + round + ' ' + String(txt).slice(0, 16), faceRead = m => { const r = /^🙈(\d+) (.+)$/.exec(String(m || '')); return r ? { round: +r[1], txt: r[2] } : null; };
   const isGameMsg = m => /^(💣\d+ |🙈\d+ |🕵️ )/.test(String(m || ''));
-  const BOMB_ROUNDS = 3, bombMsg = (round, txt) => '💣' + round + ' ' + txt, bombRead = m => { const r = /^💣(\d+) (.+)$/.exec(String(m || '')); return r ? { round: +r[1], txt: r[2] } : null; };
+  // 11월 21일 사장님: 폭탄 돌리기는 한 판으로 · 벌칙 늘리기(리모컨 미션 칸이 비어 있으면 펑! 할 때 아래에서 하나 뽑음, 24자 이내)
+  const BOMB_PENALTY = ['옆 사람에게 건배 제안하기', '10초 자기소개 하기', '사장님께 칭찬 한마디', '최근 웃겼던 일 하나 말하기', '다른 사람이 내 MBTI 맞히기', '좋아하는 노래 한 소절 흥얼거리기', '애교 한 번 보여주기', '오늘의 질문에 한 줄 답하기', '옆 사람 첫인상 말해주기', '성대모사 하나 하기', '내 인생 영화 한 편 소개하기', '휴대폰 배경화면 보여주기', '지금 기분을 이모지 3개로 말하기', '3초 동안 귀여운 표정 짓기', '제일 좋아하는 안주 고백하기', '혼술 꿀팁 하나 알려주기', '술 마시고 한 실수 하나 고백', '내일 할 일 하나 선언하기', '노래 제목으로 지금 기분 말하기', '윙크 한 번 하기', "'낯선'으로 2행시 짓기", '스크린 속 고양이 이름 맞히기', '나만 아는 TMI 하나 공개', '여기 있는 사람 장점 하나 말하기', '최애 술 한 가지 소개하기'];
+  // ---------- 벌칙 게임 6종(11월 21일 사장님 "벌칙게임 늘리기"): 마지막에 한 명이 걸리면 벌칙(리모컨 미션 칸, 비면 BOMB_PENALTY 중 랜덤) ----------
+  //  손님 폰 → games 컬렉션은 이미 쓰던 종류만 씀(ten · vote) → 파이어베이스 규칙 변경 없음
+  const PEN_TYPES = ['react', 'minor', 'updown', 'cup', 'n31', 'catw'];
+  const PEN_NM = { react: '🚦 꼴찌 반응속도', minor: '🙈 소수의 선택', updown: '🔢 업다운 숫자', cup: '🍺 술잔 룰렛', n31: '🔟 31 게임', catw: '😺 고양이 깨우기' };
+  const PEN_HOW = { react: '신호가 초록으로 바뀌는 순간 휴대폰을 탭! 제일 늦거나, 먼저 누르면 벌칙', minor: '둘 중 하나를 골라요. 적은 쪽을 고른 사람 중 한 명이 벌칙', updown: '1~100 비밀 숫자를 차례로 불러 범위를 좁혀요. 맞혀 버리면 벌칙!', cup: '차례로 잔을 하나씩 골라요. 꽝 잔을 고르면 벌칙!', n31: '차례로 숫자를 1~3개씩 이어서 외쳐요. 31을 말하면 벌칙!', catw: '차례로 자는 고양이를 1~3번 쓰다듬어요. 고양이를 깨우면 벌칙!' };
+  function penInfo(g) {
+    const left = Math.max(0, Math.ceil((g.dur || 0) - (Date.now() - (g.ms || Date.now())) / 1000)), NM = PEN_NM[g.type] || '게임', ps = g.players || [], hot = left <= 3 ? '#ff6a5a' : '';
+    if (g.phase === 'join') return { t: `${NM} 참여자 모집!`, q: PEN_HOW[g.type] || '', s: `휴대폰에서 '참여' 누르기 · ${left}초` };
+    if (g.phase === 'result') return { t: `😵 ${g.loserNick || ''}님 벌칙!`, q: g.mission ? `벌칙: ${g.mission}` : '', s: g.reason || '', col: '#ff8a7a' };
+    if (g.type === 'react') return g.phase === 'wait' ? { t: NM, q: '🔴 기다려요… 아직 누르면 부정출발!', s: '초록으로 바뀌면 휴대폰을 탭!', col: '#ff6a5a' } : { t: NM, q: '🟢 지금 탭!!', s: `${left}초`, col: '#7ee08a' };
+    if (g.type === 'minor') return { t: `${NM} · 적은 쪽이 벌칙 후보`, q: `${g.a || ''}  vs  ${g.b || ''}`, s: `휴대폰에서 둘 중 하나! (비밀) · ${left}초`, col: hot };
+    const cur = ps[(g.turn | 0) % (ps.length || 1)] || {}, last = g.last ? `${g.last.nick}: ${g.last.txt}${g.last.auto ? ' (시간 초과 자동)' : ''} · ` : '';
+    let q = '';
+    if (g.type === 'updown') q = `비밀 숫자는 ${(g.lo | 0) + 1} ~ ${(g.hi == null ? 101 : g.hi | 0) - 1} 사이`;
+    if (g.type === 'cup') q = Array.from({ length: g.cups | 0 }, (_, i) => (g.open || []).includes(i) ? '✔' : '🍺').join(' ');
+    if (g.type === 'n31') q = `지금 ${g.cur | 0}까지 · 31을 말하면 벌칙`;
+    if (g.type === 'catw') q = `😺 쿨쿨… 지금까지 ${g.pets | 0}번 쓰다듬었어요`;
+    return { t: `${NM} · 👉 ${cur.nick || ''}님 차례`, q, s: `${last}${left}초`, col: hot };
+  }
+  const BOMB_ROUNDS = 1, bombMsg = (round, txt) => '💣' + round + ' ' + txt, bombRead = m => { const r = /^💣(\d+) (.+)$/.exec(String(m || '')); return r ? { round: +r[1], txt: r[2] } : null; };
   // ---------- 메뉴판 (기본값: 매장 메뉴판 기준 · 사장 리모컨에서 수정 가능) ----------
   const M = (name, price, extra) => ({ name, price, ...(extra || {}) });
   const W_ = (name, abv, price, bottle, group) => ({ name, abv, price, bottle, group, whisky: true });
@@ -3181,6 +3208,6 @@
     lsSet('notsun-owner-live', { who, msg, ms: Date.now() }); ping();
   }
 
-  global.Notsun = { setGuestLeft, findMyGuest, resetDay, watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, horseSprite, raceProg, raceInfo, RACE_T0, BAL_QS, OX_QS, FACE_QS, faceOk, faceInfo, faceSrc, IMG_QS, LIAR_CATS, liarPack, liarOpen, LIAR_MARK, BOMB_CATS, BOMB_ROUNDS, bombMsg, bombRead, faceMsg, faceRead, isGameMsg, CHO_CATS, CHO_QS, chosung, choInfo, choOk, choSec, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, LOOK_THEMES, FITS, COS_DESC, issueLegendCoupon, BOTTOMS, ACCS, HAIR_X, TOPS, EYES, ACC_X, SHOES, PANTS_COLORS, EX_RE, setGuestCos, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
+  global.Notsun = { setGuestLeft, findMyGuest, resetDay, watchChat, sendChat, closeChat, CHAT_MAX, CHAT_LEN, makeNpcs, setNpcs, NPC_MAX, saveGameHost, loadGameHost, gameTx, saveGameHb, watchGameHb, setWifi, wifiQrText, SHOP_WIFI, GAME_TYPES, RACE_HORSES, horseSprite, raceProg, raceInfo, RACE_T0, BAL_QS, OX_QS, FACE_QS, faceOk, faceInfo, faceSrc, IMG_QS, LIAR_CATS, liarPack, liarOpen, LIAR_MARK, BOMB_CATS, BOMB_ROUNDS, BOMB_PENALTY, PEN_TYPES, PEN_NM, PEN_HOW, penInfo, bombMsg, bombRead, faceMsg, faceRead, isGameMsg, CHO_CATS, CHO_QS, chosung, choInfo, choOk, choSec, sendHeart, heartsSent, isMutual, HEART_MAX, W, H, OWNER_EMAIL, DRINKS, SEXES, HAIR_STYLES, LOOK_THEMES, FITS, COS_DESC, issueLegendCoupon, BOTTOMS, ACCS, HAIR_X, TOPS, EYES, ACC_X, SHOES, PANTS_COLORS, EX_RE, setGuestCos, HAIR_COLORS, SKIN_COLORS, SHIRT_COLORS, PANTS, DEFAULT_OWNERS,
     CAT_HIDE, shopOpen, STORY, balSet, muteSfx: v => { SFX.mute = !!v; }, BAL_SEC, setCatVisit, watchCatVisit, petCat, safeReload, netErr, newOrderId: () => LIVE ? fs.collection('orders').doc().id : 'o' + Date.now(), watchCatPets, THEMES, resolveTheme, costumeFor, drawCostume, cosSeed, seasonCostume, rollSeason, seasonPool, cosOf, OWNER_COS, ownerCostume, cardAura, AURA_FX, makeCard, saveTheme, bizDate, colorsFromImage, sprite, drawPreview, createScene, addGuest, updateMsg, updatePrefs, sendCheer, watchCheers, setQuestion, removeGuest, watchGuests, SEATS, placeGuests, saveSeats, saveOff, onScreen, drawLucky, setBest, setVip, issueCoupon, useCoupon, clearUsedCoupons, DEFAULT_MENU, MENU_NOTES, watchMenu, saveMenu, placeOrder, watchOrders, watchMyOrders, setOrderStatus, announceOrder, announceServed, drinkColor, setGuestLast, celebrateBirthday, setNtfy, testNtfy, renotify, deleteOrder, markRealert, startGame, saveGameEnd, REQ_NEED, reqTally, requestGame, markReqDone, AUTO_ORDER, AUTO_LABEL, autoInfo, autoSpec, saveAuto, notifyOwner, updateLook, gameAct, watchGameActs, tenRank, watchRecipes, saveRecipe, recipeFor, enableSound, soundOn: () => SFX.on, watchMyCoupons, watchCoupons, couponState, myUid, makeGroupPhoto, tierOf, watchOwner, saveOwners, sayLive, LIVE };
 })(window);

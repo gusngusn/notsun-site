@@ -1366,7 +1366,7 @@ function soloFx(list, t){
 //  주소에 ?g2d 를 붙이면 예전처럼 뒷벽 스크린으로 다가가서 진행
 // =====================================================================
 var OXF = 0;
-const G3TYPES = ['ox', 'face', 'img', 'liar', 'bomb', 'cho', 'rps', 'nun', 'ten', 'bal', 'rou'];   // 11월 12일 사장님: 2D로 진행하는 게임은 없음(경마만 화면 위 창)
+const G3TYPES = ['ox', 'face', 'img', 'liar', 'bomb', 'cho', 'rps', 'nun', 'ten', 'bal', 'rou'].concat(N.PEN_TYPES || []);   // 벌칙 게임 6종(11월 21일)도 3D   // 11월 12일 사장님: 2D로 진행하는 게임은 없음(경마만 화면 위 창)
 const g3on = () => { const g = ownerState && ownerState.game; return !!(g && G3TYPES.includes(g.type)) && !/[?&]g2d/.test(location.search); };
 const G3ROOT = new THREE.Group(); G3ROOT.userData.g3 = 1; scene.add(G3ROOT);
 const OZ = { x0: -2.8, x1: -.25, z0: 1.75, z1: 3.15 }, XZ = { x0: .35, x1: 3.1, z0: 2.45, z1: 3.15 };
@@ -1423,6 +1423,7 @@ function g3tick(){ const now = performance.now(), on = g3on(), g = on ? ownerSta
   if (g.type === 'img' || g.type === 'liar') { partyTick(g, now); return; }
   if (g.type === 'bomb') { bombTick(g, now); return; }
   if (['rps', 'nun', 'ten', 'bal', 'rou'].includes(g.type)) { miniTick(g, now); return; }
+  if ((N.PEN_TYPES || []).includes(g.type)) { penTick(g, now); return; }
   const e = now - G3.pAt, acts = (typeof gameActs !== 'undefined' ? gameActs : []) || [], nickOf = gid => ((g.players || []).find(p => p.gid === gid) || acts.find(a => a.gid === gid) || {}).nick || '';
   const alive = g.alive || [], picks = g.picks || {}, out = g.out || [];
   let padO = .9, padX = .9; SIGN_O.visible = SIGN_X.visible = g.phase === 'q' || g.phase === 'ans'; ANS.visible = false; g3Box.style.display = 'block'; qBox.style.display = 'none';
@@ -1653,6 +1654,25 @@ function miniTick(g, now){ const e = now - G3.pAt, acts = (typeof gameActs !== '
     if (g.phase === 'result') { lineUp(ps, g.winner); const av = center(g.winner); if (av) { iconOf(av, '🎉 당첨', '#ffd36a'); cheer(av); } ps.forEach(gid => { if (gid !== g.winner) { const a2 = G3.av.get(gid); if (a2) iconOf(a2, '', ''); } });
       g3set('🎡 룰렛 당첨', `${g.winnerNick || ''}님!`, g.reward ? `상품: ${g.reward}` : '축하해요!', '#ffd36a'); return; } }
   g3set(NM || '게임 중', '', ''); }
+// ---------- 벌칙 게임 6종(11월 21일 사장님): 참여자는 앞줄에 서고 · 차례인 사람 머리 위 👉 · 걸린 사람은 가운데로 나와 쓰러짐 ----------
+function penTick(g, now){ const acts = (typeof gameActs !== 'undefined' ? gameActs : []) || [], Z = 2.8, T = g.type;
+  SIGN_O.visible = SIGN_X.visible = ANS.visible = false; g3Box.style.display = 'block'; qBox.style.display = 'none';
+  const nickOf = gid => (((g.players || []).find(p => p.gid === gid)) || acts.find(a => a.gid === gid) || {}).nick || '';
+  const lineUp = (ids, special) => { const ln = g3line(ids.length, Z); ids.forEach((gid, i) => { const av = g3spawn(gid, nickOf(gid)); if (!av || av.home || gid === special) return; av.fall = 0; g3hop(av, ln[i][0], ln[i][1], i * 60); }); G3.av.forEach(av => { if (!ids.includes(av.gid) && av.gid !== special) g3home(av); }); };
+  const p = N.penInfo(g); g3set(p.t, p.q, p.s, p.col || '#ffd36a');
+  if (g.phase === 'join') { const ids = [...new Set(acts.filter(a => a.kind === 'join' && a.gid).map(a => a.gid))]; lineUp(ids); ids.forEach(gid => { const av = G3.av.get(gid); if (av) iconOf(av, '참여!', '#ffb27a'); }); return; }
+  const ps = (g.players || []).map(x => x.gid);
+  if (g.phase === 'result') { lineUp(ps, g.loser); const av = g3spawn(g.loser, g.loserNick);
+    if (av) { av.home = false; g3hop(av, .2, Z - .45, 0, .7); if (!av.hop) av.fall = Math.min(1, av.fall + .05); iconOf(av, '😵 벌칙!', '#ff6a5a'); if (G3.judged !== G3.pk) { G3.judged = G3.pk; pop(av.x, .5, av.z); } }
+    const rk = {}; (g.ranks || []).forEach(r => { rk[r.gid] = r.v; });
+    ps.forEach(gid => { if (gid === g.loser) return; const a2 = G3.av.get(gid); if (a2) iconOf(a2, T === 'react' && rk[gid] > 0 ? `${(rk[gid] / 1000).toFixed(2)}초` : '🎉', '#7ee08a'); }); return; }
+  lineUp(ps);
+  if (T === 'react') { const rec = {}; acts.filter(a => a.kind === 'ten' && a.gid).forEach(a => { const v = a.v | 0; if (!(a.gid in rec) || v === 0) rec[a.gid] = v; });
+    ps.forEach(gid => { const av = G3.av.get(gid); if (!av) return; const v = rec[gid]; iconOf(av, v === 0 ? '❌ 반칙' : v > 0 ? '✔' : g.phase === 'wait' ? '🔴' : '❗', v === 0 ? '#ff6a5a' : v > 0 ? '#7ee08a' : g.phase === 'wait' ? '#ff6a5a' : '#ffd36a'); }); return; }
+  if (T === 'minor') { const ok = new Set(acts.filter(a => a.kind === 'vote' && a.k === 1).map(a => a.gid)); ps.forEach(gid => { const av = G3.av.get(gid); if (av) iconOf(av, ok.has(gid) ? '✔' : '?', ok.has(gid) ? '#7ee08a' : '#e0d0c6'); }); return; }
+  const cur = ps[(g.turn | 0) % (ps.length || 1)];
+  ps.forEach(gid => { const av = G3.av.get(gid); if (av) iconOf(av, gid === cur ? '👉 차례' : '', '#ffd36a'); });
+  if (g.last && G3.lastPen !== g.k) { G3.lastPen = g.k; const av = G3.av.get(g.last.gid); if (av) { g3hop(av, av.x, av.z - .01, 0, .5); pop(av.x, .4, av.z); } } }
 (function g3loop(){ try { g3tick(); const now = performance.now();
   G3.av.forEach(av => { const h = av.hop; if (h && now >= h.t0) { const k = Math.min(1, (now - h.t0) / h.dur), s = k * k * (3 - 2 * k); av.x = h.x0 + (h.x1 - h.x0) * s; av.z = h.z0 + (h.z1 - h.z0) * s; av.y = Math.sin(Math.PI * k) * h.h; if (k >= 1) { av.hop = null; av.y = 0; if (av.home) { g3drop(av); return; } } }
     av.grp.position.set(av.x, av.y, av.z); const p = av.grp.position; av.grp.rotation.y = Math.atan2(camera.position.x - p.x, camera.position.z - p.z) * .85;

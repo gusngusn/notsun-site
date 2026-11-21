@@ -607,7 +607,7 @@ async function submit(){
   busy = true; check(); $('err').hidden = true; $('go').textContent = '앉는 중…'; $('quickGo').textContent = '앉는 중…';
   try {
     // 이 기기로 오늘 이미 앉아 있으면 새로 만들지 않고 그 캐릭터로 이어가기 (한 손님 = 하루 한 캐릭터)
-    const ex = await N.findMyGuest().catch(() => null);
+    const ex = await N.findMyGuest((loadMe() || {}).id).catch(() => null);   // 11월 21일: 사장 계정 폰은 이 폰에 저장된 캐릭터만 이어감(두 폰에서 한 캐릭터 문제)
     if (ex && ex.id) { resumeGuest(ex); busy = false; $('go').textContent = '이 모습으로 바에 앉기'; $('quickGo').textContent = '바에 앉기'; check(); return; }
     const v = visitCount();
     let r = null; for (let k = 0; k < 3; k++) { try { r = await N.addGuest({ ...cur(), nick: $('nick').value.trim().slice(0, 8), msg: $('msg').value.trim().slice(0, 24), drink, v, talk, bd: $('bdCheck').checked }); break; }
@@ -850,10 +850,10 @@ function gShut(){ $('gPanel').hidden = true; $('gChip').hidden = true; }
 $('gClose').onclick = () => { gHide = true; $('gPanel').hidden = true; $('gChip').hidden = false; };
 $('gChip').onclick = () => { gHide = false; $('gPanel').hidden = false; $('gChip').hidden = true; };
 const gq = id => document.getElementById(id);
-var gErrCode = '';   // 게임 전송 실패 이유(11월 14일: 아이폰 손님 확인용) → 실패 안내 문구 끝에 짧게 붙음
-async function gDo(kind, extra){ const me = loadMe(); if (!me || !GM) { gErrCode = !me ? 'nome' : 'nogame'; throw new Error(gErrCode); }
+var gErrCode = '', gErrAt = 0;   // 게임 전송 실패 이유(11월 14일: 아이폰 손님 확인용) → 실패 안내 문구 끝에 짧게 붙음
+async function gDo(kind, extra){ const me = loadMe(); if (!me || !GM) { gErrCode = !me ? 'nome' : 'nogame'; gErrAt = Date.now(); throw new Error(gErrCode); }
   try { await N.gameAct(GM.n, kind, { gid: me.id, nick: me.nick, ...(extra || {}) }); gErrCode = ''; }
-  catch (e) { gErrCode = String((e && (e.code || e.message)) || 'err').replace(/^firestore\//, '').slice(0, 24); throw e; } }
+  catch (e) { gErrCode = String((e && (e.code || e.message)) || 'err').replace(/^firestore\//, '').slice(0, 24); gErrAt = Date.now(); throw e; } }
 function renderGame(g){
   if (tenRaf) { cancelAnimationFrame(tenRaf); tenRaf = 0; }
   const prev = GM; GM = g || null; if (g && g.n) lastGameN = g.n; if (typeof renderReq === 'function') setTimeout(renderReq, 0); const me = loadMe();
@@ -991,6 +991,35 @@ function renderGame(g){
     if (L.fk !== g.k) { L.fk = g.k; try { navigator.vibrate && navigator.vibrate(outMe ? [160, 70, 160] : [40]); } catch (e) {} if (outMe) gBeep([330, 220], .14); }
     if (outMe) { setTimeout(() => { if (GM && GM.k === g.k && gq('gFaceIn')) { gOpen('<h3>😵 탈락</h3><p>정답: ' + escH(info[1] || '') + '<br>남은 사람들을 응원해 주세요!</p>'); } }, 2500); }
     return; }
+  if ((N.PEN_TYPES || []).includes(g.type)) {   // 벌칙 게임 6종(11월 21일 사장님): 마지막에 한 명 벌칙
+    const NM = N.PEN_NM[g.type], turnG = !['react', 'minor'].includes(g.type);
+    if (g.phase === 'join') { joinUI(NM, N.PEN_HOW[g.type] + (turnG ? ' (먼저 참여한 8명까지)' : '')); return; }
+    if (!inP) { gOpen(`<h3>${NM} 중</h3><p>스크린을 봐주세요!</p>`); return; }
+    if (g.phase === 'result') { const lose = g.loser === me.id; if (L.penK !== g.n) { L.penK = g.n; gAlert(lose ? 'boom' : 'soft'); }
+      gOpen(lose ? `<h3>😵 내가 걸렸어요!</h3><p>벌칙: <b style="color:#ffd9b8;font-size:20px">${escH(g.mission || '')}</b></p><p>${escH(g.reason || '')}</p>` : `<h3>🎉 살았다!</h3><p><b>${escH(g.loserNick || '')}</b>님 벌칙: ${escH(g.mission || '')}</p><p>${escH(g.reason || '')}</p>`); return; }
+    if (g.type === 'react') {
+      if (L.rx != null) { gOpen(`<h3>${L.rx === 0 ? '❌ 부정출발!' : '✔ ' + (L.rx / 1000).toFixed(3) + '초'}</h3><p>결과는 스크린에서!</p>`); return; }
+      const tap = (v, k) => { if (L.rx != null) return; L.rx = v; renderGame(GM); gDo('ten', { v, k }).catch(() => toast('기록을 보내지 못했어요.')); };
+      if (g.phase === 'wait') { gOpen('<h3>🔴 기다려요…</h3><button class="gbig red" id="gRx" type="button" style="width:100%;min-height:36vh;font-size:26px;animation:none;background:#8a1f22">아직!<br><small>초록으로 바뀌면 탭</small></button>'); gq('gRx').onpointerdown = () => tap(0, 1); return; }
+      if (!L.rxT0) { L.rxT0 = performance.now(); gAlert('soft'); }
+      gOpen('<h3>🟢 지금!!</h3><button class="gbig" id="gRx" type="button" style="width:100%;min-height:36vh;font-size:44px;background:#3ad07a;color:#08210f">탭!</button>');
+      gq('gRx').onpointerdown = () => tap(Math.max(1, Math.round(performance.now() - L.rxT0)), 2); return; }
+    if (g.type === 'minor') { if (pickUI('mn', 'vote', 1, `🙈 적은 쪽이 벌칙 후보!<br><small>둘 중 하나 (누가 뭘 골랐는지는 비밀)</small>`, [{ t: escH(g.a), c: '#ff8a8a' }, { t: escH(g.b), c: '#7ab8ff' }], 'gopts two')) return;
+      gOpen(`<h3>🙈 선택 완료!</h3><p>나는 <b>${escH(L.mn ? g.b : g.a)}</b></p><p>적은 쪽이 아니길… 결과는 스크린에서!</p>`); return; }
+    const ps = g.players || [], cur = ps[(g.turn | 0) % (ps.length || 1)] || {}, mine = cur.gid === me.id, tk = 't' + g.k, info = N.penInfo(g);
+    const lastP = g.last ? `<p>${escH(g.last.nick)}: ${escH(g.last.txt)}</p>` : '';
+    if (!mine || L[tk]) { gOpen(`<h3>${mine ? '✔ 보냈어요!' : `👉 ${escH(cur.nick || '')}님 차례`}</h3><p style="font-size:18px">${escH(info.q)}</p>${lastP}`); return; }
+    if (L.tBeep !== tk) { L.tBeep = tk; gAlert('soft'); }
+    const send = async v => { if (L[tk]) return; L[tk] = 1; renderGame(GM); try { await gDo('vote', { v, k: 100 + (g.k | 0) }); } catch (e) { L[tk] = 0; toast('보내지 못했어요. 다시 눌러주세요.'); renderGame(GM); } };
+    const lo = (g.lo | 0) + 1, hi = (g.hi == null ? 101 : g.hi | 0) - 1; let ctl = '';
+    if (g.type === 'updown') ctl = `<form id="gUdF" autocomplete="off" style="display:grid;gap:8px"><input id="gUdIn" type="number" inputmode="numeric" min="${lo}" max="${hi}" placeholder="${lo} ~ ${hi}" style="font-size:28px;padding:12px;border-radius:12px;border:2px solid #ffb27a;background:#140c0d;color:#fff4ea;text-align:center"><button class="gbig" type="submit">이 숫자!</button></form><p id="gUdP"></p>`;
+    if (g.type === 'cup') ctl = `<div class="gopts three">${Array.from({ length: g.cups | 0 }, (_, i) => (g.open || []).includes(i) ? '<button class="gopt" type="button" disabled style="opacity:.3">✔</button>' : `<button class="gopt" type="button" data-pv="${i}">🍺<br>${i + 1}</button>`).join('')}</div>`;
+    if (g.type === 'n31') { const c = g.cur | 0; ctl = `<div class="gopts three">${[1, 2, 3].filter(k => c + k <= 31).map(k => `<button class="gopt" type="button" data-pv="${k}">${Array.from({ length: k }, (_, i) => c + i + 1).join(', ')}</button>`).join('')}</div>`; }
+    if (g.type === 'catw') ctl = `<div class="gopts three">${[1, 2, 3].map(k => `<button class="gopt" type="button" data-pv="${k}">${'🤚'.repeat(k)}<br>${k}번</button>`).join('')}</div>`;
+    gOpen(`<h3>👉 내 차례! (15초)</h3><p style="font-size:18px">${escH(info.q)}</p>${lastP}${ctl}`);
+    document.querySelectorAll('#gBody [data-pv]').forEach(b => b.onclick = () => send(+b.dataset.pv));
+    const uf = gq('gUdF'); if (uf) uf.onsubmit = ev => { ev.preventDefault(); const v = parseInt(gq('gUdIn').value, 10); if (!(v >= lo && v <= hi)) { gq('gUdP').innerHTML = `<b style="color:#ff6a5a">${lo}~${hi} 사이 숫자로 써 주세요</b>`; return; } send(v); };
+    return; }
   if (g.type === 'rps' || g.type === 'ox') {
     const isR = g.type === 'rps', nm = isR ? '✊ 사장님과 가위바위보' : '⭕ OX 서바이벌';
     if (g.phase === 'join') { joinUI(nm, isR ? '스크린 속 사장님과 다 같이 가위바위보! 지면 탈락, 이기거나 비기면 다음 판. 끝까지 살아남으면 우승!' : '상식 OX 문제! 틀리면 탈락, 끝까지 살아남으면 우승!'); return; }
@@ -1030,7 +1059,7 @@ function renderWifi(w){ const escH = t => String(t).replace(/[&<>"']/g, c => ({ 
   el.innerHTML = `<div class="wt"><b>📶 와이파이</b><span>${escH(WIFI.s)}</span><span>PW ${escH(WIFI.p || '없음')}</span></div>${WIFI.p ? '<button type="button" data-wcopy>비밀번호 복사</button>' : ''}<small>설정 → Wi-Fi에서 위 이름을 고르고, 복사한 비밀번호를 붙여넣으면 돼요</small>`;
   const pw = WIFI.p, b = el.querySelector('[data-wcopy]'); if (b) b.onclick = async () => { let ok = false; try { await navigator.clipboard.writeText(pw); ok = true; } catch (e) { try { const t = document.createElement('textarea'); t.value = pw; document.body.appendChild(t); t.select(); ok = document.execCommand('copy'); t.remove(); } catch (e2) {} }
     b.textContent = ok ? '✅ 복사됨' : '길게 눌러 복사'; setTimeout(() => { b.textContent = '비밀번호 복사'; }, 2000); }; }); }
-function toast(t){ const el = $('toast'); if (typeof gErrCode === 'string' && gErrCode && /못했어요|못 보냈|다시!/.test(t)) { t += ` [${gErrCode}]`; gErrCode = ''; } el.textContent = t; el.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => el.hidden = true, 5000); }
+function toast(t){ const el = $('toast'); if (typeof gErrCode === 'string' && gErrCode && Date.now() - (gErrAt || 0) < 4000 && /못했어요|못 보냈|다시!/.test(t)) { t += ` [${gErrCode}]`; gErrCode = ''; } el.textContent = t; el.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => el.hidden = true, 5000); }
 let lastSave = 0;
 $('saveMsg').onclick = async () => {
   const me = loadMe(); if (!me) { restart(); return; }

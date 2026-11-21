@@ -156,8 +156,8 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
       <b class="glab">🔥 시끌벅적</b>
       <div class="gbtns">
         <button class="btn primary" id="gBomb" type="button">💣 폭탄 돌리기</button>
-        <button class="btn primary" id="gNun" type="button">🙊 눈치게임</button>
-        <button class="btn primary" id="gRps" type="button">✊ 사장님과 가위바위보</button>
+        <button class="btn primary" id="gNun" type="button" hidden>🙊 눈치게임</button>
+        <button class="btn primary" id="gRps" type="button" hidden>✊ 사장님과 가위바위보</button><!-- 11월 21일 사장님: 두 게임 뺌(버튼만 숨김) -->
         <button class="btn primary" id="gToast" type="button" hidden>🥂 다 같이 건배</button>
       </div>
       <b class="glab">🧠 머리 쓰기</b>
@@ -177,7 +177,7 @@ input[type=text],input[type=email],input[type=password]{font:19px/1.2 "Do Hyeon"
       </div>
       <label class="f">밸런스 게임 질문 <select id="gBalQ"></select></label>
       <div class="balcus"><input id="gBalA" type="text" maxlength="16" placeholder="직접 쓰기: A"><input id="gBalB" type="text" maxlength="16" placeholder="B"></div>
-      <label class="f">폭탄 맞은 사람 미션 <input id="gMission" type="text" maxlength="24" value="오늘의 질문에 한 줄 답하기"></label>
+      <label class="f">벌칙 (폭탄·벌칙 게임 공통) <input id="gMission" type="text" maxlength="24" value="" placeholder="비워 두면 벌칙 25개 중 랜덤"></label>
       <label style="display:flex;gap:8px;align-items:center;color:var(--muted);font-size:15px"><input id="gPrize" type="checkbox" style="width:20px;height:20px"> 우승자에게 쿠폰 자동 발급 (10초·OX·가위바위보·룰렛·경마 추첨 · 아래 '당첨 선물' 문구 사용)</label>
       <p class="sub" id="gState">진행 중인 게임이 없어요.</p>
       <button class="btn small" id="gStop" type="button" hidden>게임 그만하기</button>
@@ -803,6 +803,9 @@ $('gBalQ').insertAdjacentHTML('afterbegin', '<option value="r">🎲 랜덤 질�
 $('gBal').onclick = gStart('bal', () => { const ca = $('gBalA').value.trim(), cb = $('gBalB').value.trim(); let q;
     if (ca && cb) q = [ca, cb]; else { const v = $('gBalQ').value; q = v === 'r' ? null : N.BAL_QS[+v]; }
     const qs = N.balSet(q); return { phase: 'play', a: qs[0][0], b: qs[0][1], qs, round: 1, total: qs.length, dur: N.BAL_SEC }; }, n => ({ endAt: n + N.BAL_SEC * 1000 }), '⚖️ 밸런스 게임 3문제 진행 중…');
+// 벌칙 게임 6종(11월 21일 사장님): 가위바위보 버튼 자리 뒤에 버튼 추가 · 벌칙은 미션 칸(비면 랜덤)
+(N.PEN_TYPES || []).slice().reverse().forEach(t => { const b = document.createElement('button'); b.className = 'btn primary'; b.type = 'button'; b.id = 'gPen_' + t; b.textContent = N.PEN_NM[t]; $('gRps').after(b);
+  b.onclick = gStart(t, () => ({ phase: 'join', dur: 20, mission: $('gMission').value.trim().slice(0, 24) }), n => ({ joinUntil: n + 20000 }), `${N.PEN_NM[t]} 참여자 모집 (20초)…`); });
 $('gNun').onclick = gStart('nun', () => ({ phase: 'join', dur: 20 }), n => ({ joinUntil: n + 20000 }), '🙊 눈치게임 참여자 모집 (20초)…');
 $('gRou').onclick = gStart('rou', () => ({ phase: 'join', dur: 20, reward: gReward() }), n => ({ joinUntil: n + 20000 }), '🎡 룰렛 참여자 모집 (20초)…');
 $('gRace').onclick = gStart('race', () => ({ phase: 'pick', dur: 20, reward: gReward() }), n => ({ pickUntil: n + 20000 }), '🏇 경마 우승마 고르는 중 (20초)…');
